@@ -18,8 +18,15 @@ composer install
 
 ## Config
 
-Update your `.env` file with your credentials
+Place a `.env` file with
+
+```bash
+GH_USER=<github-user>
+GH_EMAIL=<github-user-email>
+GH_REPO=<github-repo>
+GH_ACCESS_TOKEN=<github-access-token>
+```
 
 ## Deploy
 
-Place all directory content into your host
+Place all directory content into your host (excluding the `client/` directory content)
