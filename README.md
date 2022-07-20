@@ -1,4 +1,4 @@
-# jJekyll JAM
+# Jekyll JAM
 
 A Jekyll interactive editor based on php boosted by GitHub API
 
