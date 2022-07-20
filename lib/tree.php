@@ -1,18 +1,22 @@
 <?php
 
 require_once 'lib/dotfile.php';
+require_once 'lib/blob.php';
 require_once 'vendor/autoload.php';
 
 use GuzzleHttp\Client;
+use Symfony\Component\Yaml\Yaml;
 
 class Tree
 {
     public $sha = null;
+    public $data = null;
+    private $_config = null;
     private $env = null;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
 
-    function __construct($sha = null)
+    function __construct($sha)
     {
         $this->sha = $sha;
         $this->env = (new Dotenv())->get();
@@ -20,16 +24,21 @@ class Tree
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
 
-    public function get($sha = null)
+    public function get()
     {
-        $_sha = $sha == null ? $this->sha : $sha;
-        if (!$_sha) {
-            throw new TypeError('Invalid commit sha');
+        if ($this->data) {
+            return $this->data;
         }
 
         $client = new Client(array('base_uri' => $this->base_url));
-        $response = $client->request('GET', $this->endpoint . '/' . $_sha . '?recursive=1');
+        $response = $client->request('GET', $this->endpoint . '/' . $this->sha . '?recursive=1', array(
+            'headers' => array(
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN'],
+                'Accept' => 'application/vnd.github+json',
+            )
+        ));
         $json = json_decode($response->getBody()->getContents(), true);
+        $this->data = $json;
         return $json;
     }
 
@@ -42,7 +51,7 @@ class Tree
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('POST', $this->endpoint, array(
-            'body' => $payload,
+            'json' => $payload,
             'headers' => array(
                 'Accept' => 'application/vnd.github+json',
                 'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
@@ -113,6 +122,80 @@ class Tree
             }
         }
 
+        return $this->_prune_tree($tree);
+    }
+
+    private function _prune_tree($tree)
+    {
+        $config = $this->config();
+        $paths = array(
+            '_posts',
+            '_drafts',
+        );
+
+        if (in_array('collections', $config)) {
+            foreach ($config['collections'] as $coll => $config) {
+                if (in_array('collections_dir', $coll)) {
+                    array_push($paths, $config['collections_dir']);
+                } else {
+                    array_push($paths, $coll);
+                }
+            }
+        }
+
+        $children = array();
+        foreach (array_keys($tree['children']) as $name) {
+            if ($tree['children'][$name]['type'] == 'blob' || in_array($name, $paths)) {
+                array_push($children, $tree['children'][$name]);
+            }
+        }
+
+        $children = array_filter($children, array($this, '_prune_branch'));
+        $named_children = array();
+        foreach ($children as $child) {
+            foreach ($tree['children'] as $name => $node) {
+                if ($node['sha'] == $child['sha']) {
+                    $named_children[preg_replace('/^_/', '', $name)] = $node;
+                }
+            }
+        }
+        $tree['children'] = $named_children;
+
         return $tree;
+    }
+
+    private function _prune_branch($node)
+    {
+        if ($node['type'] == 'blob') {
+            return preg_match('/\.md$/', $node['path']);
+        }
+        $children = array_filter($node['children'], array($this, '_prune_branch'));
+        $named_children = array();
+        foreach ($children as $child) {
+            foreach ($node['children'] as $name => $_node) {
+                if ($_node['sha'] == $child['sha']) {
+                    $named_children[preg_replace('/^_/', '', $name)] = $node;
+                }
+            }
+        }
+        $node['children'] = $named_children;
+        return true;
+    }
+
+    public function config()
+    {
+        if ($this->_config) {
+            return $this->_config;
+        }
+
+        $tree = $this->get()['tree'];
+        foreach ($tree as $node) {
+            if ($node['path'] == '_config.yml') {
+                $blob = (new Blob($node['sha']))->get();
+                $this->_config = Yaml::parse(base64_decode($blob['content']));
+            }
+        }
+
+        return $this->_config;
     }
 }

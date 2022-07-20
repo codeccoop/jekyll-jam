@@ -1,0 +1,69 @@
+:root {
+  --header-height: 60px;
+
+  --br-md: 640px;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: [sidebar] 30vw [main] auto [end];
+  grid-template-rows: [header] var(--header-height) [main] auto [end];
+}
+
+@media screen and (min-width: 640px) {
+  .app {
+    grid-template-columns: [sidebar] 25vw [main] auto [end];
+  }
+}
+
+@media screen and (min-width: 980px) {
+  .app {
+    grid-template-columns: [sidebar] 20vw [main] auto [end];
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .app {
+    grid-template-columns: [sidebar] 250px [main] auto [end];
+  }
+}
+
+.app__header {
+  height: var(--header-height);
+  grid-column: sidebar / end;
+  grid-row: header / main;
+  box-shadow: 0px 5px 5px -5px #0003;
+  padding: 0 2vw;
+}
+
+.app__brand {
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  padding: 7px 0;
+}
+
+.app__logo {
+  width: 50px;
+}
+
+.app__logo img {
+  width: 100%;
+  height: calc(var(--header-height) - 14px);
+  object-fit: contain;
+}
+
+.app__sidebar {
+  grid-column: sidebar / main;
+  grid-row: main / end;
+  height: 100vh;
+  overflow: auto;
+}

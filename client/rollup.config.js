@@ -7,9 +7,27 @@ import css from "rollup-plugin-import-css";
 
 export default [
   {
-    input: "src/pages/editor.js",
+    input: "src/pages/home/index.js",
     output: {
-      file: path.join(__dirname, "..", "static/js/editor.js"),
+      file: path.join(__dirname, "..", "static/bundle/home.js"),
+      format: "iife",
+    },
+    plugins: [
+      resolve(),
+      replace({
+        "process.env.NODE_ENV": JSON.stringify("development"),
+      }),
+      babel({
+        presets: ["@babel/preset-react"],
+      }),
+      commonjs(),
+      css(),
+    ],
+  },
+  {
+    input: "src/pages/editor/index.js",
+    output: {
+      file: path.join(__dirname, "..", "static/bundle/editor.js"),
       format: "iife",
     },
     plugins: [

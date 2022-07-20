@@ -1,0 +1,17 @@
+.editor textarea {
+  resize: none;
+  width: 100%;
+  height: 100%;
+  border: none;
+  outline: none;
+  font-size: 1.2rem;
+  color: #444;
+}
+
+.edit-page {
+  display: flex;
+}
+
+.edit-page > div {
+  flex: 1;
+}

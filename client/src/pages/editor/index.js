@@ -1,10 +1,12 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 
-import Editor from "../components/Editor.js";
-import Preview from "../components/Preview.js";
+import Editor from "../../components/Editor/index.js";
+import Preview from "../../components/Preview/index.js";
 
-const root = createRoot(document.getElementById("content"));
+import "./index.css";
+
+const root = createRoot(document.querySelector(".edit-page"));
 
 function App() {
   const blob = document.getElementById("blob");
@@ -35,8 +37,8 @@ function App() {
 
   return (
     <>
-      <Editor onUpdate={onUpdate} blobContent={blob.innerHTML} />;
-      <Preview text={editorConent} />
+      <Editor onUpdate={onUpdate} blobContent={blob.innerHTML} />
+      <Preview text={editorConent} blobContent={blob.innerHTML} />
       <a className="btn" onClick={onSubmit}>
         Save
       </a>
