@@ -1,14 +1,16 @@
 <?php
 
-class Dotenv
+class Dotfile
 {
 
-    private $path = '.env';
+    private $path = null;
 
-    function __construct($path = '.env')
+    function __construct($path = null)
     {
         if ($path) {
             $this->path = $path;
+        } else {
+            $this->path = realpath(__DIR__ . '/../.env');
         }
     }
 
@@ -16,7 +18,7 @@ class Dotenv
     {
         try {
             $envfile = fopen($this->path, "r");
-            $content = fread($envfile, filesize(".env"));
+            $content = fread($envfile, filesize($this->path));
             fclose($envfile);
             $env = array();
             foreach (explode(PHP_EOL, $content) as $l) {

@@ -1,8 +1,7 @@
 <?php
-
-require_once 'lib/dotfile.php';
-require_once 'lib/blob.php';
-require_once 'vendor/autoload.php';
+require_once realpath(__DIR__ . '/dotfile.php');
+require_once realpath(__DIR__ . '/blob.php');
+require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
 use Symfony\Component\Yaml\Yaml;
@@ -16,10 +15,10 @@ class Tree
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
 
-    function __construct($sha)
+    function __construct($sha = null)
     {
         $this->sha = $sha;
-        $this->env = (new Dotenv())->get();
+        $this->env = (new Dotfile())->get();
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
@@ -42,10 +41,10 @@ class Tree
         return $json;
     }
 
-    public function post($base_tree_sha, $changes)
+    public function post($base_sha, $changes)
     {
         $payload = array(
-            'base_tree' => $base_tree_sha,
+            'base_tree' => $base_sha,
             'tree' => $changes
         );
 
@@ -57,6 +56,8 @@ class Tree
                 'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
             )
         ));
+
+        return json_decode($response->getBody()->getContents(), true);
     }
 
     public function render()
@@ -71,15 +72,16 @@ class Tree
     private function _render($tree)
     {
         foreach ($tree['children'] as $name => $node) {
+            $url_path = base64_encode($node['path']);
             switch ($node['mode']) {
                 case '040000':
                     echo "<li>{$name}<ul>";
                     break;
                 case '100644':
-                    echo "<li><a href='/editor.php?sha={$node['sha']}&filename={$name}'>{$name}</a>";
+                    echo "<li><a href='/editor.php?sha={$node['sha']}&path={$url_path}'>{$name}</a>";
                     break;
                 case '100755':
-                    echo "<li><a href='/editor.php?sha={$node['sha']}&filename={$name}'>{$name}</a>";
+                    echo "<li><a href='/editor.php?sha={$node['sha']}&path={$url_path}'>{$name}</a>";
                     break;
             }
 

@@ -1,6 +1,6 @@
 <?php
-require_once 'lib/branch.php';
-require_once 'lib/tree.php';
+require_once realpath(__DIR__ . '/../lib/branch.php');
+require_once realpath(__DIR__ . '/../lib/tree.php');
 ?>
 
 <html lang="en">
@@ -14,13 +14,13 @@ require_once 'lib/tree.php';
         <?php
         switch ($_SERVER['SCRIPT_NAME']) {
             case '/editor.php':
-                include_once 'static/bundle/editor.css';
+                include_once realpath(__DIR__ . '/../static/bundle/editor.css');
                 break;
             case '':
-                include_once 'static/bundle/home.css';
+                include_once realpath(__DIR__ . '/../static/bundle/home.css');
                 break;
             default:
-                include_once 'static/bundle/home.css';
+                include_once realpath(__DIR__ . '/../static/bundle/home.css');
         }
         ?>
     </style>

@@ -6,13 +6,13 @@
     <?php
     switch ($_SERVER['SCRIPT_NAME']) {
         case '/editor.php':
-            include_once 'static/bundle/editor.js';
+            include_once realpath(__DIR__ . '/../static/bundle/editor.js');
             break;
         case '':
-            include_once 'static/bundle/home.js';
+            include_once realpath(__DIR__ . '/../static/bundle/home.js');
             break;
         default:
-            include_once 'static/bundle/home.js';
+            include_once realpath(__DIR__ . '/../static/bundle/home.js');
     }
     ?>
 </script>

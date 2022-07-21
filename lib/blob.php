@@ -1,7 +1,7 @@
 <?php
 
-require_once 'lib/dotfile.php';
-require_once 'vendor/autoload.php';
+require_once realpath(__DIR__ . '/dotfile.php');
+require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
 use Symfony\Component\Yaml\Yaml;
@@ -14,10 +14,10 @@ class Blob
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
 
-    function __construct($sha)
+    function __construct($sha = null)
     {
         $this->sha = $sha;
-        $this->env = (new Dotenv())->get();
+        $this->env = (new Dotfile())->get();
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
@@ -74,19 +74,12 @@ class Blob
         return Yaml::parse(str_replace('---', '', $matches[0][0]));
     }
 
-    private function filename()
-    {
-        $blob = $this->get();
-        echo $blob['path'];
-        return end(explode('/', $blob['path']));
-    }
-
     public function render()
     {
         $content = $this->content();
         $frontmatter = $this->frontmatter();
-        $filename = $this->filename();
-        echo "<template id='blob' data-filename='{$filename}' data-sha='{$this->sha}'>" . $content . '</template>';
+        # echo "<template id='blob' data-filename='{$filename}' data-sha='{$this->sha}'>" . $content . '</template>';
+        echo "<template id='blob'>" . $content . '</template>';
         echo "<ul>";
         foreach ($frontmatter as $key => $value) {
             $this->_render_item($key, $value);
