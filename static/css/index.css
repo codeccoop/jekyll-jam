@@ -11,31 +11,31 @@ body {
   font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
 }
 
-.app {
+#app {
   display: grid;
   grid-template-columns: [sidebar] 30vw [main] auto [end];
   grid-template-rows: [header] var(--header-height) [main] auto [end];
 }
 
 @media screen and (min-width: 640px) {
-  .app {
+  #app {
     grid-template-columns: [sidebar] 25vw [main] auto [end];
   }
 }
 
 @media screen and (min-width: 980px) {
-  .app {
+  #app {
     grid-template-columns: [sidebar] 20vw [main] auto [end];
   }
 }
 
 @media screen and (min-width: 1200px) {
-  .app {
+  #app {
     grid-template-columns: [sidebar] 250px [main] auto [end];
   }
 }
 
-.app__header {
+#app .header {
   height: var(--header-height);
   grid-column: sidebar / end;
   grid-row: header / main;
@@ -43,7 +43,7 @@ body {
   padding: 0 2vw;
 }
 
-.app__brand {
+.brand {
   display: flex;
   align-items: center;
   font-size: 2rem;
@@ -51,17 +51,17 @@ body {
   padding: 7px 0;
 }
 
-.app__logo {
+.brand-logo {
   width: 50px;
 }
 
-.app__logo img {
+.brand-logo img {
   width: 100%;
   height: calc(var(--header-height) - 14px);
   object-fit: contain;
 }
 
-.app__sidebar {
+#app .sidebar {
   grid-column: sidebar / main;
   grid-row: main / end;
   height: 100vh;

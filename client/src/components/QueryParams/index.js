@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import QueryParamsContext from "../store/QueryParams.js";
-import { parseQueryParams, stringifyQueryParams } from "../utils/url.js";
+import QueryParamsContext from "../../store/queryParams.js";
+import { parseQueryParams, stringifyQueryParams } from "../../utils/url.js";
 
-export default function QueryParams({ children }) {
+export default function QueryParams({ onUpdate, children }) {
   const [queryParams, setQueryParams] = useState(parseQueryParams());
 
   useEffect(() => {
@@ -11,6 +11,8 @@ export default function QueryParams({ children }) {
       null,
       `${location.pathname}?${stringifyQueryParams(queryParams)}`
     );
+
+    if (onUpdate) onUpdate(queryParams);
   }, [queryParams]);
 
   return (

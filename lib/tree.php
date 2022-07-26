@@ -60,6 +60,34 @@ class Tree
         return json_decode($response->getBody()->getContents(), true);
     }
 
+    public function json()
+    {
+        $tree = $this->_build_tree();
+        $data = array(
+            'sha' => $tree['sha'],
+            'children' => $this->_json($tree)
+        );
+
+        return json_encode($data);
+    }
+
+    private function _json($tree)
+    {
+        $items = array();
+        foreach ($tree['children'] as $name => $node) {
+            $item = array();
+            $item['name'] = $name;
+            $item['sha'] = $node['sha'];
+            $item['path'] = $node['path'];
+            $item['is_file'] = $node['mode'] != '040000';
+
+            $item['children'] = $this->_json($node);
+            array_push($items, $item);
+        }
+
+        return $items;
+    }
+
     public function render()
     {
 

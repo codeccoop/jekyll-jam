@@ -1,14 +1,16 @@
 import React from "react";
-import "./index.css";
+import "./style.css";
 
-export default function Editor({ onUpdate, blobContent }) {
+export default function Editor({ onUpdate, content, defaultContent }) {
   function onInput(ev) {
     onUpdate(ev.target.value);
   }
 
+  content = content ? content : defaultContent;
+
   return (
     <div className="editor">
-      <textarea onInput={onInput} defaultValue={blobContent}></textarea>
+      <textarea onInput={onInput} value={content}></textarea>
     </div>
   );
 }
