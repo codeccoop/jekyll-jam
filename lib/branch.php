@@ -58,7 +58,8 @@ class Branch
         $data = array(
             'sha' => $branch['commit']['sha'],
             'name' => $branch['name'],
-            'protected' => $branch['protected']
+            'protected' => $branch['protected'],
+            'repository' => $this->env['GH_REPO']
         );
 
         return json_encode($data);

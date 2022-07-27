@@ -1,8 +1,0 @@
-.sidebar.disabled ul {
-  opacity: 0.5;
-  cursor: progress;
-}
-
-.sidebar.disabled a {
-  pointer-events: none;
-}

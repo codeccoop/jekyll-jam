@@ -4,6 +4,9 @@ import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from "@rollup/plugin-replace";
 import css from "rollup-plugin-import-css";
+import scss from "rollup-plugin-scss";
+import postcss from "postcss";
+import autoprefixer from "autoprefixer";
 import json from "@rollup/plugin-json";
 import dev from "rollup-plugin-dev";
 
@@ -22,7 +25,11 @@ export default {
       presets: ["@babel/preset-react"],
     }),
     commonjs(),
-    css(),
+    // css(),
+    scss({
+      sourceMap: process.env.NODE_ENV !== "production",
+      processor: () => postcss([autoprefixer]),
+    }),
     json(),
     dev({
       port: 3000,

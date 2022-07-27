@@ -15,6 +15,9 @@ const markdown = {
 
 export default function Preview({ text }) {
   return (
-    <div id="preview" dangerouslySetInnerHTML={{ __html: markdown.makeHtml(text) }}></div>
+    <div
+      className="preview"
+      dangerouslySetInnerHTML={{ __html: markdown.makeHtml(text) }}
+    ></div>
   );
 }

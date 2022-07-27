@@ -1,0 +1,36 @@
+.edit.page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.edit__content {
+  flex: 1;
+  display: flex;
+
+  > div {
+    flex: 1;
+    overflow-y: auto;
+  }
+}
+
+.edit__controls {
+  height: 60px;
+  background-color: steelblue;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2rem;
+
+  .btn {
+    padding: 0.5em 1.2em;
+    border: 1px solid;
+    border-radius: 0.6em;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #fff2;
+    }
+  }
+}

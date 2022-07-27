@@ -8,7 +8,7 @@ import { getBlob, postCommit } from "../../services/api";
 
 import QueryParamsContext from "../../store/queryParams";
 
-import "./style.css";
+import "./style.scss";
 
 function EditorPage() {
   const loadingMessage = "Loading file content...";
@@ -48,15 +48,19 @@ function EditorPage() {
 
   return (
     <>
-      <Editor
-        onUpdate={setEditorContent}
-        content={blob.content}
-        defaultContent={defaultEditorContent}
-      />
-      <Preview text={editorConent} />
-      <a className="btn" onClick={() => onSubmit(new URLSearchParams(location.search))}>
-        Save
-      </a>
+      <div className="edit__content">
+        <Editor
+          onUpdate={setEditorContent}
+          content={blob.content}
+          defaultContent={defaultEditorContent}
+        />
+        <Preview text={editorConent} />
+      </div>
+      <div className="edit__controls">
+        <a className="btn" onClick={() => onSubmit(new URLSearchParams(location.search))}>
+          Save
+        </a>
+      </div>
     </>
   );
 }

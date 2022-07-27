@@ -1,0 +1,21 @@
+.header {
+  z-index: 100;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  font-size: 2rem;
+  font-weight: bold;
+  padding: 7px 0;
+}
+
+.brand-logo {
+  width: 50px;
+}
+
+.brand-logo img {
+  width: 100%;
+  height: calc(var(--header-height) - 14px);
+  object-fit: contain;
+}

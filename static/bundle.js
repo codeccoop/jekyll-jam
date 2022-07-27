@@ -14253,7 +14253,7 @@
 	  text
 	}) {
 	  return /*#__PURE__*/React.createElement("div", {
-	    id: "preview",
+	    className: "preview",
 	    dangerouslySetInnerHTML: {
 	      __html: markdown.makeHtml(text)
 	    }
@@ -14375,16 +14375,20 @@
 	    });
 	  }
 
-	  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Editor, {
+	  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+	    className: "edit__content"
+	  }, /*#__PURE__*/React.createElement(Editor, {
 	    onUpdate: setEditorContent,
 	    content: blob.content,
 	    defaultContent: defaultEditorContent
 	  }), /*#__PURE__*/React.createElement(Preview, {
 	    text: editorConent
-	  }), /*#__PURE__*/React.createElement("a", {
+	  })), /*#__PURE__*/React.createElement("div", {
+	    className: "edit__controls"
+	  }, /*#__PURE__*/React.createElement("a", {
 	    className: "btn",
 	    onClick: () => onSubmit(new URLSearchParams(location.search))
-	  }, "Save"));
+	  }, "Save")));
 	}
 
 	function Header() {
@@ -14410,27 +14414,52 @@
 	  })), "Jekyll JAM"));
 	}
 
-	function renderItemContent(item) {
+	function renderItemContent({
+	  item,
+	  selected
+	}) {
 	  if (item.is_file) {
 	    return /*#__PURE__*/React.createElement(Link, {
+	      id: item.sha,
 	      to: "/edit?sha=" + encodeURIComponent(item.sha) + "&path=" + encodeURIComponent(btoa(item.path))
 	    }, item.name);
 	  } else {
-	    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", null, item.name), renderList(item.children));
+	    return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
+	      id: item.sha
+	    }, item.name), renderList({
+	      items: item.children,
+	      selected
+	    }));
 	  }
 	}
 
-	function renderItem(item) {
+	function renderItem({
+	  item,
+	  selected
+	}) {
+	  const className = "item" + (item.sha === selected ? " open" : "") + (item.is_file ? " file" : " directory");
 	  return /*#__PURE__*/React.createElement("li", {
-	    key: item.sha
-	  }, renderItemContent(item));
+	    key: item.sha,
+	    className: className
+	  }, renderItemContent({
+	    item,
+	    selected
+	  }));
 	}
 
-	function renderList(items) {
-	  return /*#__PURE__*/React.createElement("ul", null, items.map(renderItem));
+	function renderList({
+	  items,
+	  selected
+	}) {
+	  return /*#__PURE__*/React.createElement("ul", null, items.map(item => renderItem({
+	    item,
+	    selected
+	  })));
 	}
 
-	function Navbar() {
+	function Sidebar({
+	  toggleVisibility
+	}) {
 	  const [tree, setTree] = react.exports.useState({
 	    isBoilerplate: true,
 	    children: [{
@@ -14448,7 +14477,7 @@
 	    }]
 	  });
 	  const [branch, setBranch] = react.exports.useState(null);
-	  useLocation();
+	  const [queryParams, setQueryParams] = react.exports.useContext(QueryParamsContext);
 	  react.exports.useEffect(() => {
 	    getBranch().then(setBranch);
 	  }, []);
@@ -14457,15 +14486,26 @@
 	  }, [branch]);
 	  return /*#__PURE__*/React.createElement("nav", {
 	    className: "sidebar" + (tree.isBoilerplate ? " disabled" : "")
-	  }, /*#__PURE__*/React.createElement("h3", null, "Directory Tree"), renderList(tree.children));
+	  }, /*#__PURE__*/React.createElement("h3", {
+	    className: "title"
+	  }, "Directory Tree", /*#__PURE__*/React.createElement("span", {
+	    onClick: toggleVisibility
+	  }, "\xAB")), renderList({
+	    items: tree.children,
+	    selected: queryParams.sha
+	  }));
 	}
 
 	function MainLayout({
 	  children
 	}) {
-	  const location = useLocation();
-	  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Header, null), /*#__PURE__*/React.createElement(Navbar, null), /*#__PURE__*/React.createElement("main", {
-	    className: location.pathname.slice(1) + "-page"
+	  const [sidebarVisibility, setSidebarVisibility] = react.exports.useState(true);
+	  return /*#__PURE__*/React.createElement("div", {
+	    className: "app__content" + (sidebarVisibility ? "" : " fullscreen")
+	  }, /*#__PURE__*/React.createElement(Header, null), /*#__PURE__*/React.createElement(Sidebar, {
+	    toggleVisibility: () => setSidebarVisibility(!sidebarVisibility)
+	  }), /*#__PURE__*/React.createElement("main", {
+	    className: location.pathname.slice(1) + " page"
 	  }, children));
 	}
 

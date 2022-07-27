@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useContext } from "react";
+import { Link } from "react-router-dom";
 
+import QueryParamsContext from "../../store/queryParams";
 import { getBranch, getTree } from "../../services/api";
 
-import "./style.css";
+import "./style.scss";
 
-function renderItemContent(item) {
+function renderItemContent({ item, selected }) {
   if (item.is_file) {
     return (
       <Link
+        id={item.sha}
         to={
           "/edit?sha=" +
           encodeURIComponent(item.sha) +
@@ -22,22 +24,31 @@ function renderItemContent(item) {
   } else {
     return (
       <>
-        <span>{item.name}</span>
-        {renderList(item.children)}
+        <span id={item.sha}>{item.name}</span>
+        {renderList({ items: item.children, selected })}
       </>
     );
   }
 }
 
-function renderItem(item) {
-  return <li key={item.sha}>{renderItemContent(item)}</li>;
+function renderItem({ item, selected }) {
+  const className =
+    "item" +
+    (item.sha === selected ? " open" : "") +
+    (item.is_file ? " file" : " directory");
+
+  return (
+    <li key={item.sha} className={className}>
+      {renderItemContent({ item, selected })}
+    </li>
+  );
 }
 
-function renderList(items) {
-  return <ul>{items.map(renderItem)}</ul>;
+function renderList({ items, selected }) {
+  return <ul>{items.map(item => renderItem({ item, selected }))}</ul>;
 }
 
-export default function Navbar() {
+export default function Sidebar({ toggleVisibility }) {
   const [tree, setTree] = useState({
     isBoilerplate: true,
     children: [
@@ -47,7 +58,8 @@ export default function Navbar() {
     ],
   });
   const [branch, setBranch] = useState(null);
-  const location = useLocation();
+
+  const [queryParams, setQueryParams] = useContext(QueryParamsContext);
 
   useEffect(() => {
     getBranch().then(setBranch);
@@ -59,8 +71,13 @@ export default function Navbar() {
 
   return (
     <nav className={"sidebar" + (tree.isBoilerplate ? " disabled" : "")}>
-      <h3>Directory Tree</h3>
-      {renderList(tree.children)}
+      <h3 className="title">
+        Directory Tree<span onClick={toggleVisibility}>&laquo;</span>
+      </h3>
+      {renderList({
+        items: tree.children,
+        selected: queryParams.sha,
+      })}
     </nav>
   );
 }
