@@ -43,13 +43,20 @@ class Branch
                 )
             ));
         } catch (ClientException $e) {
-            $default = (new Branch($this->_default()))->get();
-            return $this->_post($default['commit']['sha']);
+            // Create the deployment branch
+            $default = (new Branch($this->defaultBranch()))->get();
+            $this->data = $this->_post($default['commit']['sha']);
+
+            // Config github page
+            require_once realpath(__DIR__ . '/page.php');
+            (new Page())->post($default);
+
+            // Return the brand new branch
+            return $this->data;
         }
 
-        $json = json_decode($response->getBody()->getContents(), true);
-        $this->data = $json;
-        return $json;
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 
     public function json()
@@ -65,7 +72,7 @@ class Branch
         return json_encode($data);
     }
 
-    private function _default()
+    public function defaultBranch()
     {
         return 'main';
         # $client = new Client(array('base_uri' => 'https://github.com'));

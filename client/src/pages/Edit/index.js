@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import Editor from "../../components/Editor";
 import Preview from "../../components/Preview";
 
-import { getBlob, postCommit } from "../../services/api";
+import { getBlob, postCommit, postPull } from "../../services/api";
 
 import QueryParamsContext from "../../store/queryParams";
 
@@ -30,20 +30,26 @@ function EditorPage() {
   useEffect(() => {
     setBlob({ ...blob, content: null });
     setEditorContent(defaultEditorContent);
-    getBlob(queryParams.sha)
-      .then(data => {
-        setBlob(data);
-        setEditorContent(data.content);
-      })
-      .catch(err => {
-        console.warn("Invalid JSON data");
-      });
+    if (queryParams.sha) {
+      getBlob(queryParams.sha)
+        .then(data => {
+          setBlob(data);
+          setEditorContent(data.content);
+        })
+        .catch(err => {
+          console.warn("Invalid JSON data");
+        });
+    }
   }, [queryParams.sha]);
 
-  function onSubmit({ sha, path }) {
-    postCommit(path, btoa(editorConent), sha).then(commit => {
-      navigate("edit", { search: `?sha=${commit.sha}&path=${path}` });
+  function saveBlob({ sha, path }) {
+    postCommit({ content: btoa(editorConent), path, sha }).then(commit => {
+      navigate("/edit", { search: `?sha=${commit.sha}&path=${path}` });
     });
+  }
+
+  function publish() {
+    postPull().then(console.log).catch(console.error);
   }
 
   return (
@@ -51,14 +57,22 @@ function EditorPage() {
       <div className="edit__content">
         <Editor
           onUpdate={setEditorContent}
-          content={blob.content}
+          content={editorConent}
           defaultContent={defaultEditorContent}
         />
         <Preview text={editorConent} />
       </div>
       <div className="edit__controls">
-        <a className="btn" onClick={() => onSubmit(new URLSearchParams(location.search))}>
+        <a
+          className="btn"
+          onClick={() =>
+            saveBlob(Object.fromEntries(new URLSearchParams(location.search).entries()))
+          }
+        >
           Save
+        </a>
+        <a className="btn" onClick={publish}>
+          Publish
         </a>
       </div>
     </>

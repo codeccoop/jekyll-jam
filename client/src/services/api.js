@@ -39,6 +39,10 @@ export function getBlob(sha) {
   return request("blob", { data: { sha: sha } });
 }
 
-export function postCommit(path, content, blob) {
-  return request("commit", { method: "POST", data: { path, content, blob } });
+export function postCommit({ path, content, sha }) {
+  return request("commit", { method: "POST", data: { path, content, blob: sha } });
+}
+
+export function postPull() {
+  return request("pull", { method: "POST" });
 }
