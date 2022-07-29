@@ -7,10 +7,6 @@
 
   &.fullscreen {
     grid-template-columns: [sidebar] 3rem [main] auto [end];
-
-    .sidebar .item {
-      display: none;
-    }
   }
 }
 

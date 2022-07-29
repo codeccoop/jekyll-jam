@@ -6,7 +6,8 @@ import Home from "./pages/Home";
 import Edit from "./pages/Edit";
 import MainLayout from "./layouts/main";
 
-import { QueryParams } from "./store/queryParams";
+import { QueryParamsStore } from "./store/queryParams";
+import { BranchStore } from "./store/branch";
 
 function Uploads() {}
 
@@ -27,11 +28,13 @@ function AppRoutes() {
 function App() {
   return (
     <BrowserRouter>
-      <QueryParams>
-        <MainLayout>
-          <AppRoutes />
-        </MainLayout>
-      </QueryParams>
+      <QueryParamsStore>
+        <BranchStore>
+          <MainLayout>
+            <AppRoutes />
+          </MainLayout>
+        </BranchStore>
+      </QueryParamsStore>
     </BrowserRouter>
   );
 }

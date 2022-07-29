@@ -8,10 +8,11 @@ if ('POST' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
+require_once realpath(__DIR__ . '/../lib/repo.php');
 require_once realpath(__DIR__ . '/../lib/branch.php');
 require_once realpath(__DIR__ . '/../lib/pull.php');
 
-$branch = (new Branch())->defaultBranch();
+$branch = (new Repo())->defaultBranch();
 $pull = (new Pull())->post($branch);
 $merge = (new Pull($pull['number']))->put();
 

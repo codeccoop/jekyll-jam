@@ -1,19 +1,19 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import Editor from "../../components/Editor";
 import Preview from "../../components/Preview";
 
-import { getBlob, postCommit, postPull } from "../../services/api";
+import { getBlob, postCommit, getBranch } from "../../services/api";
 
-import QueryParamsContext from "../../store/queryParams";
+import { useQueryParams } from "../../store/queryParams";
+import { useBranch } from "../../store/branch";
 
 import "./style.scss";
 
 function EditorPage() {
-  const loadingMessage = "Loading file content...";
+  const defaultContent = "# Loading file contents...";
 
-  const defaultEditorContent = "# " + loadingMessage;
   const [blob, setBlob] = useState({
     content: null,
     sha: null,
@@ -21,15 +21,17 @@ function EditorPage() {
     path: null,
   });
 
-  const defaultBlobContent = `<h1 style='color: steelblue;'>${loadingMessage}</h1>`;
-  const [editorConent, setEditorContent] = useState(defaultEditorContent);
+  const [editorConent, setEditorContent] = useState(defaultContent);
 
-  const [queryParams, setQueryParams] = useContext(QueryParamsContext);
+  const [queryParams, setQueryParams] = useQueryParams();
+  const [branch, setBranch] = useBranch();
   const navigate = useNavigate();
+
+  const [hasChanged, setHasChanged] = useState(false);
 
   useEffect(() => {
     setBlob({ ...blob, content: null });
-    setEditorContent(defaultEditorContent);
+    setEditorContent(defaultContent);
     if (queryParams.sha) {
       getBlob(queryParams.sha)
         .then(data => {
@@ -40,16 +42,23 @@ function EditorPage() {
           console.warn("Invalid JSON data");
         });
     }
+
+    return function () {
+      getBranch().then(setBranch);
+      console.log(queryParams.sha);
+      // TODO: Control redundant branch loads when change file from directory (use the queryParams.path)
+      // TODO: Debug what queryParams status is accessible from inside this context
+    };
   }, [queryParams.sha]);
+
+  useEffect(() => {
+    setHasChanged(editorConent !== blob.content && editorConent !== defaultContent);
+  }, [editorConent]);
 
   function saveBlob({ sha, path }) {
     postCommit({ content: btoa(editorConent), path, sha }).then(commit => {
       navigate("/edit", { search: `?sha=${commit.sha}&path=${path}` });
     });
-  }
-
-  function publish() {
-    postPull().then(console.log).catch(console.error);
   }
 
   return (
@@ -58,21 +67,18 @@ function EditorPage() {
         <Editor
           onUpdate={setEditorContent}
           content={editorConent}
-          defaultContent={defaultEditorContent}
+          defaultContent={defaultContent}
         />
         <Preview text={editorConent} />
       </div>
       <div className="edit__controls">
         <a
-          className="btn"
+          className={"btn" + (hasChanged ? "" : " disabled")}
           onClick={() =>
             saveBlob(Object.fromEntries(new URLSearchParams(location.search).entries()))
           }
         >
           Save
-        </a>
-        <a className="btn" onClick={publish}>
-          Publish
         </a>
       </div>
     </>

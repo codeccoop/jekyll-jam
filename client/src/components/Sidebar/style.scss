@@ -2,20 +2,17 @@
   z-index: 10;
   background-color: #e8eeef;
   box-shadow: 2px 0px 4px -1px #0003;
-  padding: 1rem;
+  padding: 1rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
 
-  &.disabled {
-    ul {
-      opacity: 0.5;
-      cursor: progress;
-    }
-
-    a {
-      pointer-events: none;
+  .fullscreen & {
+    .btn {
+      display: none;
     }
   }
 
-  h3 {
+  h2 {
     position: relative;
     margin: 0px;
 
@@ -51,50 +48,6 @@
       width: 1rem;
       height: 1rem;
       content: "\00AB";
-    }
-  }
-
-  ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-
-    ul {
-      padding-left: 0.8rem;
-    }
-
-    li {
-      &.open {
-        background-color: steelblue;
-        color: white;
-      }
-    }
-
-    li a,
-    li span {
-      color: var(--font-color);
-      text-decoration: none;
-      font-weight: bold;
-      position: relative;
-      padding-left: 1rem;
-
-      &:before {
-        position: absolute;
-        left: 0px;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 1rem;
-        height: 1rem;
-        text-align: center;
-      }
-    }
-
-    li a:before {
-      content: "\039E";
-    }
-
-    li span:before {
-      content: "\003E";
     }
   }
 }

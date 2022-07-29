@@ -1,9 +1,9 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 export const QueryParamsContext = createContext([{}, () => {}]);
 
-export function QueryParams({ children }) {
+export function QueryParamsStore({ children }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -31,6 +31,10 @@ export function QueryParams({ children }) {
       {children}
     </QueryParamsContext.Provider>
   );
+}
+
+export function useQueryParams() {
+  return useContext(QueryParamsContext);
 }
 
 export default QueryParamsContext;

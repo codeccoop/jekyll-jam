@@ -1,0 +1,12 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  h1 {
+    color: steelblue;
+    font-size: 3rem;
+    transform: translateY(-3rem);
+  }
+}

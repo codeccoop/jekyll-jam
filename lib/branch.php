@@ -1,6 +1,7 @@
 <?php
 require_once realpath(__DIR__ . '/dotfile.php');
 require_once realpath(__DIR__ . '/ref.php');
+require_once realpath(__DIR__ . '/repo.php');
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
@@ -13,6 +14,7 @@ class Branch
     private $env = null;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/branches';
+    private $repo = null;
 
     function __construct($name = null)
     {
@@ -26,6 +28,8 @@ class Branch
 
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
+
+        $this->repo = new Repo();
     }
 
     public function get()
@@ -44,7 +48,7 @@ class Branch
             ));
         } catch (ClientException $e) {
             // Create the deployment branch
-            $default = (new Branch($this->defaultBranch()))->get();
+            $default = $this->repo->defaultBranch();
             $this->data = $this->_post($default['commit']['sha']);
 
             // Config github page
@@ -56,7 +60,30 @@ class Branch
         }
 
         $this->data = json_decode($response->getBody()->getContents(), true);
+
+        $compare = $this->compare();
+        $this->data['ahead_by'] = $compare['ahead_by'];
+        $this->data['behind_by'] = $compare['behind_by'];
+
         return $this->data;
+    }
+
+    public function compare()
+    {
+        $default = $this->repo->defaultBranch();
+        $client = new Client(array('base_uri' => $this->base_url));
+        $response = $client->request(
+            'GET',
+            str_replace('branches', 'compare', $this->endpoint) . '/' . $default . '...' . $this->name,
+            array(
+                'headers' => array(
+                    'Accept' => 'application/vnd.github+json',
+                    'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+                )
+            )
+        );
+
+        return json_decode($response->getBody()->getContents(), true);
     }
 
     public function json()
@@ -66,21 +93,12 @@ class Branch
             'sha' => $branch['commit']['sha'],
             'name' => $branch['name'],
             'protected' => $branch['protected'],
-            'repository' => $this->env['GH_REPO']
+            'repo' => $this->env['GH_REPO'],
+            'ahead_by' => $branch['ahead_by'],
+            'behind_by' => $branch['behind_by']
         );
 
         return json_encode($data);
-    }
-
-    public function defaultBranch()
-    {
-        return 'main';
-        # $client = new Client(array('base_uri' => 'https://github.com'));
-        # $response = $client->request('GET', '/' . $this->env['GH_USER'] . '/' . $this->env['GH_REPO'] . '/branches');
-        # $content = $response->getBody()->getContents();
-        # preg_match_all('/class=".*branch-name.*>(.*)</', $content, $matches);
-        # echo print_r($matches);
-        # return $matches[1][0];
     }
 
     private function _post($commit)

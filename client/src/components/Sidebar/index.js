@@ -1,54 +1,13 @@
-import React, { useState, useEffect, useContext } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 
-import QueryParamsContext from "../../store/queryParams";
-import { getBranch, getTree } from "../../services/api";
+import { useQueryParams } from "../../store/queryParams";
+import { useBranch } from "../../store/branch";
+import { getTree, postPull } from "../../services/api";
 
 import "./style.scss";
+import Directory from "../Directory";
 
-function renderItemContent({ item, selected }) {
-  if (item.is_file) {
-    return (
-      <Link
-        id={item.sha}
-        to={
-          "/edit?sha=" +
-          encodeURIComponent(item.sha) +
-          "&path=" +
-          encodeURIComponent(btoa(item.path))
-        }
-      >
-        {item.name}
-      </Link>
-    );
-  } else {
-    return (
-      <>
-        <span id={item.sha}>{item.name}</span>
-        {renderList({ items: item.children, selected })}
-      </>
-    );
-  }
-}
-
-function renderItem({ item, selected }) {
-  const className =
-    "item" +
-    (item.sha === selected ? " open" : "") +
-    (item.is_file ? " file" : " directory");
-
-  return (
-    <li key={item.sha} className={className}>
-      {renderItemContent({ item, selected })}
-    </li>
-  );
-}
-
-function renderList({ items, selected }) {
-  return <ul>{items.map(item => renderItem({ item, selected }))}</ul>;
-}
-
-export default function Sidebar({ toggleVisibility }) {
+function Sidebar({ toggleVisibility }) {
   const [tree, setTree] = useState({
     isBoilerplate: true,
     children: [
@@ -57,27 +16,33 @@ export default function Sidebar({ toggleVisibility }) {
       { name: "drafts", children: [], sha: 3 },
     ],
   });
-  const [branch, setBranch] = useState(null);
-
-  const [queryParams, setQueryParams] = useContext(QueryParamsContext);
-
-  useEffect(() => {
-    getBranch().then(setBranch);
-  }, []);
+  const [branch, setBranch] = useBranch();
+  const [queryParams, setQueryParams] = useQueryParams();
 
   useEffect(() => {
-    if (branch) getTree(branch["sha"]).then(setTree);
-  }, [branch]);
+    if (branch.sha) getTree(branch["sha"]).then(setTree);
+  }, [branch.ahead_by]);
+
+  function publish() {
+    postPull().then(console.log).catch(console.error);
+  }
 
   return (
-    <nav className={"sidebar" + (tree.isBoilerplate ? " disabled" : "")}>
-      <h3 className="title">
-        Directory Tree<span onClick={toggleVisibility}>&laquo;</span>
-      </h3>
-      {renderList({
-        items: tree.children,
-        selected: queryParams.sha,
-      })}
-    </nav>
+    <div className="sidebar">
+      <div className="sidebar__head">
+        <h2>
+          {branch["repo"] || "REPO NAME"}
+          <span onClick={toggleVisibility}>&laquo;</span>
+        </h2>
+      </div>
+      <Directory />
+      <div className="sidebar__bottom">
+        <a className={"btn" + (branch.ahead_by > 0 ? "" : " disabled")} onClick={publish}>
+          Publish
+        </a>
+      </div>
+    </div>
   );
 }
+
+export default Sidebar;
