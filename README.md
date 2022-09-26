@@ -4,13 +4,13 @@ A Jekyll interactive editor based on php boosted by GitHub API
 
 ## Build
 
-Enter the client directory and run
+Enter the client directory, install js dependencies and build the client
 
 ```bash
 npm install && npm run build
 ```
 
-From the root directory run
+Back to the root directory install php dependencies with
 
 ```bash
 composer install
@@ -21,12 +21,25 @@ composer install
 Place a `.env` file with
 
 ```bash
+GH_ACCESS_TOKEN=<github-access-token>
 GH_USER=<github-user>
 GH_EMAIL=<github-user-email>
 GH_REPO=<github-repo>
-GH_ACCESS_TOKEN=<github-access-token>
+GH_BRANCH=<github-branch>
+GH_DOMAIN=(repo|<your-custom-domain>)
 ```
 
 ## Deploy
 
-Place all directory content into your host (excluding the `client/` directory content)
+Content to be deployed is:
+
+```
+root
+|   .htaccess
+|   index.html
+└───api
+└───lib
+└───rs
+└───static
+└───vendor
+```

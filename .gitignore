@@ -1,10 +1,10 @@
-composer.json
-composer.lock
 vendor
 
-package.json
-package-lock.json
 node_modules
 
 .env
 static/bundle*
+
+bin/*
+! bin/docker-cli
+! bin/activate
