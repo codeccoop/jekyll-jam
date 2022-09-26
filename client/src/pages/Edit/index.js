@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import Editor from "../../components/Editor";
 import Preview from "../../components/Preview";
+import AssetViewer from "../../components/AssetViewer";
 
 import { getBlob, postCommit, getBranch } from "../../services/api";
 
@@ -10,6 +11,22 @@ import { useQueryParams } from "../../store/queryParams";
 import { useBranch } from "../../store/branch";
 
 import "./style.scss";
+
+function getMode(queryPath) {
+  let path;
+  try {
+    path = atob(queryPath);
+  } catch (err) {
+    return "editor";
+  }
+  if (path.match(/^\_data/)) {
+    return "data";
+  } else if (path.match(/^assets/)) {
+    return "asset";
+  } else {
+    return "editor";
+  }
+}
 
 function EditorPage() {
   const defaultContent = "# Loading file contents...";
@@ -19,6 +36,7 @@ function EditorPage() {
     sha: null,
     frontmatter: null,
     path: null,
+    encoding: null,
   });
 
   const [editorConent, setEditorContent] = useState(defaultContent);
@@ -33,10 +51,12 @@ function EditorPage() {
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
     if (queryParams.sha) {
-      getBlob(queryParams.sha)
+      getBlob(queryParams)
         .then(data => {
           setBlob(data);
-          setEditorContent(data.content);
+          if (getMode(queryParams.path) !== "asset") {
+            setEditorContent(data.content);
+          }
         })
         .catch(err => {
           console.warn("Invalid JSON data");
@@ -45,7 +65,6 @@ function EditorPage() {
 
     return function () {
       getBranch().then(setBranch);
-      console.log(queryParams.sha);
       // TODO: Control redundant branch loads when change file from directory (use the queryParams.path)
       // TODO: Debug what queryParams status is accessible from inside this context
     };
@@ -56,19 +75,23 @@ function EditorPage() {
   }, [editorConent]);
 
   function saveBlob({ sha, path }) {
-    postCommit({ content: btoa(editorConent), path, sha }).then(commit => {
+    postCommit({ content: editorConent.replace(/\n/g, "\n"), path, sha }).then(commit => {
       navigate("/edit", { search: `?sha=${commit.sha}&path=${path}` });
     });
   }
 
   return (
     <>
-      <div className="edit__content">
-        <Editor
-          onUpdate={setEditorContent}
-          content={editorConent}
-          defaultContent={defaultContent}
-        />
+      <div className={"edit__content " + getMode(queryParams.path)}>
+        {getMode(queryParams.path) !== "asset" ? (
+          <Editor
+            onUpdate={setEditorContent}
+            content={editorConent}
+            defaultContent={defaultContent}
+          />
+        ) : (
+          <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
+        )}
         <Preview text={editorConent} />
       </div>
       <div className="edit__controls">

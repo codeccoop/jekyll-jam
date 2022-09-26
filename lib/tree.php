@@ -1,10 +1,10 @@
 <?php
 require_once realpath(__DIR__ . '/dotfile.php');
 require_once realpath(__DIR__ . '/blob.php');
+require_once realpath(__DIR__ . '/config.php');
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
-use Symfony\Component\Yaml\Yaml;
 
 class Tree
 {
@@ -79,54 +79,13 @@ class Tree
             $item['name'] = $name;
             $item['sha'] = $node['sha'];
             $item['path'] = $node['path'];
-            $item['is_file'] = $node['mode'] != '040000';
+            $item['is_file'] = $node['mode'] != '040000' && sizeof($node['children']) == 0;
 
             $item['children'] = $this->_json($node);
             array_push($items, $item);
         }
 
         return $items;
-    }
-
-    public function render()
-    {
-
-        $tree = $this->_build_tree();
-        echo '<ul>Directory Tree';
-        $this->_render($tree);
-        echo '</ul>';
-    }
-
-    private function _render($tree)
-    {
-        foreach ($tree['children'] as $name => $node) {
-            $url_path = base64_encode($node['path']);
-            switch ($node['mode']) {
-                case '040000':
-                    echo "<li>{$name}<ul>";
-                    break;
-                case '100644':
-                    echo "<li><a href='/editor.php?sha={$node['sha']}&path={$url_path}'>{$name}</a>";
-                    break;
-                case '100755':
-                    echo "<li><a href='/editor.php?sha={$node['sha']}&path={$url_path}'>{$name}</a>";
-                    break;
-            }
-
-            $this->_render($node);
-
-            switch ($node['mode']) {
-                case '040000':
-                    echo '</ul></li>';
-                    break;
-                case '100644':
-                    echo '</li>';
-                    break;
-                case '100755':
-                    echo '</li>';
-                    break;
-            }
-        }
     }
 
     private function _build_tree()
@@ -164,9 +123,9 @@ class Tree
         );
 
         if (in_array('collections', $config)) {
-            foreach ($config['collections'] as $coll => $config) {
-                if (in_array('collections_dir', $coll)) {
-                    array_push($paths, $config['collections_dir']);
+            foreach ($config['collections'] as $coll => $values) {
+                if (in_array('collections_dir', $config)) {
+                    array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/' . $coll);
                 } else {
                     array_push($paths, $coll);
                 }
@@ -189,15 +148,26 @@ class Tree
                 }
             }
         }
+
+        if (in_array('_data', array_keys($tree['children']))) {
+            $data['children'] = array_filter($tree['children']['_data']['children'], function ($node) {
+                return $this->_prune_branch($node, "yml");
+            });
+            $named_children['data'] = $data;
+        }
+
+        if (in_array('assets', array_keys($tree['children']))) {
+            $named_children['assets'] = $tree['children']['assets'];
+        }
         $tree['children'] = $named_children;
 
         return $tree;
     }
 
-    private function _prune_branch($node)
+    private function _prune_branch($node, $file_type = "md")
     {
         if ($node['type'] == 'blob') {
-            return preg_match('/\.md$/', $node['path']);
+            return preg_match('/\.' . $file_type . '$/', $node['path']);
         }
         $children = array_filter($node['children'], array($this, '_prune_branch'));
         $named_children = array();
@@ -218,14 +188,7 @@ class Tree
             return $this->_config;
         }
 
-        $tree = $this->get()['tree'];
-        foreach ($tree as $node) {
-            if ($node['path'] == '_config.yml') {
-                $blob = (new Blob($node['sha']))->get();
-                $this->_config = Yaml::parse(base64_decode($blob['content']));
-            }
-        }
-
+        $this->_config =  (new Config($this->get()))->get();
         return $this->_config;
     }
 }

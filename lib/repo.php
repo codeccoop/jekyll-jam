@@ -34,12 +34,11 @@ class Repo
         ));
 
         $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 
     public function defaultBranch()
     {
-        return 'main';
-
         $data = $this->get();
         return $data['default_branch'];
     }

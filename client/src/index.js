@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 
@@ -8,6 +8,8 @@ import MainLayout from "./layouts/main";
 
 import { QueryParamsStore } from "./store/queryParams";
 import { BranchStore } from "./store/branch";
+
+import { init } from "./services/api";
 
 function Uploads() {}
 
@@ -26,15 +28,25 @@ function AppRoutes() {
 }
 
 function App() {
+  const [initialized, setInitialized] = useState(false);
+
+  useEffect(() => {
+    init().then(_ => setInitialized(true));
+  }, []);
+
   return (
     <BrowserRouter>
-      <QueryParamsStore>
-        <BranchStore>
-          <MainLayout>
-            <AppRoutes />
-          </MainLayout>
-        </BranchStore>
-      </QueryParamsStore>
+      {initialized ? (
+        <QueryParamsStore>
+          <BranchStore>
+            <MainLayout>
+              <AppRoutes />
+            </MainLayout>
+          </BranchStore>
+        </QueryParamsStore>
+      ) : (
+        void 0
+      )}
     </BrowserRouter>
   );
 }

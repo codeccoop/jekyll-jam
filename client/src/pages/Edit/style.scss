@@ -12,6 +12,15 @@
     flex: 1;
     overflow-y: auto;
   }
+
+  &.data .preview,
+  &.asset .preview {
+    display: none;
+  }
+
+  &.preview .editor {
+    display: none;
+  }
 }
 
 .edit__controls {

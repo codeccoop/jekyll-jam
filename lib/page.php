@@ -26,19 +26,12 @@ class Page
         }
 
         $client = new Client(array('base_uri' => $this->base_url));
-        try {
-            $response = $client->request('GET', $this->endpoint, array(
-                'headers' => array(
-                    'Accept' => 'application/vnd.github+json',
-                    'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
-                )
-            ));
-        } catch (ClientException $e) {
-            require_once realpath(__DIR__ . '/branch.php');
-            $default = (new Branch())->defaultBranch();
-            $this->data = $this->post($default);
-            return $this->data;
-        }
+        $response = $client->request('GET', $this->endpoint, array(
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+            )
+        ));
 
         $this->data = json_decode($response->getBody()->getContents(), true);
         return $this->data;
@@ -56,6 +49,25 @@ class Page
         $client = new Client(array('base_uri' => $this->base_url));
 
         $response = $client->request('POST', $this->endpoint, array(
+            'json' => $payload,
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+            )
+        ));
+
+        return json_decode($response->getBody()->getContents(), true);
+    }
+
+    public function put($https_enforced = false, $public = true)
+    {
+        $payload = array(
+            'cname' => $this->env['JKYL_DOMAIN'],
+            'https_enforced' => $https_enforced,
+            'public' => $public
+        );
+        $client = new Client(array('base_uri' => $this->base_url));
+        $response = $client->request('PUT', $this->endpoint, array(
             'json' => $payload,
             'headers' => array(
                 'Accept' => 'application/vnd.github+json',

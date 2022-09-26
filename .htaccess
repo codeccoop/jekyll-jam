@@ -1,1 +1,21 @@
 DirectoryIndex index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  RewriteCond %{SERVER_PORT} 80
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R,L]
+
+  RewriteBase /
+  RewriteRule ^assets$ - [R=404,NC,L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^(assets/.+)$ /rs/assets.php?path=$1 [L,NC]
+
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteCond %{REQUEST_FILENAME} !-l
+  RewriteRule . /index.html [L]
+</IfModule>

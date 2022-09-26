@@ -57,19 +57,42 @@ function Directory() {
       { name: "posts", children: [], sha: 2 },
       { name: "drafts", children: [], sha: 3 },
     ],
+    data: [],
+    assets: [
+      { name: "images", children: [], sha: 4 },
+      { name: "documents", children: [], sha: 5 },
+    ],
   });
   const [branch, setBranch] = useBranch();
   const [queryParams, setQueryParams] = useQueryParams();
 
   useEffect(() => {
-    if (branch.sha) getTree(branch["sha"]).then(setTree);
+    if (branch.sha)
+      getTree(branch["sha"]).then(data => {
+        setTree({
+          sha: data.sha,
+          children: data.children.filter(d => ["data", "assets"].indexOf(d.name) === -1),
+          data: data.children.find(d => d.name === "data").children || [],
+          assets: data.children.find(d => d.name === "assets")?.children || [],
+        });
+      });
   }, [branch.ahead_by]);
 
   return (
     <nav className={"directory" + (tree.isBoilerplate ? " loading" : "")}>
-      <h3 className="title">Directory Tree</h3>
+      <h3 className="title">Files</h3>
       {renderList({
         items: tree.children,
+        selected: queryParams.sha,
+      })}
+      <h3 className="title">Data</h3>
+      {renderList({
+        items: tree.data,
+        selected: queryParams.sha,
+      })}
+      <h3 className="title">Assets</h3>
+      {renderList({
+        items: tree.assets,
         selected: queryParams.sha,
       })}
     </nav>

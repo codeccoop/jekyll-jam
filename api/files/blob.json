@@ -1,0 +1,10 @@
+{
+  "sha": "c2d3903feda33aba7b680184e00cc0a39bcdf478",
+  "path": "404.md",
+  "frontmatter": {
+    "layout": "page",
+    "title": "404 - Page not found",
+    "permalink": "/404.html"
+  },
+  "content": "Sorry, we can't find that page that you're looking for. You can try again by going [back to the homepage](/).\n\n[<img src=\"assets/images/404.jpg\" alt=\"Constructocat by https://github.com/jasoncostello\" style=\"width: 400px;\"/>](/)\n"
+}

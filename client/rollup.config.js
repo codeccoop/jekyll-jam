@@ -3,7 +3,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from "@rollup/plugin-replace";
-import css from "rollup-plugin-import-css";
+// import css from "rollup-plugin-import-css";
 import scss from "rollup-plugin-scss";
 import postcss from "postcss";
 import autoprefixer from "autoprefixer";

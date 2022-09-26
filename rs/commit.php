@@ -11,9 +11,9 @@ $filename = end(explode('/', $path));
 
 $env = (new Dotfile())->get();
 
-$blob = (new Blob())->post($payload['content']);
+$blob = (new Blob(null, $path))->post($payload['content']);
 
-$commit = (new Branch('jekyll-jam'))->get()['commit'];
+$commit = (new Branch($env['GH_BRANCH']))->get()['commit'];
 
 $tree = (new Tree())->post($commit['sha'], array(
     array(

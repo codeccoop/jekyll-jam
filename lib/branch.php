@@ -5,7 +5,6 @@ require_once realpath(__DIR__ . '/repo.php');
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 
 class Branch
 {
@@ -14,7 +13,6 @@ class Branch
     private $env = null;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/branches';
-    private $repo = null;
 
     function __construct($name = null)
     {
@@ -28,8 +26,6 @@ class Branch
 
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
-
-        $this->repo = new Repo();
     }
 
     public function get()
@@ -39,25 +35,12 @@ class Branch
         }
 
         $client = new Client(array('base_uri' => $this->base_url));
-        try {
-            $response = $client->request('GET', $this->endpoint . '/' . $this->name, array(
-                'headers' => array(
-                    'Accept' => 'application/vnd.github+json',
-                    'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
-                )
-            ));
-        } catch (ClientException $e) {
-            // Create the deployment branch
-            $default = $this->repo->defaultBranch();
-            $this->data = $this->_post($default['commit']['sha']);
-
-            // Config github page
-            require_once realpath(__DIR__ . '/page.php');
-            (new Page())->post($default);
-
-            // Return the brand new branch
-            return $this->data;
-        }
+        $response = $client->request('GET', $this->endpoint . '/' . $this->name, array(
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+            )
+        ));
 
         $this->data = json_decode($response->getBody()->getContents(), true);
 
@@ -70,7 +53,7 @@ class Branch
 
     public function compare()
     {
-        $default = $this->repo->defaultBranch();
+        $default = (new Repo())->defaultBranch();
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request(
             'GET',
@@ -101,7 +84,7 @@ class Branch
         return json_encode($data);
     }
 
-    private function _post($commit)
+    public function post($commit)
     {
         (new Ref())->post($commit);
         return $this->get();
