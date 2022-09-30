@@ -16,6 +16,7 @@ class Blob
     private $path = null;
     private $is_asset = false;
     private $is_markdown = false;
+    private $is_yaml = false;
 
     function __construct($sha = null, $path = null)
     {
@@ -23,6 +24,7 @@ class Blob
         $this->path = $path;
         $this->is_asset = preg_match('/^assets/', $path);
         $this->is_markdown = preg_match('/\.(markdown|mkdown|mkdn|mkd|md)$/', $path);
+        $this->is_yaml = preg_match('/\.(yml|yaml)$/', $path);
         $this->env = (new Dotfile())->get();
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
@@ -106,20 +108,23 @@ class Blob
         $response = array(
             'sha' => $data['sha'],
             'path' => $this->path,
-            'frontmatter' => $this->frontmatter($data['encoding']),
-            'content' => $this->content($data['encoding']),
+            'frontmatter' => $this->frontmatter(),
+            'content' => $this->content(),
         );
 
         if ($this->is_asset) {
             $response['encoding'] = $data['encoding'];
+        } else if ($this->is_yaml) {
+            $response['content'] = Yaml::parse($this->content());
         }
 
         return json_encode($response);
     }
 
-    private function content($encoding)
+    private function content()
     {
         $blob = $this->get();
+        $encoding = $blob['encoding'];
 
         if ($encoding == 'base64') {
             if ($this->is_asset) {
@@ -133,9 +138,11 @@ class Blob
         return $this->relative_links(preg_replace('/^\n*(---)(.*)(---)(\n|$)*/s', '', $decoded));
     }
 
-    private function frontmatter($encoding)
+    private function frontmatter()
     {
         $blob = $this->get();
+        $encoding = $blob['encoding'];
+
         if ($encoding == 'base64') {
             if (!$this->is_markdown) {
                 return;

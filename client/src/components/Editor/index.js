@@ -1,5 +1,5 @@
-import React from "react";
-import "./style.scss";
+import React from 'react';
+import './style.scss';
 
 export default function Editor({ onUpdate, content, defaultContent }) {
   function onInput(ev) {
@@ -9,7 +9,7 @@ export default function Editor({ onUpdate, content, defaultContent }) {
   content = content ? content : defaultContent;
 
   return (
-    <div className="editor">
+    <div className='editor'>
       <textarea onInput={onInput} value={content}></textarea>
     </div>
   );

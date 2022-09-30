@@ -33,6 +33,11 @@ class Config
         return json_encode($response);
     }
 
+    public function yaml()
+    {
+        return $this->content();
+    }
+
     public function put($key, $value)
     {
         $data = $this->get();

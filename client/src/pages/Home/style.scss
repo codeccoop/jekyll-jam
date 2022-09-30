@@ -4,9 +4,13 @@
   justify-content: center;
   align-items: center;
 
-  h1 {
+  .home__title {
     color: steelblue;
     font-size: 3rem;
-    transform: translateY(-3rem);
+    margin: 0px;
+  }
+
+  .home__welcome-message {
+    margin: 0px;
   }
 }

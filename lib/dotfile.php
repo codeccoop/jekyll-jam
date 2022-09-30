@@ -4,6 +4,14 @@ class Dotfile
 {
 
     private $path = null;
+    private $public = array(
+        'GH_BRANCH',
+        'GH_USER',
+        'GH_REPO',
+        'GH_DOMAIN',
+        'GH_EMAIL',
+        'GH_INIT'
+    );
 
     function __construct($path = null)
     {
@@ -82,5 +90,18 @@ class Dotfile
         $this->write($env);
 
         return $this->get();
+    }
+
+    public function json()
+    {
+        $data = $this->get();
+        $response = array();
+        foreach (array_keys($data) as $key) {
+            if (in_array($key, $this->public)) {
+                $response[$key] = $data[$key];
+            }
+        }
+
+        return json_encode($response);
     }
 }

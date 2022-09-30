@@ -1,28 +1,25 @@
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 
-import Home from "./pages/Home";
-import Edit from "./pages/Edit";
-import MainLayout from "./layouts/main";
+import Home from './pages/Home';
+import Edit from './pages/Edit';
+import Settings from './pages/Settings';
+import MainLayout from './layouts/main';
 
-import { QueryParamsStore } from "./store/queryParams";
-import { BranchStore } from "./store/branch";
+import { QueryParamsStore } from './store/queryParams';
+import { ProjectStore } from './store/project';
+import { BranchStore } from './store/branch';
 
-import { init } from "./services/api";
-
-function Uploads() {}
-
-function WareHouse() {}
+import { init } from './services/api';
 
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/edit" element={<Edit />} />
-      <Route path="/uploads" element={<Uploads />} />
-      <Route path="/data" element={<WareHouse />} />
-      <Route path="*" render={() => <Redirect path="/" />} />
+      <Route path='/' element={<Home />} />
+      <Route path='/edit' element={<Edit />} />
+      <Route path='/settings' element={<Settings />} />
+      <Route path='*' render={() => <Redirect path='/' />} />
     </Routes>
   );
 }
@@ -30,26 +27,20 @@ function AppRoutes() {
 function App() {
   const [initialized, setInitialized] = useState(false);
 
-  useEffect(() => {
-    init().then(_ => setInitialized(true));
-  }, []);
-
   return (
     <BrowserRouter>
-      {initialized ? (
-        <QueryParamsStore>
+      <QueryParamsStore>
+        <ProjectStore>
           <BranchStore>
             <MainLayout>
               <AppRoutes />
             </MainLayout>
           </BranchStore>
-        </QueryParamsStore>
-      ) : (
-        void 0
-      )}
+        </ProjectStore>
+      </QueryParamsStore>
     </BrowserRouter>
   );
 }
 
-const root = createRoot(document.querySelector("#app"));
+const root = createRoot(document.querySelector('#app'));
 root.render(<App />);
