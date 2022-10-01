@@ -65,6 +65,10 @@ class Cache
                 unlink($file);
             }
         }
+        set_error_handler(function () {
+        });
+        rmdir($dir);
+        restore_error_handler();
     }
 
     public function is_cached()
@@ -95,5 +99,6 @@ class Cache
     public function reset()
     {
         $this->rmDir($this->base_path);
+        # mkdir($this->base_path, 0750, false);
     }
 }
