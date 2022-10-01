@@ -1,22 +1,26 @@
 <?php
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/ref.php');
-require_once realpath(__DIR__ . '/repo.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . 'cache.php');
+require_once realpath(__DIR__ . DS . 'ref.php');
+require_once realpath(__DIR__ . DS . 'repo.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
 
 class Branch
 {
-    public $name = null;
-    public $data = null;
-    private $env = null;
+    public $name;
+    public $data;
+    private $env;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/branches';
 
     function __construct($name = null)
     {
         $this->env = (new Dotfile())->get();
+        $this->cache = new Cache('branch');
 
         if ($name) {
             $this->name = $name;
@@ -30,9 +34,7 @@ class Branch
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->data) return $this->data;
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->name, array(
@@ -48,6 +50,10 @@ class Branch
         $this->data['ahead_by'] = $compare['ahead_by'];
         $this->data['behind_by'] = $compare['behind_by'];
 
+        $this->cache->sha = $this->data['sha'];
+        if (!$this->cache->is_cached()) {
+            $this->cache->reset();
+        }
         return $this->data;
     }
 

@@ -1,30 +1,54 @@
 <?php
-require_once realpath(__DIR__ . '/blob.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . 'blob.php');
+require_once realpath(__DIR__ . DS . 'cache.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use Symfony\Component\Yaml\Yaml;
 
 class Config
 {
     private $path = '_config.yml';
-    private $blob = null;
+    private $blob;
+    private $cache;
+    private $default_path;
 
     function __construct($tree)
     {
+        $this->default_path = realpath(__DIR__ . DS . '..' . DS . 'static' . DS . 'data' . DS . 'default_config.yml');
+
         $node = array_values(array_filter($tree['tree'], function ($node) {
             return $node['path'] == '_config.yml';
         }))[0];
+
+        $this->cache = new Cache('config', $node['sha']);
         $this->blob = new Blob($node['sha'], $this->path);
     }
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->cache->is_cached()) return $this->cache->get();
 
-        $this->data = $this->blob->get();
-        return $this->data;
+        $data = $this->blob->get();
+        return $this->cache->post($data);
+    }
+
+    public function post()
+    {
+        $file = fopen($this->default_path, 'r');
+        $content = fread($file, filesize($this->default_path));
+        $data = $this->blob->post($content);
+        return $this->cache->post($data);
+    }
+
+    public function put($key, $value)
+    {
+        $data = $this->get();
+        $data[$key] = $value;
+        $content = Yaml::dump($data);
+        $data = $this->blob->post($content);
+        return $this->cache->post($data);
     }
 
     public function json()
@@ -36,15 +60,6 @@ class Config
     public function yaml()
     {
         return $this->content();
-    }
-
-    public function put($key, $value)
-    {
-        $data = $this->get();
-        $data[$key] = $value;
-        $content = Yaml::dump($data);
-        $data = $this->blob->post($content);
-        return $data;
     }
 
     private function content()

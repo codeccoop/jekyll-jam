@@ -1,17 +1,20 @@
 <?php
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/blob.php');
-require_once realpath(__DIR__ . '/config.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . 'blob.php');
+require_once realpath(__DIR__ . DS . 'config.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
+require_once realpath(__DIR__ . DS . 'cache.php');
 
 use GuzzleHttp\Client;
 
 class Tree
 {
-    public $sha = null;
-    public $data = null;
-    private $_config = null;
-    private $env = null;
+    public $sha;
+    private $_config;
+    private $env;
+    private $cache;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
 
@@ -19,15 +22,14 @@ class Tree
     {
         $this->sha = $sha;
         $this->env = (new Dotfile())->get();
+        $this->cache = new Cache('tree', $sha);
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->cache->is_cached()) return $this->cache->get();
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->sha . '?recursive=1', array(
@@ -36,9 +38,8 @@ class Tree
                 'Accept' => 'application/vnd.github+json',
             )
         ));
-        $json = json_decode($response->getBody()->getContents(), true);
-        $this->data = $json;
-        return $json;
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 
     public function post($base_sha, $changes)
@@ -57,7 +58,8 @@ class Tree
             )
         ));
 
-        return json_decode($response->getBody()->getContents(), true);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 
     public function json()

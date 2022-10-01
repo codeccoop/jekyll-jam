@@ -1,5 +1,6 @@
 <?php
 require_once realpath(__DIR__ . '/dotfile.php');
+require_once realpath(__DIR__ . '/cache.php');
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
@@ -15,12 +16,15 @@ class Commit
     {
         $this->sha = $sha;
         $this->env = (new Dotfile())->get();
+        $this->cache = new Cache('commits' . DS . $sha, $sha);
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
 
     public function get($sha = null)
     {
+        if ($this->cache->is_cached()) return $this->cache->get();
+
         $_sha = $sha == null ? $this->sha : $sha;
         if (!$_sha) {
             throw new TypeError('Invalid commit sha');
@@ -33,7 +37,8 @@ class Commit
                 'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
             )
         ));
-        return json_decode($response->getBody()->getContents(), true);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 
     public function post($message, $parent_sha, $tree_sha)
@@ -58,6 +63,7 @@ class Commit
             )
         ));
 
-        return json_decode($response->getBody()->getContents(), true);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 }

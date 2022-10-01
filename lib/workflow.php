@@ -1,20 +1,15 @@
 <?php
+define('DS', DIRECTORY_SEPARATOR);
 
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/content.php');
-// require_once realpath(__DIR__ . '/../vendor/autoload.php');
-
-// use GuzzleHttp\Client;
-// use Symfony\Component\Yaml\Yaml;
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . 'content.php');
 
 class Workflow
 {
 
-    private $env = null;
+    private $env;
     private $config_path = '.github/workflows/jekyll-docker.yml';
-    private $content = null;
-    // private $base_url = 'https://api.github.com';
-    // private $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
+    private $content;
 
     function __construct()
     {

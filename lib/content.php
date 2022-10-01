@@ -1,16 +1,17 @@
 <?php
+define('DS', DIRECTORY_SEPARATOR);
 
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 
 class Content
 {
-    public $path = null;
-    private $env = null;
-    private $data = null;
+    public $path;
+    private $env;
+    private $data;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/contents';
 

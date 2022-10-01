@@ -1,14 +1,15 @@
 <?php
+define('DS', DIRECTORY_SEPARATOR);
 
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
-use GuzzleHttp\Exception\ClientException;
 
 class Page
 {
-    private $env = null;
+    private $data;
+    private $env;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/pages';
 
@@ -21,9 +22,7 @@ class Page
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->data) return $this->data;
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint, array(
@@ -56,7 +55,8 @@ class Page
             )
         ));
 
-        return json_decode($response->getBody()->getContents(), true);
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 
     public function put($https_enforced = false, $public = true)
@@ -75,6 +75,7 @@ class Page
             )
         ));
 
-        return json_decode($response->getBody()->getContents(), true);
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 }

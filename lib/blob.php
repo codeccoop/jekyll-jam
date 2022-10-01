@@ -1,19 +1,21 @@
 <?php
+define('DS', DIRECTORY_SEPARATOR);
 
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . 'cache.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
 use Symfony\Component\Yaml\Yaml;
 
 class Blob
 {
-    public $sha = null;
-    public $data = null;
-    private $env = null;
+    public $sha;
+    private $env;
+    private $cache;
+    private $path;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
-    private $path = null;
     private $is_asset = false;
     private $is_markdown = false;
     private $is_yaml = false;
@@ -22,12 +24,15 @@ class Blob
     {
         $this->sha = $sha;
         $this->path = $path;
+        $this->env = (new Dotfile())->get();
+        $this->cache = new Cache('blobs' . DS . $path, $sha);
+
+        $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
+        $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
+
         $this->is_asset = preg_match('/^assets/', $path);
         $this->is_markdown = preg_match('/\.(markdown|mkdown|mkdn|mkd|md)$/', $path);
         $this->is_yaml = preg_match('/\.(yml|yaml)$/', $path);
-        $this->env = (new Dotfile())->get();
-        $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
-        $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
 
     private function relative_links($content)
@@ -60,9 +65,7 @@ class Blob
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->cache->is_cached()) return $this->cache->get();
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->sha, array(
@@ -72,8 +75,8 @@ class Blob
             )
         ));
 
-        $this->data = json_decode($response->getBody()->getContents(), true);
-        return $this->data;
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 
     public function post($content, $encoding = 'base64')
@@ -99,7 +102,8 @@ class Blob
             )
         ));
 
-        return json_decode($response->getBody()->getContents(), true);
+        $data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($data);
     }
 
     public function json()
