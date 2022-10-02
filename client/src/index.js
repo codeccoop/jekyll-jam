@@ -11,7 +11,7 @@ import { QueryParamsStore } from './store/queryParams';
 import { ProjectStore } from './store/project';
 import { BranchStore } from './store/branch';
 
-import { init } from './services/api';
+// import { init } from './services/api';
 
 function AppRoutes() {
   return (
@@ -25,7 +25,7 @@ function AppRoutes() {
 }
 
 function App() {
-  const [initialized, setInitialized] = useState(false);
+  // const [initialized, setInitialized] = useState(false);
 
   return (
     <BrowserRouter>

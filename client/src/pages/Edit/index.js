@@ -6,7 +6,7 @@ import Preview from '../../components/Preview';
 import AssetViewer from '../../components/AssetViewer';
 import YamlForm from '../../components/YamlForm';
 
-import { getBlob, postCommit, getBranch } from '../../services/api';
+import { getBlob, commit, getBranch } from '../../services/api';
 
 import { useQueryParams } from '../../store/queryParams';
 import { useBranch } from '../../store/branch';
@@ -76,7 +76,7 @@ function EditorPage() {
   }, [editorConent]);
 
   function saveBlob({ sha, path }) {
-    postCommit({ content: editorConent.replace(/\n/g, '\n'), path, sha }).then(commit => {
+    commit({ content: editorConent.replace(/\n/g, '\n'), path, sha }).then(commit => {
       navigate('/edit', { search: `?sha=${commit.sha}&path=${path}` });
     });
   }

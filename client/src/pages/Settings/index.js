@@ -26,7 +26,18 @@ function Settings() {
   return (
     <>
       <h1>Settings</h1>
-      {ready ? <h2>{project.GH_REPO}</h2> : void 0}
+      <h2>GitHub</h2>
+      <label>User</label>
+      <input type='text' value={project?.GH_USER} />
+      <label>Email</label>
+      <input type='text' value={project?.GH_EMAIL} />
+      <label>Repo</label>
+      <input type='text' value={project?.GH_REPO} />
+      <label>Branch</label>
+      <input type='text' value={project?.GH_BRANCH} />
+      <label>Domain</label>
+      <input type='text' value={project?.GH_DOMAIN} />
+      <h2>Jekyll</h2>
       <YamlForm content={config} />
     </>
   );

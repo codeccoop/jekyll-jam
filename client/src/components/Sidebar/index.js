@@ -21,9 +21,9 @@ function Sidebar({ toggleVisibility }) {
   const [queryParams, setQueryParams] = useQueryParams();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (branch.sha) getTree(branch['sha']).then(setTree);
-  }, [branch.ahead_by]);
+  // useEffect(() => {
+  //   if (branch.sha) getTree(branch['sha']).then(setTree);
+  // }, [branch.ahead_by]);
 
   // function publish() {
   //   postPull().then(console.log).catch(console.error);
