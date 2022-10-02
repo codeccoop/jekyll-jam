@@ -4,8 +4,8 @@
 This project is at its first development steps. It isn't ready yet, but we are excited with it and we will put houres in its development. Take this README as a road map of all features we want to cover with this software.
 
 # Jekyll JAM
-[![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/GetPublii/Publii/blob/master/LICENSE)
- [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/GetPublii/Publii/graphs/commit-activity)
+![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)
+![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
   
 The Jekyll CMS interactive editor boosted by [GitHub](https://github.com)
 
