@@ -8,11 +8,13 @@ if ('POST' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-require_once realpath(__DIR__ . '/../lib/blob.php');
-require_once realpath(__DIR__ . '/../lib/branch.php');
-require_once realpath(__DIR__ . '/../lib/tree.php');
-require_once realpath(__DIR__ . '/../lib/commit.php');
-require_once realpath(__DIR__ . '/../lib/ref.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'blob.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'branch.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'tree.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'commit.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'ref.php');
 
 $payload = json_decode(file_get_contents('php://input'), true);
 $path = base64_decode($payload['path']);

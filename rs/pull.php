@@ -8,9 +8,11 @@ if ('POST' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-require_once realpath(__DIR__ . '/../lib/repo.php');
-require_once realpath(__DIR__ . '/../lib/branch.php');
-require_once realpath(__DIR__ . '/../lib/pull.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'repo.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'branch.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'pull.php');
 
 $branch = (new Repo())->defaultBranch();
 $pull = (new Pull())->post($branch);

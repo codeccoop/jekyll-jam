@@ -8,8 +8,10 @@ if ('GET' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-require_once realpath(__DIR__ . '/../lib/tree.php');
-require_once realpath(__DIR__ . '/../lib/config.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'tree.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'config.php');
 
 $sha = $_GET["sha"];
 $tree = (new Tree($sha))->get();

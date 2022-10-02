@@ -8,7 +8,9 @@ if ('GET' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-require_once realpath(__DIR__ . '/../lib/branch.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'branch.php');
 
 $branch = new Branch();
 echo $branch->json();

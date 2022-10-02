@@ -8,8 +8,10 @@ if ('GET' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-require_once realpath(__DIR__ . '/../lib/dotfile.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+define('DS', DIRECTORY_SEPARATOR);
+
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Exception\ClientException;
 
@@ -17,10 +19,10 @@ $dotfile = new Dotfile();
 $env = $dotfile->get();
 
 if (!in_array('GH_INIT', array_keys($env))) {
-    require_once realpath(__DIR__ . '/../lib/branch.php');
-    require_once realpath(__DIR__ . '/../lib/repo.php');
-    require_once realpath(__DIR__ . '/../lib/page.php');
-    require_once realpath(__DIR__ . '/../lib/tree.php');
+    require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'branch.php');
+    require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'repo.php');
+    require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'page.php');
+    require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'tree.php');
 
     $repo = new Repo();
     $branch = new Branch();
