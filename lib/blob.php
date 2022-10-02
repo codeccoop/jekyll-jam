@@ -103,7 +103,7 @@ class Blob
         ));
 
         $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        return $data;
     }
 
     public function json()

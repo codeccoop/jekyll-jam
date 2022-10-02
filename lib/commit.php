@@ -1,6 +1,6 @@
 <?php
 require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/cache.php');
+// require_once realpath(__DIR__ . '/cache.php');
 require_once realpath(__DIR__ . '/../vendor/autoload.php');
 
 use GuzzleHttp\Client;
@@ -11,19 +11,21 @@ class Commit
     private $env = null;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/commits';
+    private $data;
 
     function __construct($sha = null)
     {
         $this->sha = $sha;
         $this->env = (new Dotfile())->get();
-        $this->cache = new Cache('commits' . DS . $sha, $sha);
+        // $this->cache = new Cache('commits' . DS . $sha, $sha);
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
     }
 
     public function get($sha = null)
     {
-        if ($this->cache->is_cached()) return $this->cache->get();
+        // if ($this->cache->is_cached()) return $this->cache->get();
+        if ($this->data) return $this->data;
 
         $_sha = $sha == null ? $this->sha : $sha;
         if (!$_sha) {
@@ -37,8 +39,11 @@ class Commit
                 'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
             )
         ));
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        /* $data = json_decode($response->getBody()->getContents(), true); */
+        /* return $this->cache->post($data); */
+
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 
     public function post($message, $parent_sha, $tree_sha)
@@ -63,7 +68,10 @@ class Commit
             )
         ));
 
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        /* $data = json_decode($response->getBody()->getContents(), true); */
+        /* return $this->cache->post($data); */
+
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 }
