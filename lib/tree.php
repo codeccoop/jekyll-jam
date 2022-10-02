@@ -124,12 +124,12 @@ class Tree
             '_drafts',
         );
 
-        if (in_array('collections', $config)) {
+        if (isset($config['collections'])) {
             foreach ($config['collections'] as $coll => $values) {
-                if (in_array('collections_dir', $config)) {
-                    array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/' . $coll);
+                if (isset($config['collections_dir'])) {
+                    array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/_' . $coll);
                 } else {
-                    array_push($paths, $coll);
+                    array_push($paths, '_' . $coll);
                 }
             }
         }
@@ -190,7 +190,7 @@ class Tree
             return $this->_config;
         }
 
-        $this->_config =  (new Config($this->get()))->get();
+        $this->_config =  json_decode((new Config($this->get()))->json(), true);
         return $this->_config;
     }
 }
