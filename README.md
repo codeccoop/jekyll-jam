@@ -45,22 +45,24 @@ your Jekyll JAM instance ready.
 
 ## Developers
 
-Enter the client directory, install js dependencies and build the client
 
-```bash
-npm install && npm run build
-```
-
-Back to the root directory install php dependencies with
+From the root directory install php dependencies with
 
 ```bash
 composer install
 ```
 
-Start your environment using docker
+Enter the client directory, install js dependencies and build the client for development
+```bash
+cd client && npm install && npm start
+```
+
+To get your instance running, start your environment using docker
 ```bash
 bin/docker-cli run
 ```
+
+The Jekyll JAM instance will be exposed on the localhost:443
 
 ## Config
 
