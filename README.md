@@ -1,3 +1,8 @@
+:warning: Under developmen
+---
+
+This project is at its first development steps. It isn't ready yet, but we are excited with it and we will put houres in its development. Take this README as a road map of all features we want to cover with this software.
+
 # Jekyll JAM
 [![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://github.com/GetPublii/Publii/blob/master/LICENSE)
  [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/GetPublii/Publii/graphs/commit-activity)
@@ -6,7 +11,7 @@ The Jekyll CMS interactive editor boosted by [GitHub](https://github.com)
 
 ## Users
 ### Why Jekyll JAM
-Jekyll is a simple, blog-aware, static site generator. Jekyll renders Markdown and Liquid
+[Jekyll](https://jekyllrb.com/) is a simple, blog-aware, static site generator. Jekyll renders Markdown and Liquid
 templates and spits out a complete, static website ready to be served as static files based
 web site, light, fast and secure.
 
@@ -15,20 +20,21 @@ Jekyll JAM comes to fill this gap and allow users to build their own web for fre
 software installation, domains and dns configuration neither hosting plans.
 
 ### How to use it?
-Create a new project with [https://codeccoop.org/jekyll-jam](Còdec) or with any other Jekyll JAM
+Create a new project with [Còdec](https://codeccoop.org/jekyll-jam) or with any other Jekyll JAM
 provider you know. At your first time in the editor, Jekyll JAM will require you to configure the
 project. It will take you throughout a process to syncronize your project with GitHub and define
-wich deployment mode you want tu use and what Jekyll Theme you want to use for your brand new site.
+wich deployment mode you want tu use and what [Jekyll Theme](https://jekyllrb.com/docs/themes/)
+you want to use for your brand new site.
 
 ### Deployment modes
 #### GitHub page
-GitHub offers their GitHub pages as a free service to publish your repository content on the web.
+GitHub offers their [GitHub Pages](https://pages.github.com/) as a free service to publish your repository content on the web.
 GitHub pages is running on top of Jekyll to compile your code and get a complete web site. With
 GitHub Pages you can host your page for free on GitHub, using their domain, or bind your page to
 a domain of your own and get it on the web without traces of GitHub.
 
 #### FTP hosting
-With GitHub Workflows, we can compile the Jekyll templeates into a web page and then perform
+With [GitHub Workflows](https://docs.github.com/en/actions/using-workflows), we can compile the Jekyll templeates into a web page and then perform
 a continious integration with your host using FTP. If you prefer to own your own host and domain
 and use Jekyll JAM as your CMS, this is your option.
 
@@ -38,7 +44,7 @@ as a zip file to make what you want with it.
 
 ## Providers
 ### Installation
-Download Jekyll JAM from this [wlink](https://github.com/codeccoop/jekyll-jam/archive/refs/heads/main.zip).
+Download Jekyll JAM from this [link](https://github.com/codeccoop/jekyll-jam/archive/refs/heads/main.zip).
 Unzip the content of the downloaded archive into your server root directory and name it as `jekyll-jam`.
 Then, navigate to `http://yourdomain.ltd/jekyll-jam/admin` and follow the instructions to get
 your Jekyll JAM instance ready.
