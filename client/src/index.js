@@ -10,6 +10,7 @@ import MainLayout from './layouts/main';
 import { QueryParamsStore } from './store/queryParams';
 import { ProjectStore } from './store/project';
 import { BranchStore } from './store/branch';
+import { StyleStore } from './store/style';
 
 // import { init } from './services/api';
 
@@ -32,9 +33,11 @@ function App() {
       <QueryParamsStore>
         <ProjectStore>
           <BranchStore>
-            <MainLayout>
-              <AppRoutes />
-            </MainLayout>
+            <StyleStore>
+              <MainLayout>
+                <AppRoutes />
+              </MainLayout>
+            </StyleStore>
           </BranchStore>
         </ProjectStore>
       </QueryParamsStore>

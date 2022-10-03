@@ -37,6 +37,10 @@ export function getConfig(sha) {
   return request('config', { data: { sha } });
 }
 
+export function getStyleURL(sha) {
+  return request('style', { data: { sha } });
+}
+
 export function init() {
   return request('init', {});
 }
