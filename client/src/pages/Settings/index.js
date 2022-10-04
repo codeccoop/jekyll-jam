@@ -8,10 +8,10 @@ import { getConfig } from '../../services/api';
 import YamlForm from '../../components/YamlForm';
 
 function Settings() {
-  const [project, setProject] = useProject(null);
-  const [branch, setBranch] = useBranch(null);
+  const project = useProject(null);
+  const branch = useBranch(null)[0];
   const [config, setConfig] = useState(null);
-  const [ready, setReady] = useState(false);
+  const setReady = useState(false)[1];
 
   useEffect(() => {
     if (branch?.sha === void 0) return;

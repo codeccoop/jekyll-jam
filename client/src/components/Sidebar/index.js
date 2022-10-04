@@ -1,37 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { useQueryParams } from '../../store/queryParams';
 import { useBranch } from '../../store/branch';
-import { getTree, postPull } from '../../services/api';
+import { useProject } from '../../store/project';
 
 import './style.scss';
 import Directory from '../Directory';
 
 function Sidebar({ toggleVisibility }) {
-  const [tree, setTree] = useState({
-    isBoilerplate: true,
-    children: [
-      { name: 'index.md', children: [], sha: 1 },
-      { name: 'posts', children: [], sha: 2 },
-      { name: 'drafts', children: [], sha: 3 },
-    ],
-  });
-  const [branch, setBranch] = useBranch();
-  const [queryParams, setQueryParams] = useQueryParams();
+  const branch = useBranch()[0];
   const navigate = useNavigate();
-
-  // useEffect(() => {
-  //   if (branch.sha) getTree(branch['sha']).then(setTree);
-  // }, [branch.ahead_by]);
-
-  // function publish() {
-  //   postPull().then(console.log).catch(console.error);
-  // }
+  const project = useProject();
 
   function goSettings() {
     navigate('/settings');
   }
+
+  function openSite() {
+    if (project.GH_DOMAIN === 'repo') {
+      window.open(`https://${project.GH_USER}.github.io/${project.GH_REPO}`);
+    } else {
+      window.open('https://' + project.GH_DOMAIN);
+    }
+  }
+
+  function downloadBuild() {}
 
   return (
     <div className='sidebar'>
@@ -48,6 +41,12 @@ function Sidebar({ toggleVisibility }) {
           onClick={goSettings}
         >
           Settings
+        </a>
+        <a className='btn' onClick={openSite}>
+          View site
+        </a>
+        <a className='btn' onClick={downloadBuild}>
+          Download
         </a>
       </div>
     </div>

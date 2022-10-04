@@ -7,7 +7,7 @@ export const StyleContext = createContext(null);
 
 export function StyleStore({ children }) {
   const [state, setState] = useState();
-  const [branch, _] = useBranch();
+  const branch = useBranch()[0];
 
   useEffect(() => {
     if (!branch?.sha) return;
@@ -19,20 +19,6 @@ export function StyleStore({ children }) {
       })
         .then(res => res.text())
         .then(data => {
-          // const css = `.edit .preview {
-          //   ${data}
-          // }`;
-          // const css = data;
-          // const style = document.createElement('style');
-          // style.setAttribute('scoped', '');
-
-          // if (style.styleSheet) {
-          //   style.styleSheet.cssText = css;
-          // } else {
-          //   style.appendChild(document.createTextNode(css));
-          // }
-
-          // document.head.appendChild(style);
           setState(data);
         });
     });

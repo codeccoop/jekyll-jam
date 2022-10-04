@@ -1,14 +1,14 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './style.scss';
 
 import { useProject } from '../../store/project';
 
 function HomePage() {
-  const [project, setProject] = useProject();
+  const project = useProject()[0];
 
-  useEffect(() => {
-    console.log(project);
-  }, [project]);
+  // useEffect(() => {
+  //   console.log(project);
+  // }, [project]);
 
   return (
     <>

@@ -42,8 +42,8 @@ function EditorPage() {
 
   const [editorConent, setEditorContent] = useState(defaultContent);
 
-  const [queryParams, setQueryParams] = useQueryParams();
-  const [branch, setBranch] = useBranch();
+  const queryParams = useQueryParams()[0];
+  const setBranch = useBranch()[1];
   const navigate = useNavigate();
 
   const [hasChanged, setHasChanged] = useState(false);

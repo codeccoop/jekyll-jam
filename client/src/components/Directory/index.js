@@ -23,8 +23,8 @@ function Directory() {
       { name: 'documents', children: [], sha: 5 },
     ],
   });
-  const [branch, setBranch] = useBranch();
-  const [queryParams, setQueryParams] = useQueryParams();
+  const branch = useBranch()[0];
+  const [queryParams, _] = useQueryParams();
 
   function newFile(type) {
     if (type === 'markdown') {
