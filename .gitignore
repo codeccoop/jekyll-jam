@@ -9,3 +9,5 @@ static/bundle*
 bin/*
 ! bin/docker-cli
 ! bin/activate
+
+codebase
