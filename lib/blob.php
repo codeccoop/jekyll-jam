@@ -42,24 +42,29 @@ class Blob
 
     private function absolute_links($content)
     {
-        preg_match('/\[[^\]]+[^\)]+\)/', $content, $matches_md);
-        foreach ($matches_md as $match) {
-            preg_match('/\([^\)]+\)/', $match, $url);
-            if (!preg_match('/^\( *(http|mailto)/', $url[0])) {
-                $content = str_replace($url[0], '({{ site.baseurl }}/' . preg_replace('/^ *\//', '', substr($url[0], 1)), $content);
+        preg_match_all('/\[[^\]]+[^\)]+\)/', $content, $matches_md);
+        if (sizeof($matches_md) > 0) {
+            foreach ($matches_md[0] as $match) {
+                preg_match('/\([^\)]+\)/', $match, $url);
+                if (!preg_match('/^\( *(http|mailto)/', $url[0])) {
+                    $content = str_replace($url[0], '({{ site.baseurl }}/' . preg_replace('/^ *\//', '', substr($url[0], 1)), $content);
+                }
             }
         }
 
-        preg_match('/(src|href|srcset)=(\"|\')[^\'|\"]+(\'|\")/', $content, $matches_html);
-        $i = 0;
-        foreach ($matches_html as $match) {
-            $i++;
-            if ($i - 1 % 4 != 0) continue;
-            preg_match('/(?<=\'|\").+(?=\'|\")/', $match, $url);
-            if (!preg_match('/^ *(http|mailto)/', $url[0])) {
-                $content = str_replace($url[0], '{{ site.baseurl }}/' . preg_replace('/^ *\//', '', $url[0]), $content);
+        preg_match_all('/(src|href|srcset)=(\"|\')[^\'|\"]+(\'|\")/', $content, $matches_html);
+        if (sizeof($matches_html) > 0) {
+            $i = 0;
+            foreach ($matches_html[0] as $match) {
+                $i++;
+                if ($i - 1 % 4 != 0) continue;
+                preg_match('/(?<=\'|\").+(?=\'|\")/', $match, $url);
+                if (!preg_match('/^ *(http|mailto)/', $url[0])) {
+                    $content = str_replace($url[0], '{{ site.baseurl }}/' . preg_replace('/^ *\//', '', $url[0]), $content);
+                }
             }
         }
+
         return $content;
     }
 

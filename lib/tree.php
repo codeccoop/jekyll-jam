@@ -127,9 +127,9 @@ class Tree
         if (isset($config['collections'])) {
             foreach ($config['collections'] as $coll => $values) {
                 if (isset($config['collections_dir'])) {
-                    array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/_' . $coll);
+                    array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/' . $coll);
                 } else {
-                    array_push($paths, '_' . $coll);
+                    array_push($paths, $coll);
                 }
             }
         }
