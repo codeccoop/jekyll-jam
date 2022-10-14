@@ -9,5 +9,10 @@ static/bundle*
 bin/*
 ! bin/docker-cli
 ! bin/activate
+! bin/.htaccess
+
+scripts/*
+! scripts/api/*
+! scripts/.htaccess
 
 codebase
