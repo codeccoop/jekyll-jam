@@ -1,7 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from "react";
 
-import { marked } from 'marked';
-import { useStyle } from '../../store/style';
+import { marked } from "marked";
+import { useStore } from "../../store";
+
 marked.setOptions({
   breaks: false,
   smartLists: true,
@@ -11,15 +12,16 @@ marked.setOptions({
 export default function Preview({ text }) {
   const elRef = useRef();
   const shadowRef = useRef();
-  const rendererRef = useRef(document.createElement('template'));
-  const css = useStyle();
+  const rendererRef = useRef(document.createElement("template"));
+  const [store] = useStore();
+  const css = store.style;
 
   useEffect(() => {
     const el = elRef.current;
     const html = el.innerHTML;
     const renderer = rendererRef.current;
     renderer.innerHTML = html;
-    shadowRef.current = elRef.current.attachShadow({ mode: 'open' });
+    shadowRef.current = elRef.current.attachShadow({ mode: "open" });
     const shadow = shadowRef.current;
     shadow.appendChild(renderer.content);
     renderer.innerHTML = html;
@@ -29,12 +31,12 @@ export default function Preview({ text }) {
     if (!(shadowRef.current && text)) return;
     const shadow = shadowRef.current;
     const renderer = rendererRef.current;
-    const contentEl = renderer.content.querySelector('.previewContent');
+    const contentEl = renderer.content.querySelector(".previewContent");
 
     if (contentEl) {
       contentEl.innerHTML = marked.parse(text);
       const rendererHTML = renderer.innerHTML;
-      shadow.innerHTML = '';
+      shadow.innerHTML = "";
       shadow.appendChild(renderer.content);
       renderer.innerHTML = rendererHTML;
     }
@@ -45,21 +47,21 @@ export default function Preview({ text }) {
     const shadow = shadowRef.current;
     const renderer = rendererRef.current;
 
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     if (style.styleSheet) style.styleSheet.cssText = css;
     else style.appendChild(document.createTextNode(css));
 
     renderer.content.prepend(style);
     const rendererHTML = renderer.innerHTML;
-    shadow.innerHTML = '';
+    shadow.innerHTML = "";
     shadow.appendChild(renderer.content);
     renderer.innerHTML = rendererHTML;
   }, [css]);
 
   return (
-    <div ref={elRef} className='preview'>
+    <div ref={elRef} className="preview">
       <div
-        className='previewContent'
+        className="previewContent"
         dangerouslySetInnerHTML={{ __html: marked.parse(text) }}
       ></div>
     </div>

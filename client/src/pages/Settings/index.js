@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import './style.scss';
+import React, { useEffect, useState } from "react";
+import "./style.scss";
 
-import { useProject } from '../../store/project';
-import { useBranch } from '../../store/branch';
-import { getConfig } from '../../services/api';
+// import { useProject } from '../../store/project';
+// import { useBranch } from '../../store/branch';
+import { useStore } from "../../store";
+import { getConfig } from "../../services/api";
 
-import YamlForm from '../../components/YamlForm';
+import YamlForm from "../../components/YamlForm";
 
 function Settings() {
-  const project = useProject(null);
-  const branch = useBranch(null)[0];
+  // const project = useProject(null);
+  // const branch = useBranch(null)[0];
+  const [{ project, branch }] = useStore();
   const [config, setConfig] = useState(null);
   const setReady = useState(false)[1];
 
@@ -28,15 +30,15 @@ function Settings() {
       <h1>Settings</h1>
       <h2>GitHub</h2>
       <label>User</label>
-      <input type='text' value={project?.GH_USER} />
+      <input type="text" value={project?.GH_USER} />
       <label>Email</label>
-      <input type='text' value={project?.GH_EMAIL} />
+      <input type="text" value={project?.GH_EMAIL} />
       <label>Repo</label>
-      <input type='text' value={project?.GH_REPO} />
+      <input type="text" value={project?.GH_REPO} />
       <label>Branch</label>
-      <input type='text' value={project?.GH_BRANCH} />
+      <input type="text" value={project?.GH_BRANCH} />
       <label>Domain</label>
-      <input type='text' value={project?.GH_DOMAIN} />
+      <input type="text" value={project?.GH_DOMAIN} />
       <h2>Jekyll</h2>
       <YamlForm content={config} />
     </>

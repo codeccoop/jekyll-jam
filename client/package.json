@@ -14,6 +14,7 @@
     "marked": "^4.0.18",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-flux-store": "file:../../../../../home/orzo/.nvm/versions/node/v14.21.1/lib/node_modules/react-flux-store",
     "react-router-dom": "^6.3.0",
     "rollup": "^2.77.0",
     "yamljs": "^0.3.0"

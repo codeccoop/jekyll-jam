@@ -1,10 +1,11 @@
-import React from 'react';
-import './style.scss';
+import React from "react";
+import "./style.scss";
 
-import { useProject } from '../../store/project';
+// import { useProject } from "../../store/project";
+import { useStore } from "../../store";
 
 function HomePage() {
-  const project = useProject()[0];
+  const [{ project }] = useStore();
 
   // useEffect(() => {
   //   console.log(project);
@@ -12,8 +13,8 @@ function HomePage() {
 
   return (
     <>
-      <h1 className='home__title'>{project.GH_REPO}</h1>
-      <p className='home__welcome-message'>Welcome to Jekyll JAM Editor</p>
+      <h1 className="home__title">{project.GH_REPO}</h1>
+      <p className="home__welcome-message">Welcome to Jekyll JAM Editor</p>
     </>
   );
 }

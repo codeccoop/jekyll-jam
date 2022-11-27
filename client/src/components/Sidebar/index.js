@@ -1,51 +1,49 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import { useNavigate } from "react-router-dom";
 
-import { useBranch } from '../../store/branch';
-import { useProject } from '../../store/project';
+import { useStore } from "../../store";
 
-import './style.scss';
-import Directory from '../Directory';
+import "./style.scss";
+import Directory from "../Directory";
 
 function Sidebar({ toggleVisibility }) {
-  const branch = useBranch()[0];
   const navigate = useNavigate();
-  const project = useProject();
+  const [{ branch, project }] = useStore();
 
   function goSettings() {
-    navigate('/settings');
+    navigate("/settings");
   }
 
   function openSite() {
-    if (project.GH_DOMAIN === 'repo') {
+    if (project.GH_DOMAIN === "repo") {
       window.open(`https://${project.GH_USER}.github.io/${project.GH_REPO}`);
     } else {
-      window.open('https://' + project.GH_DOMAIN);
+      window.open("https://" + project.GH_DOMAIN);
     }
   }
 
   function downloadBuild() {}
 
   return (
-    <div className='sidebar'>
-      <div className='sidebar__head'>
+    <div className="sidebar">
+      <div className="sidebar__head">
         <h2>
-          {branch['repo'] || 'REPO NAME'}
+          {branch["repo"] || "REPO NAME"}
           <span onClick={toggleVisibility}>&laquo;</span>
         </h2>
       </div>
       <Directory />
-      <div className='sidebar__bottom'>
+      <div className="sidebar__bottom">
         <a
-          className={'btn' + (branch.ahead_by > 0 ? '' : ' disabled')}
+          className={"btn" + (branch.ahead_by > 0 ? "" : " disabled")}
           onClick={goSettings}
         >
           Settings
         </a>
-        <a className='btn' onClick={openSite}>
+        <a className="btn" onClick={openSite}>
           View site
         </a>
-        <a className='btn' onClick={downloadBuild}>
+        <a className="btn" onClick={downloadBuild}>
           Download
         </a>
       </div>

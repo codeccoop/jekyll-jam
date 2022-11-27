@@ -1,36 +1,37 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 
-import Editor from '../../components/Editor';
-import Preview from '../../components/Preview';
-import AssetViewer from '../../components/AssetViewer';
-import YamlForm from '../../components/YamlForm';
+import Editor from "../../components/Editor";
+import Preview from "../../components/Preview";
+import AssetViewer from "../../components/AssetViewer";
+import YamlForm from "../../components/YamlForm";
 
-import { getBlob, commit, getBranch } from '../../services/api';
+import { getBlob, commit, getBranch } from "../../services/api";
 
-import { useQueryParams } from '../../store/queryParams';
-import { useBranch } from '../../store/branch';
+// import { useQueryParams } from '../../store/queryParams';
+// import { useBranch } from '../../store/branch';
+import { useStore } from "../../store";
 
-import './style.scss';
+import "./style.scss";
 
 function getMode(queryPath) {
   let path;
   try {
     path = atob(queryPath);
   } catch (err) {
-    return 'editor';
+    return "editor";
   }
   if (path.match(/^\_data/)) {
-    return 'data';
+    return "data";
   } else if (path.match(/^assets/)) {
-    return 'asset';
+    return "asset";
   } else {
-    return 'editor';
+    return "editor";
   }
 }
 
 function EditorPage() {
-  const defaultContent = '# Loading file contents...';
+  const defaultContent = "# Loading file contents...";
 
   const [blob, setBlob] = useState({
     content: null,
@@ -42,8 +43,9 @@ function EditorPage() {
 
   const [editorConent, setEditorContent] = useState(defaultContent);
 
-  const queryParams = useQueryParams()[0];
-  const setBranch = useBranch()[1];
+  const [{ query }, dispatch] = useStore();
+  // const queryParams = useQueryParams()[0];
+  // const setBranch = useBranch()[1];
   const navigate = useNavigate();
 
   const [hasChanged, setHasChanged] = useState(false);
@@ -51,55 +53,60 @@ function EditorPage() {
   useEffect(() => {
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
-    if (queryParams.sha) {
-      getBlob(queryParams)
-        .then(data => {
+    if (query.sha) {
+      getBlob(query)
+        .then((data) => {
           setBlob(data);
-          if (getMode(queryParams.path) === 'editor') {
+          if (getMode(query.path) === "editor") {
             setEditorContent(data.content);
           }
         })
-        .catch(err => {
-          console.warn('Invalid JSON data');
+        .catch((err) => {
+          console.warn("Invalid JSON data");
         });
     }
 
     return function () {
-      getBranch().then(setBranch);
+      getBranch().then((branch) =>
+        dispatch({
+          action: "SET_BRANCH",
+          payload: branch,
+        })
+      );
       // TODO: Control redundant branch loads when change file from directory (use the queryParams.path)
       // TODO: Debug what queryParams status is accessible from inside this context
     };
-  }, [queryParams.sha]);
+  }, [query.sha]);
 
   useEffect(() => {
     setHasChanged(editorConent !== blob.content && editorConent !== defaultContent);
   }, [editorConent]);
 
   function saveBlob({ sha, path }) {
-    commit({ content: editorConent.replace(/\n/g, '\n'), path, sha }).then(commit => {
-      navigate('/edit', { search: `?sha=${commit.sha}&path=${path}` });
+    commit({ content: editorConent.replace(/\n/g, "\n"), path, sha }).then((commit) => {
+      navigate("/edit", { search: `?sha=${commit.sha}&path=${path}` });
     });
   }
 
   return (
     <>
-      <div className={'edit__content ' + getMode(queryParams.path)}>
-        {getMode(queryParams.path) === 'editor' ? (
+      <div className={"edit__content " + getMode(query.path)}>
+        {getMode(query.path) === "editor" ? (
           <Editor
             onUpdate={setEditorContent}
             content={editorConent}
             defaultContent={defaultContent}
           />
-        ) : getMode(queryParams.path) === 'data' ? (
+        ) : getMode(query.path) === "data" ? (
           <YamlForm content={editorConent} />
         ) : (
           <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
         )}
         <Preview text={editorConent} />
       </div>
-      <div className='edit__controls'>
+      <div className="edit__controls">
         <a
-          className={'btn' + (hasChanged ? '' : ' disabled')}
+          className={"btn" + (hasChanged ? "" : " disabled")}
           onClick={() =>
             saveBlob(Object.fromEntries(new URLSearchParams(location.search).entries()))
           }
