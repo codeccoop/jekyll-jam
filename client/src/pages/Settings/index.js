@@ -3,7 +3,8 @@ import "./style.scss";
 
 // import { useProject } from '../../store/project';
 // import { useBranch } from '../../store/branch';
-import { useStore } from "../../store";
+// import { useStore } from "../../store";
+import { useStore } from "colmado";
 import { getConfig } from "../../services/api";
 
 import YamlForm from "../../components/YamlForm";

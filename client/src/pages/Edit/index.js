@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 import Editor from "../../components/Editor";
@@ -8,9 +8,7 @@ import YamlForm from "../../components/YamlForm";
 
 import { getBlob, commit, getBranch } from "../../services/api";
 
-// import { useQueryParams } from '../../store/queryParams';
-// import { useBranch } from '../../store/branch';
-import { useStore } from "../../store";
+import { useStore } from "colmado";
 
 import "./style.scss";
 
@@ -44,8 +42,6 @@ function EditorPage() {
   const [editorConent, setEditorContent] = useState(defaultContent);
 
   const [{ query }, dispatch] = useStore();
-  // const queryParams = useQueryParams()[0];
-  // const setBranch = useBranch()[1];
   const navigate = useNavigate();
 
   const [hasChanged, setHasChanged] = useState(false);

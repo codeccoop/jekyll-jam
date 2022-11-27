@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-import { useStore } from "../../store";
+// import { useStore } from "../../store";
+import { useStore } from "colmado";
 
 import "./style.scss";
 import Directory from "../Directory";

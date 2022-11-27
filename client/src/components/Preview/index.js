@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
 
 import { marked } from "marked";
-import { useStore } from "../../store";
+// import { useStore } from "../../store";
+import { useStore } from "colmado";
 
 marked.setOptions({
   breaks: false,

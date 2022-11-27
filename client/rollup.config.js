@@ -3,7 +3,6 @@ import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from "@rollup/plugin-replace";
-// import css from "rollup-plugin-import-css";
 import scss from "rollup-plugin-scss";
 import postcss from "postcss";
 import autoprefixer from "autoprefixer";
@@ -25,7 +24,6 @@ export default {
       presets: ["@babel/preset-react"],
     }),
     commonjs(),
-    // css(),
     scss({
       sourceMap: process.env.NODE_ENV !== "production",
       processor: () => postcss([autoprefixer]),
@@ -41,4 +39,5 @@ export default {
       },
     }),
   ],
+  preserveSymlinks: true,
 };

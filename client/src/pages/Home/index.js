@@ -1,15 +1,10 @@
 import React from "react";
 import "./style.scss";
 
-// import { useProject } from "../../store/project";
-import { useStore } from "../../store";
+import { useStore } from "colmado";
 
 function HomePage() {
   const [{ project }] = useStore();
-
-  // useEffect(() => {
-  //   console.log(project);
-  // }, [project]);
 
   return (
     <>
