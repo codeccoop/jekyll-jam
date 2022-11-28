@@ -12,8 +12,8 @@ function HomePage() {
 
   return (
     <>
-      <h1 className='home__title'>{project.GH_REPO}</h1>
-      <p className='home__welcome-message'>Welcome to Jekyll JAM Editor</p>
+      <h1 className="home__title">{project.GH_REPO}</h1>
+      <p className="home__welcome-message">Welcome to Vocero Editor</p>
     </>
   );
 }

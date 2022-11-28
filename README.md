@@ -3,25 +3,25 @@
 
 This project is at its first development steps. It isn't ready yet, but we are excited with it and we will put houres in its development. Take this README as a road map of all features we want to cover with this software.
 
-# Jekyll JAM
+# Vocero
 ![GPLv3 license](https://img.shields.io/badge/License-GPLv3-blue.svg)
 ![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)
   
 The Jekyll CMS interactive editor boosted by [GitHub](https://github.com)
 
 ## Users
-### Why Jekyll JAM
+### Why Vocero?
 [Jekyll](https://jekyllrb.com/) is a simple, blog-aware, static site generator. Jekyll renders Markdown and Liquid
 templates and spits out a complete, static website ready to be served as static files based
 web site, light, fast and secure.
 
 Jekyll is so :cool:, if you have some techie background. If not, it's not very friendly.
-Jekyll JAM comes to fill this gap and allow users to build their own web for free, without
+Vocero comes to fill this gap and allow users to build their own web for free, without
 software installation, domains and dns configuration neither hosting plans.
 
 ### How to use it?
-Create a new project with [Còdec](https://codeccoop.org/jekyll-jam) or with any other Jekyll JAM
-provider you know. At your first time in the editor, Jekyll JAM will require you to configure the
+Create a new project with [Còdec](https://codeccoop.org/jekyll-jam) or with any other Vocero
+provider you know. At your first time in the editor, Vocero will require you to configure the
 project. It will take you throughout a process to syncronize your project with GitHub and define
 wich deployment mode you want tu use and what [Jekyll Theme](https://jekyllrb.com/docs/themes/)
 you want to use for your brand new site.
@@ -36,18 +36,18 @@ a domain of your own and get it on the web without traces of GitHub.
 #### FTP hosting
 With [GitHub Workflows](https://docs.github.com/en/actions/using-workflows), we can compile the Jekyll templeates into a web page and then perform
 a continious integration with your host using FTP. If you prefer to own your own host and domain
-and use Jekyll JAM as your CMS, this is your option.
+and use Vocero as your CMS, this is your option.
 
 #### Arhive File
-Use Jekyll JAM as a content editor, GitHub as a compile environment, and get the result compressed
+Use Vocero as a content editor, GitHub as a compile environment, and get the result compressed
 as a zip file to make what you want with it.
 
 ## Providers
 ### Installation
-Download Jekyll JAM from this [link](https://github.com/codeccoop/jekyll-jam/archive/refs/heads/main.zip).
+Download Vocero from this [link](https://github.com/codeccoop/jekyll-jam/archive/refs/heads/main.zip).
 Unzip the content of the downloaded archive into your server root directory and name it as `jekyll-jam`.
 Then, navigate to `http://yourdomain.ltd/jekyll-jam/admin` and follow the instructions to get
-your Jekyll JAM instance ready.
+your Vocero instance ready.
 
 ## Developers
 
@@ -68,7 +68,7 @@ To get your instance running, start your environment using docker
 bin/docker-cli run
 ```
 
-The Jekyll JAM instance will be exposed on the localhost:443
+The Vocero instance will be exposed on the localhost:443
 
 ## Config
 
