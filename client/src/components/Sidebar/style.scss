@@ -50,4 +50,23 @@
       content: "\00AB";
     }
   }
+
+  .btn[data-changes] {
+    position: relative;
+
+    &[data-changes="0"]::after {
+      display: none;
+    }
+
+    &::after {
+      content: attr(data-changes);
+      position: absolute;
+      top: 50%;
+      right: 0px;
+      width: 1em;
+      height: 1em;
+      border-radius: 50%;
+      background-color: red;
+    }
+  }
 }

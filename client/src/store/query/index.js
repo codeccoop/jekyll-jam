@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import reducer from "./reducer";
 
-const Component = ({ warehouse, children }) => {
+const Component = ({ Warehouse, children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -15,7 +15,7 @@ const Component = ({ warehouse, children }) => {
     setState(Object.fromEntries(new URLSearchParams(location.search).entries()));
   }, [location]);
 
-  return <warehouse.Provider value={[state, navigate]}>{children}</warehouse.Provider>;
+  return <Warehouse value={[state, navigate]}>{children}</Warehouse>;
 };
 
 export default { name: "query", Component, reducer };

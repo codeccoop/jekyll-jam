@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import Editor from "../../components/Editor";
 import Preview from "../../components/Preview";
 import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
-import { getBlob, commit, getBranch } from "../../services/api";
+import { getBlob, getBranch } from "../../services/api";
 
 import { useStore } from "colmado";
 
@@ -39,18 +38,20 @@ function EditorPage() {
     encoding: null,
   });
 
-  const [editorConent, setEditorContent] = useState(defaultContent);
+  const [editorContent, setEditorContent] = useState(defaultContent);
 
-  const [{ query }, dispatch] = useStore();
-  const navigate = useNavigate();
+  const [{ query, changes }, dispatch] = useStore();
 
   const [hasChanged, setHasChanged] = useState(false);
 
   useEffect(() => {
+    // Wait until changes store was rendered
+    if (changes === void 0) return;
+
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
     if (query.sha) {
-      getBlob(query)
+      retriveBlob()
         .then((data) => {
           setBlob(data);
           if (getMode(query.path) === "editor") {
@@ -61,27 +62,40 @@ function EditorPage() {
           console.warn("Invalid JSON data");
         });
     }
-
-    return function () {
-      getBranch().then((branch) =>
-        dispatch({
-          action: "SET_BRANCH",
-          payload: branch,
-        })
-      );
-      // TODO: Control redundant branch loads when change file from directory (use the queryParams.path)
-      // TODO: Debug what queryParams status is accessible from inside this context
-    };
-  }, [query.sha]);
+  }, [query.sha, changes]);
 
   useEffect(() => {
-    setHasChanged(editorConent !== blob.content && editorConent !== defaultContent);
-  }, [editorConent]);
+    setHasChanged(editorContent !== blob.content && editorContent !== defaultContent);
+  }, [editorContent]);
 
-  function saveBlob({ sha, path }) {
-    commit({ content: editorConent.replace(/\n/g, "\n"), path, sha }).then((commit) => {
-      navigate("/edit", { search: `?sha=${commit.sha}&path=${path}` });
+  function storeEdit() {
+    const { sha, path } = Object.fromEntries(
+      new URLSearchParams(location.search).entries()
+    );
+    dispatch({
+      action: "ADD_CHANGE",
+      payload: {
+        content: editorContent.replace(/\n/g, "\n"),
+        frontmatter: blob.frontmatter,
+        sha,
+        path,
+      },
     });
+  }
+
+  function refreshBranch() {
+    return getBranch().then((branch) => {
+      dispatch({
+        action: "SET_BRANCH",
+        payload: branch,
+      });
+    });
+  }
+
+  function retriveBlob() {
+    const edit = changes.find((d) => d.sha === query.sha);
+    if (edit) return Promise.resolve(edit);
+    return getBlob(query);
   }
 
   return (
@@ -90,23 +104,18 @@ function EditorPage() {
         {getMode(query.path) === "editor" ? (
           <Editor
             onUpdate={setEditorContent}
-            content={editorConent}
+            content={editorContent}
             defaultContent={defaultContent}
           />
         ) : getMode(query.path) === "data" ? (
-          <YamlForm content={editorConent} />
+          <YamlForm content={editorContent} />
         ) : (
           <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
         )}
-        <Preview text={editorConent} />
+        <Preview text={editorContent} />
       </div>
       <div className="edit__controls">
-        <a
-          className={"btn" + (hasChanged ? "" : " disabled")}
-          onClick={() =>
-            saveBlob(Object.fromEntries(new URLSearchParams(location.search).entries()))
-          }
-        >
+        <a className={"btn" + (hasChanged ? "" : " disabled")} onClick={storeEdit}>
           Save
         </a>
       </div>

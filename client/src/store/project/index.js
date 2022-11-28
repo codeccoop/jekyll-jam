@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 /* SOURCE */
 import { getProject } from "../../services/api.js";
 
-const Component = ({ warehouse, children }) => {
+const Component = ({ Warehouse, children }) => {
   const [state, setState] = useState({});
   const navigate = useNavigate();
 
@@ -20,9 +20,7 @@ const Component = ({ warehouse, children }) => {
   }, [state]);
 
   return (
-    <warehouse.Provider value={[state, () => {}]}>
-      {state !== null ? children : void 0}
-    </warehouse.Provider>
+    <Warehouse value={[state, () => {}]}>{state !== null ? children : void 0}</Warehouse>
   );
 };
 

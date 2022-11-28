@@ -16,24 +16,26 @@ require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'tree.php');
 require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'commit.php');
 require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'ref.php');
 
-$payload = json_decode(file_get_contents('php://input'), true);
-$path = base64_decode($payload['path']);
-$filename = end(explode('/', $path));
-
 $env = (new Dotfile())->get();
 
-$blob = (new Blob(null, $path))->post($payload['content']);
+$payload = json_decode(file_get_contents('php://input'), true);
 
-$commit = (new Branch($env['GH_BRANCH']))->get()['commit'];
-
-$tree = (new Tree())->post($commit['sha'], array(
-    array(
+$changes = array();
+foreach ($payload as $file) {
+    $path = base64_decode($file['path']);
+    $content = $file['content'];
+    $blob = (new Blob(null, $path))->post($content);
+    array_push($changes, array(
         'path' => $path,
         'type' => 'blob',
         'mode' => '100644',
         'sha' => $blob['sha']
-    )
-));
+    ));
+}
+
+$commit = (new Branch($env['GH_BRANCH']))->get()['commit'];
+
+$tree = (new Tree())->post($commit['sha'], $changes);
 
 $commit = (new Commit())->post(
     "Update {$filename} by Jekyll JAM",
@@ -44,7 +46,7 @@ $commit = (new Commit())->post(
 $ref = (new Ref())->post($commit['sha'], true);
 
 echo '{';
-echo '"blob": ' . json_encode($blob) . ',';
+echo '"changes": ' . json_encode($changes) . ',';
 echo '"tree": ' . json_encode($tree) . ',';
 echo '"commit": ' . json_encode($commit) . ',';
 echo '"ref": ' . json_encode($commit);

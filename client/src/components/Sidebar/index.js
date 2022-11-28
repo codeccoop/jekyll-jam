@@ -1,15 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
-// import { useStore } from "../../store";
 import { useStore } from "colmado";
 
 import "./style.scss";
 import Directory from "../Directory";
+import { commit } from "../../services/api";
 
 function Sidebar({ toggleVisibility }) {
   const navigate = useNavigate();
-  const [{ branch, project }] = useStore();
+  const [{ branch, project, changes }, dispatch] = useStore();
 
   function goSettings() {
     navigate("/settings");
@@ -24,6 +24,14 @@ function Sidebar({ toggleVisibility }) {
   }
 
   function downloadBuild() {}
+
+  function commitChanges() {
+    commit(changes).then(() => {
+      dispatch({
+        action: "CLEAR_CHANGES",
+      });
+    });
+  }
 
   return (
     <div className="sidebar">
@@ -46,6 +54,9 @@ function Sidebar({ toggleVisibility }) {
         </a>
         <a className="btn" onClick={downloadBuild}>
           Download
+        </a>
+        <a className="btn" data-changes={(changes || []).length} onClick={commitChanges}>
+          Publish
         </a>
       </div>
     </div>
