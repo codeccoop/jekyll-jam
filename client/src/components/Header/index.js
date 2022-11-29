@@ -16,7 +16,7 @@ export default function Header() {
           <source srcSet="static/images/app-logo.webp" type="image/webp" />
           <img src="static/images/app-logo.png" type="image/png" />
         </picture>
-        Jekyll JAM
+        Vocero
       </div>
     </header>
   );
