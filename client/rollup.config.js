@@ -3,8 +3,8 @@ import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import replace from "@rollup/plugin-replace";
-import scss from "rollup-plugin-scss";
-import postcss from "postcss";
+import postcss from "rollup-plugin-postcss";
+import url from "postcss-url";
 import autoprefixer from "autoprefixer";
 import json from "@rollup/plugin-json";
 import dev from "rollup-plugin-dev";
@@ -24,9 +24,8 @@ export default {
       presets: ["@babel/preset-react"],
     }),
     commonjs(),
-    scss({
-      sourceMap: process.env.NODE_ENV !== "production",
-      processor: () => postcss([autoprefixer]),
+    postcss({
+      plugins: [autoprefixer(), url({ url: "inline" })],
     }),
     json(),
     dev({

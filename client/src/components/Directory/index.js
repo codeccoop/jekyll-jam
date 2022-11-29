@@ -116,7 +116,6 @@ function Directory() {
     <nav className={"directory" + (tree.isBoilerplate ? " loading" : "")}>
       <h3 className="title">
         Files<a className="create" onClick={() => newFile("markdown")}></a>
-        <a className="upload" onClick={() => uploadFile("markdown")}></a>
       </h3>
       {renderList({
         items: tree.children,
@@ -124,7 +123,6 @@ function Directory() {
       })}
       <h3 className="title">
         Data<a className="create" onClick={() => newFile("yaml")}></a>
-        <a className="upload" onClick={() => uploadFile("yaml")}></a>
       </h3>
       {renderList({
         items: tree.data,

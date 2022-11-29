@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 import "./style.scss";
+// import sendIcon from "../../assets/icons/send-icon.png";
+// import settingsIcon from "../../assets/icons/settings-icon.png";
+// import visitIcon from "../../assets/icons/visit-icon.png";
 import Directory from "../Directory";
 import { commit, observeWorkflow } from "../../services/api";
 
@@ -57,26 +60,28 @@ function Sidebar({ toggleVisibility }) {
       </div>
       <Directory />
       <div className="sidebar__bottom">
-        <a
-          className="btn"
-          disabled={branch.ahead_by > 0 ? "" : " disabled"}
-          onClick={goSettings}
-        >
-          Settings
-        </a>
-        <a className="btn" onClick={openSite}>
-          View site
-        </a>
-        <a className="btn" disabled={isBuilding} onClick={downloadBuild}>
-          Download
-        </a>
+        <div className="sidebar__controls">
+          <a
+            className="icon settings"
+            disabled={branch.ahead_by > 0 ? "" : " disabled"}
+            onClick={goSettings}
+          >
+            <abbr title="Settings"></abbr>
+          </a>
+          <a className="icon visit" onClick={openSite}>
+            <abbr title="Visit"></abbr>
+          </a>
+          <a className="icon send" onClick={downloadBuild}>
+            <abbr title="Publish"></abbr>
+          </a>
+        </div>
         <a
           className="btn"
           disabled={isBuilding}
           data-changes={(changes || []).length}
           onClick={commitChanges}
         >
-          Publish
+          Commit
         </a>
       </div>
     </div>

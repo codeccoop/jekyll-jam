@@ -106,6 +106,10 @@ function EditorPage() {
     }
   }
 
+  function toTheClippBoard() {
+    navigator.clipboard.writeText("/" + blob.path.replace(/\.md$/, ".html"));
+  }
+
   return (
     <>
       <div className={"edit__content " + getMode(query.path)}>
@@ -123,6 +127,9 @@ function EditorPage() {
         <Preview text={editorContent} />
       </div>
       <div className="edit__controls">
+        <a className="btn" onClick={toTheClippBoard}>
+          Get URL
+        </a>
         <a className={"btn" + (hasChanged ? "" : " disabled")} onClick={storeEdit}>
           Save
         </a>

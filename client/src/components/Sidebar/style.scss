@@ -51,6 +51,33 @@
     }
   }
 
+  .sidebar__controls {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1rem;
+
+    .icon {
+      cursor: pointer;
+      width: 2rem;
+      height: 2rem;
+      background-size: contain;
+      background-position: center;
+      background-repeat: no-repeat;
+
+      $icons: "settings", "visit", "send";
+      @each $icon in $icons {
+        &.#{$icon} {
+          background-image: url(../../assets/icons/#{$icon}-icon.png);
+        }
+      }
+
+      > abbr {
+        display: block;
+        height: 2rem;
+      }
+    }
+  }
+
   .btn[data-changes] {
     position: relative;
 
@@ -62,11 +89,13 @@
       content: attr(data-changes);
       position: absolute;
       top: 50%;
-      right: 0px;
-      width: 1em;
-      height: 1em;
+      right: 0.65em;
+      width: 1.3em;
+      height: 1.3em;
       border-radius: 50%;
       background-color: red;
+      color: white;
+      transform: translateY(-50%);
     }
   }
 }
