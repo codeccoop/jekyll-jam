@@ -15,6 +15,7 @@ class Workflow
     private $env;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs';
+    private $data;
 
     function __construct()
     {

@@ -22,8 +22,8 @@ deactivate () {
         unset _OLD_VIRTUAL_PS1
     fi
 
-    if [ -f "$dir/bin/php" ]; then
-        rm "$dir/bin/php"
+    if [ -f "$dir/sh/php" ]; then
+        rm "$dir/sh/php"
     fi
 
     unset VIRTUAL_ENV
@@ -39,7 +39,7 @@ VIRTUAL_ENV="$dir"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
-PATH="$VIRTUAL_ENV/bin:$PATH"
+PATH="$VIRTUAL_ENV/sh:$PATH"
 export PATH
 
 _OLD_VIRTUAL_PS1="${PS1-}"
@@ -51,9 +51,9 @@ fi
 export PS1
 
 if ! [ -z "$1" ]; then
-    ln -s "$(which "php$1")" "$VIRTUAL_ENV/bin/php"
+    ln -s "$(which "php$1")" "$VIRTUAL_ENV/sh/php"
 else
-    ln -s "$(which "php$(php --version | grep -o -m 1 '[0-9][.][0-9]')")" "$VIRTUAL_ENV/bin/php"
+    ln -s "$(which "php$(php --version | grep -o -m 1 '[0-9][.][0-9]')")" "$VIRTUAL_ENV/sh/php"
 fi
 
 if [ -n "${BASH-}" ] || [ -n "${ZSH_VERSION-}" ]; then

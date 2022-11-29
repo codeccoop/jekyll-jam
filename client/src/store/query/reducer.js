@@ -22,6 +22,11 @@ function reducer({ state, action, payload }) {
     case "PATCH_QUERY":
       query = { ...state, ...payload };
       return genHref(search);
+    case "REFRESH_SHA":
+      const [, sha] = payload.find(([from]) => state.sha === from);
+      if (sha) {
+        return { ...state, sha: sha };
+      }
   }
 }
 

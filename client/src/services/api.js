@@ -65,3 +65,39 @@ export function commit(changes) {
 export function postPull() {
   return request("pull", { method: "POST" });
 }
+
+export function getWorkflow() {
+  return request("workflow", { method: "GET" });
+}
+
+export function observeWorkflow(interval = 5e3, timeout = 3e2) {
+  const start = Date.now();
+  let time_delta = 0;
+
+  return new Promise((res, rej) => {
+    function abort(msg = "Timeout error") {
+      rej(new Error(msg));
+    }
+
+    function observe() {
+      time_delta = (start - Date.now()) / 1e3;
+      if (time_delta <= timeout) {
+        getWorkflow()
+          .then((data) => {
+            console.log(data.status);
+            if (data.status === "completed") {
+              if (data.conclusion === "success") res(data);
+              else abort(data);
+            } else if (data.status === "error") {
+              abort(data);
+            } else {
+              setTimeout(observe, interval);
+            }
+          })
+          .catch(() => setTimeout(observe, interval));
+      } else abort();
+    }
+
+    observe();
+  });
+}

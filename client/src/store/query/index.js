@@ -15,7 +15,11 @@ const Component = ({ Warehouse, children }) => {
     setState(Object.fromEntries(new URLSearchParams(location.search).entries()));
   }, [location]);
 
-  return <Warehouse value={[state, navigate]}>{children}</Warehouse>;
+  function setQuery(query) {
+    navigate({ ...location, search: new URLSearchParams(query).toString() });
+  }
+
+  return <Warehouse value={[state, setQuery]}>{children}</Warehouse>;
 };
 
 export default { name: "query", Component, reducer };

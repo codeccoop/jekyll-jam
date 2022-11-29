@@ -1,23 +1,23 @@
 /* VENDOR */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 /* SOURCE */
 import reducer from "./reducer";
 
 const Component = ({ Warehouse, children }) => {
-  const [changes, setChanges] = useState();
-
-  useEffect(() => {
-    const changes = localStorage.getItem("_VOCERO_CHANGES") || "[]";
-    setChanges(JSON.parse(changes));
-  }, []);
+  const memory = localStorage.getItem("_VOCERO_CHANGES") || "[]";
+  const [changes, setChanges] = useState(JSON.parse(memory));
 
   function setState(changes) {
     localStorage.setItem("_VOCERO_CHANGES", JSON.stringify(changes));
     setChanges(changes);
   }
 
-  return <Warehouse value={[changes, setState]}>{children}</Warehouse>;
+  return (
+    <Warehouse value={[changes, setState]}>
+      {changes !== void 0 ? children : void 0}
+    </Warehouse>
+  );
 };
 
 export default { name: "changes", Component, reducer };

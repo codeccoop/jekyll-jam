@@ -1,15 +1,16 @@
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useStore } from "colmado";
 
 import "./style.scss";
 import Directory from "../Directory";
-import { commit } from "../../services/api";
+import { commit, observeWorkflow } from "../../services/api";
 
 function Sidebar({ toggleVisibility }) {
   const navigate = useNavigate();
   const [{ branch, project, changes }, dispatch] = useStore();
+  const [isBuilding, setIsBuilding] = useState(false);
 
   function goSettings() {
     navigate("/settings");
@@ -26,9 +27,22 @@ function Sidebar({ toggleVisibility }) {
   function downloadBuild() {}
 
   function commitChanges() {
-    commit(changes).then(() => {
+    commit(changes).then((commit) => {
+      const changeMap = changes.reduce((acum, from) => {
+        return acum.concat([
+          [from.sha, commit.changes.find((to) => to.path === atob(from.path)).sha],
+        ]);
+      }, []);
       dispatch({
         action: "CLEAR_CHANGES",
+      });
+      dispatch({
+        action: "REFRESH_SHA",
+        payload: changeMap,
+      });
+      setIsBuilding(true);
+      observeWorkflow().finally(() => {
+        setIsBuilding(false);
       });
     });
   }
@@ -44,7 +58,8 @@ function Sidebar({ toggleVisibility }) {
       <Directory />
       <div className="sidebar__bottom">
         <a
-          className={"btn" + (branch.ahead_by > 0 ? "" : " disabled")}
+          className="btn"
+          disabled={branch.ahead_by > 0 ? "" : " disabled"}
           onClick={goSettings}
         >
           Settings
@@ -52,10 +67,15 @@ function Sidebar({ toggleVisibility }) {
         <a className="btn" onClick={openSite}>
           View site
         </a>
-        <a className="btn" onClick={downloadBuild}>
+        <a className="btn" disabled={isBuilding} onClick={downloadBuild}>
           Download
         </a>
-        <a className="btn" data-changes={(changes || []).length} onClick={commitChanges}>
+        <a
+          className="btn"
+          disabled={isBuilding}
+          data-changes={(changes || []).length}
+          onClick={commitChanges}
+        >
           Publish
         </a>
       </div>

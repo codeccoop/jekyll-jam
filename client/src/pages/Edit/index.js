@@ -45,28 +45,30 @@ function EditorPage() {
   const [hasChanged, setHasChanged] = useState(false);
 
   useEffect(() => {
-    // Wait until changes store was rendered
-    if (changes === void 0) return;
-
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
-    if (query.sha) {
-      retriveBlob()
-        .then((data) => {
-          setBlob(data);
-          if (getMode(query.path) === "editor") {
-            setEditorContent(data.content);
-          }
-        })
-        .catch((err) => {
-          console.warn("Invalid JSON data");
-        });
-    }
-  }, [query.sha, changes]);
+    if (query.sha) retriveBlob();
+  }, [query.sha]);
 
   useEffect(() => {
     setHasChanged(editorContent !== blob.content && editorContent !== defaultContent);
   }, [editorContent]);
+
+  useEffect(() => {
+    if (hasChanged && changes.length) {
+      // Update after a 'save' a.k.a store changes. We have to reconciliate our editor content
+      // and blob content because the second has been updated on the localStorage.
+      retriveBlob();
+      // setHasChanged(false);
+    }
+    // Case when changes were wipped after a commit.
+    setHasChanged(false);
+
+    return () => {
+      // If changes will change, the view is 'saving' some content. HasChanged has to be true.
+      setHasChanged(true);
+    };
+  }, [changes]);
 
   function storeEdit() {
     const { sha, path } = Object.fromEntries(
@@ -83,19 +85,25 @@ function EditorPage() {
     });
   }
 
-  function refreshBranch() {
-    return getBranch().then((branch) => {
-      dispatch({
-        action: "SET_BRANCH",
-        payload: branch,
-      });
-    });
-  }
+  // function refreshBranch() {
+  //   return getBranch().then((branch) => {
+  //     dispatch({
+  //       action: "SET_BRANCH",
+  //       payload: branch,
+  //     });
+  //   });
+  // }
 
-  function retriveBlob() {
-    const edit = changes.find((d) => d.sha === query.sha);
-    if (edit) return Promise.resolve(edit);
-    return getBlob(query);
+  async function retriveBlob() {
+    let blob = changes.find((d) => d.sha === query.sha);
+    if (!blob) {
+      blob = await getBlob(query);
+    }
+
+    setBlob(blob);
+    if (getMode(query.path) === "editor") {
+      setEditorContent(blob.content || "");
+    }
   }
 
   return (

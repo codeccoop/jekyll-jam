@@ -19,11 +19,13 @@ body {
   text-align: center;
 }
 
-.btn.disabled {
+.btn.disabled,
+.btn[disabled] {
   pointer-events: none;
   opacity: 0.6;
 }
 
-.btn:hover {
+.btn:not(.disabled):hover,
+.btn:not([disabled]):hover {
   background-color: #fff2;
 }
