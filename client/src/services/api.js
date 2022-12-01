@@ -26,7 +26,12 @@ function request(
 
   if (data) config.body = JSON.stringify(data);
 
-  return fetch(path, config).then((res) => res.json());
+  const req = fetch(path, config);
+  if (headers["Accept"] === "application/json") {
+    return req.then((res) => res.json());
+  }
+
+  return req;
 }
 
 export function getProject() {
@@ -100,4 +105,11 @@ export function observeWorkflow(interval = 5e3, timeout = 3e2) {
 
     observe();
   });
+}
+
+export function getArtifact() {
+  return request("artifact", {
+    method: "GET",
+    headers: { "Accept": "application/zip" },
+  }).then((res) => res.blob());
 }

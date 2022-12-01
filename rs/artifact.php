@@ -1,6 +1,6 @@
 <?php
 header('Allow: GET');
-header('Content-Type: application/json');
+header('Content-Type: application/zip');
 
 if ('GET' != $_SERVER['REQUEST_METHOD']) {
     header('HTTP/1.1 405 Method Not Allowed');

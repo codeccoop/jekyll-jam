@@ -80,6 +80,34 @@ class Workflow
         return json_encode($data);
     }
 
+    public function artifact()
+    {
+        if ($this->cache->is_cached()) {
+            $workflow = $this->cache->get();
+        } else {
+            $workflow = $this->get();
+        }
+
+        $id = $workflow["id"];
+
+        $client = new Client(array('base_uri' => $this->base_url));
+        $response = $client->request('GET', $this->endpoint . '/' . $id . '/artifacts', array(
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+            )
+        ));
+
+        $data = json_decode($response->getBody()->getContents(), true);
+
+        $artifact = null;
+        if ($data['total_count'] > 0) {
+            $artifact = $data['artifacts'][0];
+        }
+
+        return $artifact;
+    }
+
     private function config_template($branches = array('main'))
     {
 

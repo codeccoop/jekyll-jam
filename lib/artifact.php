@@ -14,7 +14,7 @@ class Artifact
 
     private $env;
     private $base_url = 'https://api.github.com';
-    private $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs/$ID/artifacts';
+    private $endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts';
     private $workflow;
 
     public $id;
@@ -27,37 +27,40 @@ class Artifact
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
 
-        $this->workflow = (new Workflow())->get();
-        preg_match('/(?<=\/)[0-9]+(?=\/)/', $this->workflow['artifacts_url'], $mathes);
-        $this->id = $mathes[0];
+        /* echo print_r($this->workflow); */
+        /* preg_match('/(?<=\/)[0-9]+(?=\/)/', $this->workflow['artifacts_url'], $mathes); */
+        /* $this->id = $mathes[0]; */
+        /* echo $this->id; */
     }
 
     public function get()
     {
         if ($this->data) return $this->data;
 
-        $client = new Client(array('base_uri' => $this->base_url));
-        $response = $client->request('GET', str_replace('$ID', $this->id, $this->endpoint), array(
-            'headers' => array(
-                'Accept' => 'application/vnd.github+json',
-                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
-            )
-        ));
+        $this->data = (new Workflow())->artifact();
+        return $this->cache->post($this->data);
+        /* $client = new Client(array('base_uri' => $this->base_url)); */
+        /* $response = $client->request('GET', str_replace('$ID', $this->id, $this->endpoint), array( */
+        /*     'headers' => array( */
+        /*         'Accept' => 'application/vnd.github+json', */
+        /*         'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN'] */
+        /*     ) */
+        /* )); */
 
-        $data = json_decode($response->getBody()->getContents(), true);
+        /* $data = json_decode($response->getBody()->getContents(), true); */
 
-        if ($data['total_count'] > 0) {
-            $artifact = null;
-            foreach ($data['artifacts'] as $arti) {
-                if ($artifact == null) $artifact = $arti;
-                else if (strtotime($artifact['created_at']) < strtotime($arti['created_at'])) $artifact = $arti;
-            }
-        } else {
-            return $this->cache->get();
-        }
+        /* if ($data['total_count'] > 0) { */
+        /*     $artifact = null; */
+        /*     foreach ($data['artifacts'] as $arti) { */
+        /*         if ($artifact == null) $artifact = $arti; */
+        /*         else if (strtotime($artifact['created_at']) < strtotime($arti['created_at'])) $artifact = $arti; */
+        /*     } */
+        /* } else { */
+        /*     return $this->cache->get(); */
+        /* } */
 
-        $this->data = $artifact;
-        return $this->cache->post($artifact);
+        /* $this->data = $artifact; */
+        /* return $this->cache->post($artifact); */
     }
 
     public function json()
@@ -68,9 +71,15 @@ class Artifact
 
     public function zip()
     {
-        $endpoint = str_replace('artifacts', 'zip', $this->endpoint);
-        $endpoint = str_replace('runs', 'artifacts', $endpoint);
-        $endpoint = str_replace('$ID', $this->id, $endpoint);
+        $data = $this->get();
+        // $artifact_id = preg_match
+        preg_match('/[0-9]+$/', $data['url'], $mathes);
+        $id = $mathes[0];
+
+        # $endpoint = str_replace('artifacts', 'zip', $this->endpoint);
+        /* $endpoint = str_replace('runs', 'artifacts', $this->endpoint); */
+        /* $endpoint = str_replace('$ID', $this->id, $endpoint); */
+        /* echo $endpoint; */
         $dir = realpath(__DIR__ . DS . '..' . DS . '.artifacts');
         $latest = $dir . DS . 'latest.zip';
         $backup = $dir . DS . 'recovery.zip';
@@ -85,16 +94,25 @@ class Artifact
         try {
             $stream = fopen($latest, 'w');
             $client = new Client(array('base_uri' => $this->base_url));
-            $response = $client->request('GET', $endpoint, array(
+            $response = $client->request('GET', $this->endpoint . '/' . $id . '/zip', array(
                 'sink' => $stream,
                 'headers' => array(
-                    'Accept' => 'application/zip',
+                    'Accept' => 'application/vnd.github+json',
                     'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
                 )
             ));
-            fclose($stream);
-            $response->getBody();
+            /* fclose($stream); */
+            /* echo "got response"; */
+            /* $headers = $response->getHeaders(); */
+            /* echo print_r($headers); */
+            /* $location = $headers['Location']; */
+            /* echo $location; */
+            /* throw new Exception(); */
+
+            /* $client = new Client( */
+            /* $response->getBody(); */
         } catch (ClientException $e) {
+            echo $e;
             if ($recovery) {
                 rename($backup, $latest);
             }
@@ -102,7 +120,6 @@ class Artifact
 
         if (file_exists($latest)) {
             header('Content-disposition: attachment;filename=latest.zip');
-            header('Content-Type: application/zip');
             header("Content-Length: " . filesize($latest));
 
             readfile($latest);

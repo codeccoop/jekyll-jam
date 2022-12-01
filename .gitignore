@@ -5,6 +5,7 @@ node_modules
 .env
 static/bundle*
 .cache
+.artifacts
 
 bin/*
 ! bin/docker-cli

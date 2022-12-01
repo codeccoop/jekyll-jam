@@ -8,7 +8,7 @@ import "./style.scss";
 // import settingsIcon from "../../assets/icons/settings-icon.png";
 // import visitIcon from "../../assets/icons/visit-icon.png";
 import Directory from "../Directory";
-import { commit, observeWorkflow } from "../../services/api";
+import { commit, observeWorkflow, getArtifact } from "../../services/api";
 
 function Sidebar({ toggleVisibility }) {
   const navigate = useNavigate();
@@ -27,7 +27,20 @@ function Sidebar({ toggleVisibility }) {
     }
   }
 
-  function downloadBuild() {}
+  function downloadBuild() {
+    getArtifact()
+      .then((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "latest.zip";
+        document.body.appendChild(link);
+        link.click();
+        URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+      })
+      .catch(console.error);
+  }
 
   function commitChanges() {
     commit(changes).then((commit) => {
