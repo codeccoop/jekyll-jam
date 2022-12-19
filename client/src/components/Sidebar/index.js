@@ -4,9 +4,6 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 import "./style.scss";
-// import sendIcon from "../../assets/icons/send-icon.png";
-// import settingsIcon from "../../assets/icons/settings-icon.png";
-// import visitIcon from "../../assets/icons/visit-icon.png";
 import Directory from "../Directory";
 import { commit, observeWorkflow, getArtifact } from "../../services/api";
 

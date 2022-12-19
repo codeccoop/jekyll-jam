@@ -89,7 +89,6 @@ export function observeWorkflow(interval = 5e3, timeout = 3e2) {
       if (time_delta <= timeout) {
         getWorkflow()
           .then((data) => {
-            console.log(data.status);
             if (data.status === "completed") {
               if (data.conclusion === "success") res(data);
               else abort(data);

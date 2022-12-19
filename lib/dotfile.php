@@ -18,7 +18,7 @@ class Dotfile
         if ($path) {
             $this->path = $path;
         } else {
-            $this->path = realpath(__DIR__ . '/../.env');
+            $this->path = realpath(__DIR__ . DS . '..' . DS . '.env');
         }
     }
 

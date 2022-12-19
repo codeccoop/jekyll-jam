@@ -1,6 +1,4 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
-
 require_once realpath(__DIR__ . DS . 'dotfile.php');
 require_once realpath(__DIR__ . DS . 'content.php');
 require_once realpath(__DIR__ . DS . 'commit.php');
@@ -31,13 +29,21 @@ class Workflow
         if ($this->data) return $this->data;
 
         $commit = (new Commit())->get();
-        $commit_date = $commit['committer']['date'];
-        $date = date('Y-m-d', strtotime($commit_date)) . 'T' . date('h:m:s', strtotime($commit_date));
+        $commit_date = strtotime($commit['committer']['date']);
+
+        if ($this->cache->is_cached()) {
+            $this->data = $this->cache->get();
+            $cache_date = strtotime($this->data['created_at']);
+            if ($commit_date < $cache_date) {
+                return $this->data;
+            }
+            $this->data = null;
+        }
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint, array(
             'query' => array(
-                'created' => '>=' . $date
+                'created' => '>=' . preg_replace("/\+.*$/", "", date('c', $commit_date))
             ),
             'headers' => array(
                 'Accept' => 'application/vnd.github+json',
@@ -53,7 +59,10 @@ class Workflow
                 else if (strtotime($workflow['created_at']) < strtotime($run['created_at'])) $workflow = $run;
             }
         } else {
-            return $this->cache->get();
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            header('Content-Type: application/json');
+            echo '{"status": "error", "message": "404 Not Found"}';
+            exit;
         }
 
         $this->data = $workflow;
@@ -78,34 +87,6 @@ class Workflow
     {
         $data = $this->get();
         return json_encode($data);
-    }
-
-    public function artifact()
-    {
-        if ($this->cache->is_cached()) {
-            $workflow = $this->cache->get();
-        } else {
-            $workflow = $this->get();
-        }
-
-        $id = $workflow["id"];
-
-        $client = new Client(array('base_uri' => $this->base_url));
-        $response = $client->request('GET', $this->endpoint . '/' . $id . '/artifacts', array(
-            'headers' => array(
-                'Accept' => 'application/vnd.github+json',
-                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
-            )
-        ));
-
-        $data = json_decode($response->getBody()->getContents(), true);
-
-        $artifact = null;
-        if ($data['total_count'] > 0) {
-            $artifact = $data['artifacts'][0];
-        }
-
-        return $artifact;
     }
 
     private function config_template($branches = array('main'))

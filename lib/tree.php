@@ -1,6 +1,4 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
-
 require_once realpath(__DIR__ . DS . 'dotfile.php');
 require_once realpath(__DIR__ . DS . 'blob.php');
 require_once realpath(__DIR__ . DS . 'config.php');

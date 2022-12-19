@@ -1,6 +1,4 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
-
 class Cache
 {
     private $base_path;
@@ -80,7 +78,7 @@ class Cache
             }
         }
 
-        if ($this->sha === null) return $this->content;
+        if ($this->sha === null) return true; // $this->content;
         return $this->content['sha'] === $this->sha;
     }
 

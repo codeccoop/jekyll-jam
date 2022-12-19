@@ -1,7 +1,7 @@
 <?php
-require_once realpath(__DIR__ . '/dotfile.php');
-require_once realpath(__DIR__ . '/cache.php');
-require_once realpath(__DIR__ . '/../vendor/autoload.php');
+require_once realpath(__DIR__ . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . 'cache.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
 

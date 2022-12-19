@@ -3,9 +3,10 @@ header('Allow: GET');
 header('Content-Type: application/json');
 
 if ('GET' != $_SERVER['REQUEST_METHOD']) {
-    header('HTTP/1.1 405 Method Not Allowed');
-    echo '{"status": "error", "message": "405 Method Not Allowed"}';
-    exit;
+    header($_SERVER['SERVER_PROTOCOL'] . ' 405 Method Not Allowed');
+    header('Content-Type: application/json');
+    echo '{"status": "error", "message": "Method not allowed"}';
+    exit();
 }
 
 define('DS', DIRECTORY_SEPARATOR);

@@ -1,6 +1,4 @@
 <?php
-define('DS', DIRECTORY_SEPARATOR);
-
 require_once realpath(__DIR__ . DS . 'dotfile.php');
 require_once realpath(__DIR__ . DS . 'cache.php');
 require_once realpath(__DIR__ . DS . 'ref.php');
