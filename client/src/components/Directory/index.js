@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 
-// import { useStore } from "../../store";
 import { useStore } from "colmado";
-//import { useBranch } from "../../store/branch";
 import { getTree } from "../../services/api";
 
 import File from "./File";
@@ -24,8 +22,8 @@ function Directory() {
     ],
   });
   const [{ query, branch }] = useStore();
-  // const branch = useBranch()[0];
-  // const [queryParams, _] = query;
+
+  const [visibilities, setVisibilities] = useState({});
 
   function newFile(type) {
     if (type === "markdown") {
@@ -63,7 +61,13 @@ function Directory() {
     } else {
       return (
         <>
-          <span id={item.sha}>{item.name}</span>
+          <span
+            className={"directory" + (visibilities[item.path] ? " open" : "")}
+            id={item.sha}
+            onClick={() => toggleVisibility(item.path)}
+          >
+            {item.name}
+          </span>
           {renderList({ items: item.children, selected })}
         </>
       );
@@ -101,40 +105,51 @@ function Directory() {
   useEffect(() => {
     if (branch.sha) {
       fetchTree();
-      // getTree(branch['sha']).then(data => {
-      //   setTree({
-      //     sha: data.sha,
-      //     children: data.children.filter(d => ['data', 'assets'].indexOf(d.name) === -1),
-      //     data: data.children.find(d => d.name === 'data').children || [],
-      //     assets: data.children.find(d => d.name === 'assets')?.children || [],
-      //   });
-      // });
     }
   }, [branch.ahead_by]);
 
+  function toggleVisibility(path) {
+    setVisibilities({ ...visibilities, [path]: !visibilities[path] });
+  }
+
   return (
     <nav className={"directory" + (tree.isBoilerplate ? " loading" : "")}>
-      <h3 className="title">
+      <h3
+        className={"title" + (visibilities.children ? " open" : "")}
+        onClick={() => toggleVisibility("children")}
+      >
         Files<a className="create" onClick={() => newFile("markdown")}></a>
       </h3>
-      {renderList({
-        items: tree.children,
-        selected: query.sha,
-      })}
-      <h3 className="title">
+      {visibilities.children === true
+        ? renderList({
+            items: tree.children,
+            selected: query.sha,
+          })
+        : void 0}
+      <h3
+        className={"title" + (visibilities.data ? " open" : "")}
+        onClick={() => toggleVisibility("data")}
+      >
         Data<a className="create" onClick={() => newFile("yaml")}></a>
       </h3>
-      {renderList({
-        items: tree.data,
-        selected: query.sha,
-      })}
-      <h3 className="title">
+      {visibilities.data
+        ? renderList({
+            items: tree.data,
+            selected: query.sha,
+          })
+        : void 0}
+      <h3
+        className={"title" + (visibilities.assets ? " open" : "")}
+        onClick={() => toggleVisibility("assets")}
+      >
         Assets<a className="upload" onClick={() => uploadFile("asset")}></a>
       </h3>
-      {renderList({
-        items: tree.assets,
-        selected: query.sha,
-      })}
+      {visibilities.assets
+        ? renderList({
+            items: tree.assets,
+            selected: query.sha,
+          })
+        : void 0}
     </nav>
   );
 }

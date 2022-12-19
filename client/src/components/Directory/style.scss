@@ -19,10 +19,32 @@
     }
   }
 
-  h3 {
+  h3.title {
     margin-bottom: 0px;
+    cursor: pointer;
+    position: relative;
+    text-indent: 0.5em;
+
+    &::before {
+      content: ">";
+      position: absolute;
+      left: -0.6em;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    &.open {
+      &::before {
+        content: "v";
+      }
+
+      a {
+        display: inline;
+      }
+    }
 
     > a {
+      display: none;
       cursor: pointer;
       position: relative;
       float: right;
@@ -112,6 +134,10 @@
       background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
+    }
+
+    li span.open {
+      border-bottom: 1px solid white;
     }
   }
 }
