@@ -5,7 +5,7 @@ import Preview from "../../components/Preview";
 import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
-import { getBlob, getBranch } from "../../services/api";
+import { getBlob } from "../../services/api";
 
 import { useStore } from "colmado";
 

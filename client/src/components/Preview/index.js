@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 
 import { marked } from "marked";
-// import { useStore } from "../../store";
 import { useStore } from "colmado";
+import { renderBlocks } from "../../utils/blocks";
 
 marked.setOptions({
   breaks: false,
@@ -35,7 +35,7 @@ export default function Preview({ text }) {
     const contentEl = renderer.content.querySelector(".previewContent");
 
     if (contentEl) {
-      contentEl.innerHTML = marked.parse(text);
+      contentEl.innerHTML = renderBlocks(marked.parse(text), store.blocks);
       const rendererHTML = renderer.innerHTML;
       shadow.innerHTML = "";
       shadow.appendChild(renderer.content);
@@ -63,7 +63,9 @@ export default function Preview({ text }) {
     <div ref={elRef} className="preview">
       <div
         className="previewContent"
-        dangerouslySetInnerHTML={{ __html: marked.parse(text) }}
+        dangerouslySetInnerHTML={{
+          __html: renderBlocks(marked.parse(text), store.blocks),
+        }}
       ></div>
     </div>
   );

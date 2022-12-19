@@ -46,6 +46,13 @@ export function getStyleURL(sha) {
   return request("style", { data: { sha } });
 }
 
+export function getBlocks(sha) {
+  return request("blocks", {
+    data: { sha },
+    headers: { "Accept": "text/javascript" },
+  });
+}
+
 export function init() {
   return request("init", {});
 }
@@ -108,7 +115,6 @@ export function observeWorkflow(interval = 5e3, timeout = 3e2) {
 
 export function getArtifact() {
   return request("artifact", {
-    method: "GET",
     headers: { "Accept": "application/zip" },
   }).then((res) => res.blob());
 }
