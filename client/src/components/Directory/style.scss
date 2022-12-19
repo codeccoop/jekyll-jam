@@ -26,7 +26,7 @@
     text-indent: 0.5em;
 
     &::before {
-      content: ">";
+      content: "\003E";
       position: absolute;
       left: -0.6em;
       top: 50%;
@@ -35,7 +35,7 @@
 
     &.open {
       &::before {
-        content: "v";
+        content: "\003C";
       }
 
       a {

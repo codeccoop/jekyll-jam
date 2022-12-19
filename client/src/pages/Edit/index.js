@@ -11,7 +11,7 @@ import { useStore } from "colmado";
 
 import "./style.scss";
 
-function getMode(queryPath) {
+function getEditMode(queryPath) {
   let path;
   try {
     path = atob(queryPath);
@@ -43,6 +43,8 @@ function EditorPage() {
   const [{ query, changes }, dispatch] = useStore();
 
   const [hasChanged, setHasChanged] = useState(false);
+
+  const [preview, setPreview] = useState(false);
 
   useEffect(() => {
     setBlob({ ...blob, content: null });
@@ -85,15 +87,6 @@ function EditorPage() {
     });
   }
 
-  // function refreshBranch() {
-  //   return getBranch().then((branch) => {
-  //     dispatch({
-  //       action: "SET_BRANCH",
-  //       payload: branch,
-  //     });
-  //   });
-  // }
-
   async function retriveBlob() {
     let blob = changes.find((d) => d.sha === query.sha);
     if (!blob) {
@@ -101,7 +94,7 @@ function EditorPage() {
     }
 
     setBlob(blob);
-    if (getMode(query.path) === "editor") {
+    if (getEditMode(query.path) === "editor") {
       setEditorContent(blob.content || "");
     }
   }
@@ -112,23 +105,39 @@ function EditorPage() {
 
   return (
     <>
-      <div className={"edit__content " + getMode(query.path)}>
-        {getMode(query.path) === "editor" ? (
-          <Editor
-            onUpdate={setEditorContent}
-            content={editorContent}
-            defaultContent={defaultContent}
-          />
-        ) : getMode(query.path) === "data" ? (
-          <YamlForm content={editorContent} />
+      <div
+        className={[
+          "edit__content",
+          getEditMode(query.path),
+          preview ? " preview" : "edit",
+        ].join(" ")}
+      >
+        {!preview ? (
+          getEditMode(query.path) === "editor" ? (
+            <Editor
+              onUpdate={setEditorContent}
+              content={editorContent}
+              defaultContent={defaultContent}
+            />
+          ) : getEditMode(query.path) === "data" ? (
+            <YamlForm content={editorContent} />
+          ) : (
+            <AssetViewer
+              content={blob.content}
+              encoding={blob.encoding}
+              path={blob.path}
+            />
+          )
         ) : (
-          <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
+          <Preview text={editorContent} />
         )}
-        <Preview text={editorContent} />
       </div>
       <div className="edit__controls">
         <a className="btn" onClick={toTheClippBoard}>
           Get URL
+        </a>
+        <a className="btn" onClick={() => setPreview(!preview)}>
+          {preview ? "Edit" : "Preview"}
         </a>
         <a className={"btn" + (hasChanged ? "" : " disabled")} onClick={storeEdit}>
           Save

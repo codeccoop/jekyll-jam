@@ -66,8 +66,8 @@ export default function Editor({ onUpdate, content, defaultContent }) {
 
   return (
     <div className="editor" onKeyDown={onKeyDown}>
-      <Blocks onSelect={onSelectBlock} />
       <textarea ref={textAreaRef} onInput={onInput} value={content}></textarea>
+      <Blocks onSelect={onSelectBlock} />
     </div>
   );
 }

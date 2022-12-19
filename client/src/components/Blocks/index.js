@@ -19,6 +19,7 @@ export default function Blocks({ onSelect }) {
 
   return (
     <div className="blocks">
+      <h3>Blocks</h3>
       <ul>{blocksList()}</ul>
     </div>
   );
