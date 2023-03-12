@@ -51,8 +51,9 @@ export default function Editor({ onUpdate, content, defaultContent }) {
     let args = block.args.map((arg) => arg + '=""\n').join("  ");
     if (block.args.length) args = "\n  " + args;
     let mark = `<${block.name}${args}`;
-    if (block.selfClosed === true) mark += "/>";
-    else mark += `>\n\n</${block.name}>`;
+    // if (block.selfClosed === true) mark += "/>";
+    // else
+    mark += `>\n</${block.name}>`;
     const textArea = textAreaRef.current;
     const cursor = textArea.selectionStart;
     textArea.value =

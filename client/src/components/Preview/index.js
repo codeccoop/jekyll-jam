@@ -1,8 +1,12 @@
 import React, { useEffect, useRef } from "react";
-
 import { marked } from "marked";
 import { useStore } from "colmado";
-import { renderBlocks } from "../../utils/blocks";
+
+import {
+  BMLMarkdExtension,
+  genBMLMakredExtension,
+  // renderBlocks,
+} from "../../utils/blocks";
 
 marked.setOptions({
   breaks: false,
@@ -14,8 +18,12 @@ export default function Preview({ text }) {
   const elRef = useRef();
   const shadowRef = useRef();
   const rendererRef = useRef(document.createElement("template"));
-  const [store] = useStore();
-  const css = store.style;
+  const [{ blocks, style }] = useStore();
+  const css = style;
+
+  useEffect(() => {
+    if (blocks.length) marked.use({ extensions: genBMLMakredExtension(blocks) });
+  }, [blocks]);
 
   useEffect(() => {
     const el = elRef.current;
@@ -35,7 +43,8 @@ export default function Preview({ text }) {
     const contentEl = renderer.content.querySelector(".previewContent");
 
     if (contentEl) {
-      contentEl.innerHTML = renderBlocks(marked.parse(text), store.blocks);
+      // contentEl.innerHTML = renderBlocks(marked.parse(text), blocks);
+      contentEl.innerHTML = marked.parse(text);
       const rendererHTML = renderer.innerHTML;
       shadow.innerHTML = "";
       shadow.appendChild(renderer.content);
@@ -59,12 +68,14 @@ export default function Preview({ text }) {
     renderer.innerHTML = rendererHTML;
   }, [css]);
 
+  debugger;
   return (
     <div ref={elRef} className="preview">
       <div
         className="previewContent"
         dangerouslySetInnerHTML={{
-          __html: renderBlocks(marked.parse(text), store.blocks),
+          // __html: renderBlocks(marked.parse(text), blocks),
+          __html: marked.parse(text),
         }}
       ></div>
     </div>

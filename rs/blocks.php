@@ -16,7 +16,7 @@ try {
     echo (new Blocks($_GET['sha']))->get();
 } catch (Exception $e) {
     echo '[{
-        name: "Video",
+        name: "CustomVideo",
         args: ["url", "width", "height"],
         selfClosed: true,
         fn: ({ url, width, height }) => `<video src="${url}" width="${width}" height="${height}" />`

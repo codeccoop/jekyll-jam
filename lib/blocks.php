@@ -6,7 +6,7 @@ require_once realpath(__DIR__ . DS . 'tree.php');
 
 class Blocks
 {
-    private $env;
+    // private $env;
     private $blob;
     private $cache;
     private $tree;

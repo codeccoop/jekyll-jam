@@ -6,6 +6,7 @@ import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
 import { getBlob } from "../../services/api";
+import { renderBlocks, undoBlockRenders } from "../../utils/blocks";
 
 import { useStore } from "colmado";
 
@@ -40,7 +41,7 @@ function EditorPage() {
 
   const [editorContent, setEditorContent] = useState(defaultContent);
 
-  const [{ query, changes }, dispatch] = useStore();
+  const [{ query, changes, blocks }, dispatch] = useStore();
 
   const [hasChanged, setHasChanged] = useState(false);
 
@@ -73,13 +74,15 @@ function EditorPage() {
   }, [changes]);
 
   function storeEdit() {
+    debugger;
     const { sha, path } = Object.fromEntries(
       new URLSearchParams(location.search).entries()
     );
+    console.log(renderBlocks(editorContent, blocks).replace(/\n/g, "\n"));
     dispatch({
       action: "ADD_CHANGE",
       payload: {
-        content: editorContent.replace(/\n/g, "\n"),
+        content: renderBlocks(editorContent, blocks).replace(/\n/g, "\n"),
         frontmatter: blob.frontmatter,
         sha,
         path,
@@ -93,6 +96,7 @@ function EditorPage() {
       blob = await getBlob(query);
     }
 
+    blob.content = undoBlockRenders(blob.content);
     setBlob(blob);
     if (getEditMode(query.path) === "editor") {
       setEditorContent(blob.content || "");
