@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+// import { marked } from "marked";
+import { useStore } from "colmado";
 
 import Editor from "../../components/Editor";
 import Preview from "../../components/Preview";
@@ -6,9 +8,8 @@ import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
 import { getBlob } from "../../services/api";
-import { renderBlocksToStore, undoBlockRenders } from "../../utils/blocks";
-
-import { useStore } from "colmado";
+import { renderBlocks, hydrateBlocks } from "../../lib/blocks";
+import useMarked from "../../hooks/useMarked";
 
 import "./style.scss";
 
@@ -30,6 +31,8 @@ function getEditMode(queryPath) {
 
 function EditorPage() {
   const defaultContent = "# Loading file contents...";
+
+  const marked = useMarked();
 
   const [blob, setBlob] = useState({
     content: null,
@@ -80,7 +83,8 @@ function EditorPage() {
     dispatch({
       action: "ADD_CHANGE",
       payload: {
-        content: btoa(renderBlocksToStore(editorContent, blocks).replace(/\n/g, "\n")),
+        // content: btoa(renderBlocks(editorContent, blocks).replace(/\n/g, "\n")),
+        content: btoa(renderBlocks(editorContent, marked).replace(/\n/g, "\n")),
         frontmatter: blob.frontmatter,
         sha,
         path,
@@ -97,7 +101,7 @@ function EditorPage() {
       blob.content = atob(blob.content);
     }
 
-    blob.content = undoBlockRenders(blob.content);
+    blob.content = hydrateBlocks(blob.content);
     setBlob(blob);
     if (getEditMode(query.path) === "editor") {
       setEditorContent(blob.content || "");

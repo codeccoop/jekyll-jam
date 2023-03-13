@@ -1,25 +1,29 @@
 import React, { useEffect, useRef } from "react";
-import { marked } from "marked";
+// import { marked } from "marked";
 import { useStore } from "colmado";
 
-import { genBMLMakredExtension } from "../../utils/blocks";
+import useMarked from "../../hooks/useMarked";
 
-marked.setOptions({
-  breaks: false,
-  smartLists: true,
-  //smartypants: true,
-});
+// import { genBMLMakredExtension } from "../../utils/blocks";
+
+//marked.setOptions({
+//  breaks: false,
+//  smartLists: true,
+//  //smartypants: true,
+//});
 
 export default function Preview({ text }) {
   const elRef = useRef();
   const shadowRef = useRef();
   const rendererRef = useRef(document.createElement("template"));
-  const [{ blocks, style }] = useStore();
+  // const [{ blocks, style }] = useStore();
+  const [{ style }] = useStore();
+  const marked = useMarked();
   const css = style;
 
-  useEffect(() => {
-    if (blocks.length) marked.use({ extensions: genBMLMakredExtension(blocks) });
-  }, [blocks]);
+  // useEffect(() => {
+  //   if (blocks.length) marked.use({ extensions: genBMLMakredExtension(blocks) });
+  // }, [blocks]);
 
   useEffect(() => {
     const el = elRef.current;
