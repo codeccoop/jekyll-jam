@@ -18,23 +18,15 @@ function getNodeAttributes(node) {
 
 function htmlToBml(blockDefn, html) {
   const nameReg = new RegExp(blockDefn.name, "ig");
-  let capitalized = html.replace(nameReg, blockDefn.name);
-  const node = parseHTMLFragment(html).children[0];
-  const attrs = getNodeAttributes(node);
-  Object.entries(attrs).forEach((attr, index, entries) => {
-    const attrString = `${attr[0]}="${attr[1]}"`;
-    capitalized = capitalized.replace(attrString, "\n  " + attrString);
-    if (index === entries.length - 1) {
-      capitalized = capitalized.replace(attrString, attrString + "\n");
-    }
-  });
-  return capitalized;
+  return html.replace(nameReg, blockDefn.name);
 }
 
 function commentWrap(blockDefn, html, fragment) {
   let node = fragment.children[0];
-  const openTag = new Comment(` vocero-block\n${htmlToBml(blockDefn, html)}\n`);
-  const closeTag = new Comment(" /vocero-block ");
+  const openTag = new Comment(
+    ` vocero-block="${blockDefn.name}"\n${htmlToBml(blockDefn, html, false)}\n`
+  );
+  const closeTag = new Comment(` /vocero-block="${blockDefn.name}" `);
   fragment.insertBefore(openTag, node);
   fragment.appendChild(closeTag, node);
   return fragment;
@@ -42,38 +34,46 @@ function commentWrap(blockDefn, html, fragment) {
 
 function renderBlock(blockDefn, node) {
   const attributes = getNodeAttributes(node);
-  const fragment = parseHTMLFragment(blockDefn.fn(attributes));
-  return commentWrap(blockDefn, node.outerHTML, fragment);
+  return parseHTMLFragment(blockDefn.fn(attributes));
 }
 
-export function renderBlocks(html, blocks) {
-  if (!html) return "";
+export function renderBlocksToStore(src, blocks) {
+  if (!src) return "";
 
-  const doc = parseHTMLDoc(html);
+  const renderers = genBMLMakredExtension(blocks);
 
-  for (let blockDefn of blocks) {
-    const nodes = doc.getElementsByTagName(blockDefn.name.toLowerCase());
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i];
-      const dom = renderBlock(blockDefn, node);
-
-      while (dom.childNodes.length) {
-        const child = dom.childNodes[i];
-        node.parentElement.insertBefore(child, node);
+  let rendered = "";
+  while (/\n/.test(src)) {
+    renderers.forEach((renderer, i) => {
+      const token = renderer.tokenizer(src);
+      if (token) {
+        const block = renderer.renderer(token, true);
+        src = src.replace(token.raw, "");
+        rendered += block;
+      } else {
+        const rule = /^\n*[^\n]*\n+/;
+        const line = src.match(rule)[0];
+        src = src.replace(rule, "");
+        rendered += line;
       }
-      node.parentElement.removeChild(node);
-    }
+    });
   }
 
-  return doc.body.innerHTML;
+  return rendered;
 }
 
 export function undoBlockRenders(md) {
   if (!md) return "";
 
   while (md.match(/<!-- vocero-block/g)) {
-    const block = md.match(/(?<=<!-- vocero-block\n)(\n|.)*(?=\n-->)/);
-    md = md.replace(/<!-- vocero-block(\n|.)*\/vocero-block -->/, block[0]);
+    const name = md.match(/(?<=<!-- vocero-block=")([^"]+)"\n/)[1];
+    const block = md.match(
+      new RegExp(`(?<=<!-- vocero-block="${name}"\n)(\n|.)*(?=\n-->)`)
+    )[0];
+    md = md.replace(
+      new RegExp(`<!-- vocero-block="${name}"\n(\n|.)+/vocero-block="${name}" -->`),
+      block
+    );
   }
 
   return md;
@@ -100,9 +100,10 @@ export function genBMLMakredExtension(blocks) {
           };
         }
       },
-      renderer(token) {
+      renderer(token, meta = false) {
         const node = parseHTMLFragment(token.raw).children[0];
-        const fragment = renderBlock(blockDefn, node, this.parseInline);
+        let fragment = renderBlock(blockDefn, node);
+        if (meta) fragment = commentWrap(blockDefn, token.raw, fragment);
         let html = "";
         for (let node of fragment.childNodes) {
           switch (node.nodeType) {
@@ -115,9 +116,7 @@ export function genBMLMakredExtension(blocks) {
           }
         }
 
-        return `\n<div class="vocero-block">\n
-          ${html}\n
-        </div>`;
+        return html;
       },
     };
   });

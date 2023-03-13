@@ -2,11 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { marked } from "marked";
 import { useStore } from "colmado";
 
-import {
-  BMLMarkdExtension,
-  genBMLMakredExtension,
-  // renderBlocks,
-} from "../../utils/blocks";
+import { genBMLMakredExtension } from "../../utils/blocks";
 
 marked.setOptions({
   breaks: false,
@@ -43,7 +39,6 @@ export default function Preview({ text }) {
     const contentEl = renderer.content.querySelector(".previewContent");
 
     if (contentEl) {
-      // contentEl.innerHTML = renderBlocks(marked.parse(text), blocks);
       contentEl.innerHTML = marked.parse(text);
       const rendererHTML = renderer.innerHTML;
       shadow.innerHTML = "";
@@ -68,15 +63,11 @@ export default function Preview({ text }) {
     renderer.innerHTML = rendererHTML;
   }, [css]);
 
-  debugger;
   return (
     <div ref={elRef} className="preview">
       <div
         className="previewContent"
-        dangerouslySetInnerHTML={{
-          // __html: renderBlocks(marked.parse(text), blocks),
-          __html: marked.parse(text),
-        }}
+        dangerouslySetInnerHTML={{ __html: marked.parse(text) }}
       ></div>
     </div>
   );

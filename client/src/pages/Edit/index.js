@@ -6,7 +6,7 @@ import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
 import { getBlob } from "../../services/api";
-import { renderBlocks, undoBlockRenders } from "../../utils/blocks";
+import { renderBlocksToStore, undoBlockRenders } from "../../utils/blocks";
 
 import { useStore } from "colmado";
 
@@ -74,15 +74,13 @@ function EditorPage() {
   }, [changes]);
 
   function storeEdit() {
-    debugger;
     const { sha, path } = Object.fromEntries(
       new URLSearchParams(location.search).entries()
     );
-    console.log(renderBlocks(editorContent, blocks).replace(/\n/g, "\n"));
     dispatch({
       action: "ADD_CHANGE",
       payload: {
-        content: renderBlocks(editorContent, blocks).replace(/\n/g, "\n"),
+        content: btoa(renderBlocksToStore(editorContent, blocks).replace(/\n/g, "\n")),
         frontmatter: blob.frontmatter,
         sha,
         path,
@@ -94,6 +92,9 @@ function EditorPage() {
     let blob = changes.find((d) => d.sha === query.sha);
     if (!blob) {
       blob = await getBlob(query);
+    } else {
+      blob = JSON.parse(JSON.stringify(blob));
+      blob.content = atob(blob.content);
     }
 
     blob.content = undoBlockRenders(blob.content);
