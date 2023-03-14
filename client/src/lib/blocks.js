@@ -38,7 +38,6 @@ export function renderBlocks(src, marked) {
   let rendered = "";
   const tokens = marked.Lexer.lex(src, marked.defaults);
 
-  debugger;
   tokens.forEach((token) => {
     if (token.renderer) {
       const block = token.renderer.call({ parser: marked.Parser }, token, true);
@@ -54,7 +53,6 @@ export function renderBlocks(src, marked) {
 export function hydrateBlocks(md) {
   if (!md) return "";
 
-  debugger;
   while (md.match(/<!-- vocero-block/g)) {
     const uuid = md.match(/(?<=<!-- vocero-block=")([^"]+)" /)[1];
     const block = atob(

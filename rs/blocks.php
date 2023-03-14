@@ -16,10 +16,23 @@ try {
     echo (new Blocks($_GET['sha']))->get();
 } catch (Exception $e) {
     echo '[{
+        family: "media",
         name: "CustomVideo",
+        level: "block",
         args: ["url", "width", "height"],
-        selfClosed: true,
-        fn: ({ url, width, height }) => `<video src="${url}" width="${width}" height="${height}" />`
+        fn: ({ src, width, height }) => `<video src="${src || ""}" style="width: ${width || "500px"}; height: ${height || "auto"};" />`
+    }, {
+        family: "layout",
+        name: "Columns",
+        level: "block",
+        args: [],
+        fn: ({ content }) => `<div class="columns" style="display: flex">${content}</div>`
+    }, {
+        family: "layout",
+        name: "Column",
+        level: "block",
+        args: ["span", "gutter"],
+        fn: ({ span, gutter, content }) => `<div class="column" style="flex: ${span || 1}; padding: ${gutter || "0px"}">${content}</div>`
     }]';
     /* header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found'); */
     /* header('Content-Type: application/json'); */

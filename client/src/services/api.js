@@ -82,7 +82,7 @@ export function getWorkflow() {
   return request("workflow", { method: "GET" });
 }
 
-export function observeWorkflow(interval = 5e3, timeout = 3e2) {
+export function observeWorkflow(interval = 10e3, timeout = 3e2) {
   const start = Date.now();
   let time_delta = 0;
 

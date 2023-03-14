@@ -29,16 +29,40 @@ class Workflow
         if ($this->data) return $this->data;
 
         $commit = (new Commit())->get();
-        $commit_date = strtotime($commit['committer']['date']);
 
         if ($this->cache->is_cached()) {
-            $this->data = $this->cache->get();
-            $cache_date = strtotime($this->data['created_at']);
-            if ($commit_date < $cache_date) {
-                return $this->data;
+            $data = $this->cache->get();
+            if ($data['head_sha'] == $commit['sha']) {
+                if (in_array($data['status'], array('in_progress', 'queued', 'waiting', 'pending', 'requested'))) {
+                    return $this->get_one($data['id']);
+                } else {
+                    $this->data = $data;
+                    return $data;
+                }
+            } else {
+                return $this->get_all($commit);
             }
-            $this->data = null;
         }
+    }
+
+    private function get_one($run_id)
+    {
+        $client = new Client(array('base_uri' => $this->base_url));
+        $response = $client->request('GET', $this->endpoint . '/' . $run_id, array(
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'token ' . $this->env['GH_ACCESS_TOKEN']
+            )
+        ));
+
+        $data = json_decode($response->getBody()->getContents(), true);
+        $this->data = $data;
+        return $this->cache->post($data);
+    }
+
+    private function get_all($commit)
+    {
+        $commit_date = strtotime($commit['committer']['date']);
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint, array(
@@ -52,11 +76,11 @@ class Workflow
         ));
 
         $data = json_decode($response->getBody()->getContents(), true);
+        $workflow_run = null;
+
         if ($data['total_count'] > 0) {
-            $workflow = null;
             foreach ($data['workflow_runs'] as $run) {
-                if ($workflow == null) $workflow = $run;
-                else if (strtotime($workflow['created_at']) < strtotime($run['created_at'])) $workflow = $run;
+                if ($run['head_sha'] == $commit['sha']) $workflow_run = $run;
             }
         } else {
             header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
@@ -65,8 +89,15 @@ class Workflow
             exit;
         }
 
-        $this->data = $workflow;
-        return $this->cache->post($workflow);
+        if ($workflow_run == null) {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            header('Content-Type: application/json');
+            echo '{"status": "error", "message": "404 Not Found"}';
+            exit;
+        }
+
+        $this->data = $workflow_run;
+        return $this->cache->post($workflow_run);
     }
 
     public function put($branches = null)
