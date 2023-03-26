@@ -82,18 +82,14 @@ class Workflow
             foreach ($data['workflow_runs'] as $run) {
                 if ($run['head_sha'] == $commit['sha']) $workflow_run = $run;
             }
-        } else {
-            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
-            header('Content-Type: application/json');
-            echo '{"status": "error", "message": "404 Not Found"}';
-            exit;
-        }
+        } else throw new Exception("404 Not Found", 404);
 
         if ($workflow_run == null) {
-            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
-            header('Content-Type: application/json');
-            echo '{"status": "error", "message": "404 Not Found"}';
-            exit;
+            throw new Exception("404 Not Found", 404);
+            /* header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found'); */
+            /* header('Content-Type: application/json'); */
+            /* echo '{"status": "error", "message": "404 Not Found"}'; */
+            /* exit; */
         }
 
         $this->data = $workflow_run;

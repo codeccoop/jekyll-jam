@@ -1,6 +1,7 @@
 <?php
 require_once realpath(__DIR__ . DS . 'dotfile.php');
 require_once realpath(__DIR__ . DS . 'cache.php');
+require_once realpath(__DIR__ . DS . 'link.php');
 require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
@@ -35,32 +36,23 @@ class Blob
 
     private function relative_links($content)
     {
-        return preg_replace('/{{ *site\.baseurl *}}/', '', $content);
+        return preg_replace('/{{\s*site\.baseurl\s*}}/', '', $content);
     }
 
     private function absolute_links($content)
     {
-        preg_match_all('/\[[^\]]+[^\)]+\)/', $content, $matches_md);
-        if (sizeof($matches_md) > 0) {
-            foreach ($matches_md[0] as $match) {
-                preg_match('/\([^\)]+\)/', $match, $url);
-                if (!preg_match('/^\( *(http|mailto)/', $url[0])) {
-                    $content = str_replace($url[0], '({{ site.baseurl }}/' . preg_replace('/^ *\//', '', substr($url[0], 1)), $content);
-                }
+        $replace = fn ($link) => str_replace($link->source, $link->as_absolute(), $content);
+
+        foreach (Link::get_links($content) as $link) {
+            foreach ($link->get_children() as $sublink) {
+                $content = $replace($sublink);
             }
+
+            $content = $replace($link);
         }
 
-        preg_match_all('/(src|href|srcset)=(\"|\')[^\'|\"]+(\'|\")/', $content, $matches_html);
-        if (sizeof($matches_html) > 0) {
-            $i = 0;
-            foreach ($matches_html[0] as $match) {
-                $i++;
-                if ($i - 1 % 4 != 0) continue;
-                preg_match('/(?<=\'|\").+(?=\'|\")/', $match, $url);
-                if (!preg_match('/^ *(http|mailto)/', $url[0])) {
-                    $content = str_replace($url[0], '{{ site.baseurl }}/' . preg_replace('/^ *\//', '', $url[0]), $content);
-                }
-            }
+        foreach (HLink::get_hlinks($content) as $hlink) {
+            $content = $replace($hlink);
         }
 
         return $content;
