@@ -13,6 +13,7 @@ class Artifact
     private $env;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs/$WORKFLOW_ID/artifacts';
+    private $download_endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts/$ARTIFACT_ID/zip';
 
     function __construct()
     {
@@ -21,10 +22,15 @@ class Artifact
 
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
+
+        $this->download_endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->download_endpoint);
+        $this->download_endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->download_endpoint);
     }
 
     public function get()
     {
+        // TODO: Move this to lib/run.php
+
         if ($this->data) return $this->data;
         if ($this->cache->is_cached()) $cached = $this->cache->get();
         else $cached = null;
@@ -36,7 +42,7 @@ class Artifact
             return $cached;
         }
 
-        $endpoint = preg_replace('/$WORKFLOW_ID/', $workflow['id'], $this->endpoint);
+        $endpoint = str_replace('$WORKFLOW_ID', $workflow['id'], $this->endpoint);
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $endpoint, array(
             'headers' => array(
@@ -50,10 +56,7 @@ class Artifact
         if ($data['total_count'] > 0) {
             $this->data = $data['artifacts'][0];
         } else {
-            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
-            header('Content-Type: application/json');
-            echo '{"status": "error", "message": "404 Not Found"}';
-            exit();
+            throw new Exception("404 Not Found", 404);
         }
 
         return $this->cache->post($this->data);
@@ -77,10 +80,7 @@ class Artifact
             $expired = time() > strtotime($data['expires_at']);
             $is_cached = $data['is_cached'];
             if ($expired || $is_cached) {
-                header('Content-disposition: attachment;filename=latest.zip');
-                header("Content-Length: " . filesize($latest));
-                readfile($latest);
-                exit();
+                return $latest;
             } else {
                 rename($latest, $backup);
                 $recovery = true;
@@ -92,7 +92,8 @@ class Artifact
         try {
             $stream = fopen($latest, 'w');
             $client = new Client(array('base_uri' => $this->base_url));
-            $response = $client->request('GET', $this->endpoint . '/' . $data['id'] . '/zip', array(
+            // $response = $client->request('GET', $this->endpoint . '/' . $data['id'] . '/zip', array(
+            $client->request('GET', str_replace('$ARTIFACT_ID', $data['id'], $this->download_endpoint), array(
                 'sink' => $stream,
                 'headers' => array(
                     'Accept' => 'application/vnd.github+json',
@@ -101,22 +102,13 @@ class Artifact
             ));
         } catch (ClientException $e) {
             if ($recovery) rename($backup, $latest);
-            header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error');
-            header('Content-Type: application/json');
-            echo '{"status": "error", "message": "' . $e->getMessage() . '"}';
-            exit();
+            throw new Exception("500 Internal Server Error", 500);
         }
 
         if (file_exists($latest)) {
-            header('Content-disposition: attachment;filename=latest.zip');
-            header("Content-Length: " . filesize($latest));
-            readfile($latest);
-            exit();
+            return $latest;
         } else {
-            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
-            header('Content-Type: application/json');
-            echo '{"status": "error", "message": "File not found"}';
-            exit();
+            throw new Exception('404 Not Found', 404);
         }
     }
 }

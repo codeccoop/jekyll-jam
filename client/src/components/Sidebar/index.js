@@ -27,6 +27,7 @@ function Sidebar({ toggleVisibility }) {
   function downloadBuild() {
     getArtifact()
       .then((blob) => {
+        if (blob.type === "application/json") throw new Error(blob);
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;

@@ -115,6 +115,6 @@ export function observeWorkflow(interval = 10e3, timeout = 3e2) {
 
 export function getArtifact() {
   return request("artifact", {
-    headers: { "Accept": "application/zip" },
+    headers: { "Accept": "application/zip, application/json" },
   }).then((res) => res.blob());
 }
