@@ -1,17 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "./style.scss";
 
-// import { useProject } from '../../store/project';
-// import { useBranch } from '../../store/branch';
-// import { useStore } from "../../store";
 import { useStore } from "colmado";
 import { getConfig } from "../../services/api";
 
 import YamlForm from "../../components/YamlForm";
 
 function Settings() {
-  // const project = useProject(null);
-  // const branch = useBranch(null)[0];
   const [{ project, branch }] = useStore();
   const [config, setConfig] = useState(null);
   const setReady = useState(false)[1];

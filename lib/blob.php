@@ -113,8 +113,8 @@ class Blob
 
         if ($this->is_asset) {
             $response['encoding'] = $data['encoding'];
-        } else if ($this->is_yaml) {
-            $response['content'] = Yaml::parse($this->content());
+        } else {
+            $response['encoding'] = 'base64';
         }
 
         return json_encode($response);
@@ -127,14 +127,24 @@ class Blob
 
         if ($encoding == 'base64') {
             if ($this->is_asset) {
-                return $blob['content'];
+                $content = $blob['content'];
+            } else {
+                $decoded = base64_decode($blob['content']);
+
+                if ($this->is_yaml) {
+                    $content = json_encode(Yaml::parse($decoded));
+                } else {
+                    // $content = $this->relative_links(preg_replace('/^\n*(---)((.|\n|\r)*)(---)(\n|$)*/s', '', $decoded));
+                    $content = $this->relative_links(preg_replace('/^[\n\r]*---[.\r\n]*---(\n|$)*/s', '', $decoded));
+                }
+
+                $content = base64_encode($content);
             }
-            $decoded = base64_decode($blob['content']);
         } else {
-            $decoded = 'Unkown encoding';
+            throw new Exception('Unkown encoding ' . $encoding, 500);
         }
 
-        return $this->relative_links(preg_replace('/^\n*(---)(.*)(---)(\n|$)*/s', '', $decoded));
+        return $content;
     }
 
     private function frontmatter()
@@ -151,7 +161,8 @@ class Blob
             return;
         }
 
-        preg_match_all('/^\n*(---)(.*)(---)(\n|$)*/s', $decoded, $matches);
+        // preg_match_all('/^\n*(---)(.*)(---)(\n|$)*/s', $decoded, $matches);
+        preg_match('/^[\n\r]*(?:---)([.\n\r]*)(?:---)/', $decoded, $matches);
         return Yaml::parse(str_replace('---', '', $matches[0][0]));
     }
 }

@@ -1,18 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import './style.scss';
+import React, { useEffect, useState } from "react";
+import "./style.scss";
 
-export default function YamlForm({ content }) {
+export default function YamlForm({ onUpdate, content }) {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    if (content !== null) setData(content);
+    if (Object.prototype.isPrototypeOf(content)) {
+      setData(content);
+    } else {
+      try {
+        setData(JSON.parse(content));
+      } catch {}
+    }
   }, [content]);
 
-  function onUpdate(key, value) {
+  function update(key, value) {
     const newData = JSON.parse(JSON.stringify(data));
     key
-      .split('/')
-      .map(v => {
+      .split("/")
+      .map((v) => {
         if (isNaN(Number(v))) return String(v);
         return Number(v);
       })
@@ -23,7 +29,7 @@ export default function YamlForm({ content }) {
         return acum[key];
       }, newData);
 
-    setData(newData);
+    onUpdate(newData);
   }
 
   function typedValue(value) {
@@ -38,46 +44,46 @@ export default function YamlForm({ content }) {
 
   function renderValue(value, key) {
     switch (typeof value) {
-      case 'object':
+      case "object":
         if (value === null)
-          return <input type='text' onChange={ev => onUpdate(key, ev.target.value)} />;
-        else return <input type='date' value={value} />;
-      case 'number':
+          return <input type="text" onChange={(ev) => update(key, ev.target.value)} />;
+        else return <input type="date" value={value} />;
+      case "number":
         return (
           <input
-            type='number'
+            type="number"
             value={value}
-            onChange={ev => onUpdate(key, ev.target.value)}
+            onChange={(ev) => update(key, ev.target.value)}
           />
         );
-      case 'boolean':
+      case "boolean":
         return (
           <input
-            type='checkbox'
+            type="checkbox"
             checked={value}
-            onChange={ev => onUpdate(key, ev.target.checked)}
+            onChange={(ev) => update(key, ev.target.checked)}
           />
         );
       default:
         return (
           <input
-            type='text'
+            type="text"
             value={value}
-            onChange={ev => onUpdate(key, ev.target.value)}
+            onChange={(ev) => update(key, ev.target.value)}
           />
         );
     }
   }
 
   function renderMap(data, key) {
-    key = key !== void 0 ? key : '';
+    key = key !== void 0 ? key : "";
     return (
-      <ul>
+      <ul className="map">
         {Object.entries(data).map((e, i) => {
           const _key = key ? `${key}/${e[0]}` : String(e[0]);
           return (
-            <li key={_key}>
-              <label>{e[0]}</label>
+            <li className="map-item" key={_key} onClick={onMapItemClick}>
+              <label>{e[0]}:</label>
               {render(e[1], _key)}
             </li>
           );
@@ -87,14 +93,18 @@ export default function YamlForm({ content }) {
   }
 
   function renderList(data, key) {
-    key = key !== void 0 ? key : '';
+    key = key !== void 0 ? key : "";
     return (
-      <ul>
+      <ol className="list">
         {data.map((d, i) => {
           const _key = key ? `${key}/${i}` : String(i);
-          return <li key={_key}>{render(d, _key)}</li>;
+          return (
+            <li className="list-item" key={_key}>
+              {render(d, _key)}
+            </li>
+          );
         })}
-      </ul>
+      </ol>
     );
   }
 
@@ -106,5 +116,14 @@ export default function YamlForm({ content }) {
       ? renderMap(data, key)
       : renderValue(data, key);
   }
-  return <form className='yaml-form'>{render(data)}</form>;
+
+  function onMapItemClick(ev) {
+    const item = ev.currentTarget;
+    const input = Array.from(item.children).find((node) =>
+      HTMLInputElement.prototype.isPrototypeOf(node)
+    );
+    if (input) input.focus();
+  }
+
+  return <form className="yaml-form">{render(data)}</form>;
 }

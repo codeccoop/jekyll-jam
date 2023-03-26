@@ -44,7 +44,7 @@ function EditorPage() {
 
   const [editorContent, setEditorContent] = useState(defaultContent);
 
-  const [{ query, changes, blocks }, dispatch] = useStore();
+  const [{ query, changes }, dispatch] = useStore();
 
   const [hasChanged, setHasChanged] = useState(false);
 
@@ -57,7 +57,12 @@ function EditorPage() {
   }, [query.sha]);
 
   useEffect(() => {
-    setHasChanged(editorContent !== blob.content && editorContent !== defaultContent);
+    const hasChanged =
+      getEditMode(query.path) !== "asset" &&
+      editorContent !== defaultContent &&
+      btoa(editorContent) !== blob.content;
+
+    setHasChanged(hasChanged);
   }, [editorContent]);
 
   useEffect(() => {
@@ -80,14 +85,14 @@ function EditorPage() {
     const { sha, path } = Object.fromEntries(
       new URLSearchParams(location.search).entries()
     );
+
     dispatch({
       action: "ADD_CHANGE",
       payload: {
-        // content: btoa(renderBlocks(editorContent, blocks).replace(/\n/g, "\n")),
-        content: btoa(renderBlocks(editorContent, marked).replace(/\n/g, "\n")),
-        frontmatter: blob.frontmatter,
         sha,
         path,
+        content: btoa(editorContent),
+        frontmatter: blob.frontmatter,
       },
     });
   }
@@ -98,14 +103,15 @@ function EditorPage() {
       blob = await getBlob(query);
     } else {
       blob = JSON.parse(JSON.stringify(blob));
-      blob.content = atob(blob.content);
     }
 
-    blob.content = hydrateBlocks(blob.content);
-    setBlob(blob);
+    let editorContent = atob(blob.content);
     if (getEditMode(query.path) === "editor") {
-      setEditorContent(blob.content || "");
+      editorContent = hydrateBlocks(editorContent);
     }
+
+    setBlob(blob);
+    setEditorContent(editorContent);
   }
 
   function toTheClippBoard() {
@@ -129,7 +135,7 @@ function EditorPage() {
               defaultContent={defaultContent}
             />
           ) : getEditMode(query.path) === "data" ? (
-            <YamlForm content={editorContent} />
+            <YamlForm onUpdate={setEditorContent} content={editorContent} />
           ) : (
             <AssetViewer
               content={blob.content}

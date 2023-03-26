@@ -86,10 +86,6 @@ class Workflow
 
         if ($workflow_run == null) {
             throw new Exception("404 Not Found", 404);
-            /* header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found'); */
-            /* header('Content-Type: application/json'); */
-            /* echo '{"status": "error", "message": "404 Not Found"}'; */
-            /* exit; */
         }
 
         $this->data = $workflow_run;

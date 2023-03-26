@@ -1,3 +1,70 @@
 .yaml-form {
+  flex: 1;
   display: block;
+
+  .list,
+  .map {
+    list-style: none;
+
+    .map,
+    .list {
+      margin-left: 0.5em;
+    }
+
+    .map {
+      border-left: 1px solid;
+    }
+
+    .list {
+      border-left: 1px dotted;
+    }
+  }
+
+  .map {
+    > .map-item > .list,
+    > .map-item > .map {
+      padding-top: 0.5em;
+    }
+  }
+
+  .list .map {
+    padding-left: 20px;
+  }
+
+  .list-item,
+  .map-item {
+    margin: 0.2em 0;
+
+    &:first-child {
+      margin-top: 0px;
+    }
+
+    &:last-child {
+      margin-bottom: 0px;
+    }
+  }
+
+  .map-item,
+  .list-item {
+    > label {
+      font-weight: bold;
+      width: 400px;
+    }
+
+    > input {
+      margin-left: 0.5em;
+      color: #333;
+      outline: none;
+      padding: 0.25em 0 0.25em 0.75em;
+      border-radius: 2px;
+      border: none;
+      border-bottom: 1px solid;
+      border-color: white;
+      transition: border-color 200ms ease;
+
+      &:focus {
+        border-color: #ccc;
+      }
+    }
+  }
 }
