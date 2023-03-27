@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-// import { marked } from "marked";
 import { useStore } from "colmado";
 
 import Editor from "../../components/Editor";
@@ -8,7 +7,7 @@ import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
 import { getBlob } from "../../services/api";
-import { renderBlocks, hydrateBlocks } from "../../lib/blocks";
+import { hydrateBlocks } from "../../lib/blocks";
 import useMarked from "../../hooks/useMarked";
 
 import "./style.scss";

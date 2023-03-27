@@ -11,15 +11,14 @@ if ('GET' != $_SERVER['REQUEST_METHOD']) {
 
 define('DS', DIRECTORY_SEPARATOR);
 
-require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'workflow.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'workflow_run.php');
 
 function fetch($try = 0)
 {
-
     try {
-        return (new Workflow())->json();
+        return (new WorkflowRun())->json();
     } catch (Exception $e) {
-        if ($e->getCode() === 404 && $try < 5) {
+        if ($e->getCode() === 404 && $try < 10) {
             sleep(1);
             return fetch($try + 1);
         } else {

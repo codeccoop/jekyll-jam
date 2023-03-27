@@ -78,11 +78,11 @@ export function postPull() {
   return request("pull", { method: "POST" });
 }
 
-export function getWorkflow() {
-  return request("workflow", { method: "GET" });
+export function getWorkflowRun() {
+  return request("workflow_run", { method: "GET" });
 }
 
-export function observeWorkflow(interval = 10e3, timeout = 3e2) {
+export function observeWorkflowRun(interval = 10e3, timeout = 3e2) {
   const start = Date.now();
   let time_delta = 0;
 
@@ -94,7 +94,7 @@ export function observeWorkflow(interval = 10e3, timeout = 3e2) {
     function observe() {
       time_delta = (start - Date.now()) / 1e3;
       if (time_delta <= timeout) {
-        getWorkflow()
+        getWorkflowRun()
           .then((data) => {
             if (data.status === "completed") {
               if (data.conclusion === "success") res(data);

@@ -5,7 +5,7 @@ import { useStore } from "colmado";
 
 import "./style.scss";
 import Directory from "../Directory";
-import { commit, observeWorkflow, getArtifact } from "../../services/api";
+import { commit, observeWorkflowRun, getArtifact } from "../../services/api";
 
 function Sidebar({ toggleVisibility }) {
   const navigate = useNavigate();
@@ -55,7 +55,7 @@ function Sidebar({ toggleVisibility }) {
         payload: changeMap,
       });
       setIsBuilding(true);
-      observeWorkflow().finally(() => {
+      observeWorkflowRun().finally(() => {
         setIsBuilding(false);
       });
     });
