@@ -38,6 +38,13 @@ export function getProject() {
   return request("project", {});
 }
 
+export function postProject(project) {
+  return request("project", {
+    method: "POST",
+    data: project,
+  });
+}
+
 export function getConfig(sha) {
   return request("config", { data: { sha } });
 }
@@ -117,4 +124,29 @@ export function getArtifact() {
   return request("artifact", {
     headers: { "Accept": "application/zip, application/json" },
   }).then((res) => res.blob());
+}
+
+export function getRepo(slug) {
+  return fetch(`https://api.github.com/repos/${slug}`, {
+    headers: {
+      "Accept": "application/vnd.github+json",
+    },
+  }).then((res) => res.json());
+}
+
+export function getUser(slug) {
+  return fetch(`https://api.github.com/users/${slug}`, {
+    headers: {
+      "Accept": "application/vnd.github+json",
+    },
+  }).then((res) => res.json());
+}
+
+export function getAuthenticatedUser(token) {
+  return fetch("https://api.github.com/users", {
+    headers: {
+      "Accept": "application/vnd.github+json",
+      "Authorization": `Bearer ${token}`,
+    },
+  }).then((res) => res.json());
 }

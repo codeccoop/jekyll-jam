@@ -134,8 +134,7 @@ class Blob
                 if ($this->is_yaml) {
                     $content = json_encode(Yaml::parse($decoded));
                 } else {
-                    // $content = $this->relative_links(preg_replace('/^\n*(---)((.|\n|\r)*)(---)(\n|$)*/s', '', $decoded));
-                    $content = $this->relative_links(preg_replace('/^[\n\r]*---[.\r\n]*---(\n|$)*/s', '', $decoded));
+                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---((.|\n|\r)*)---(\n|\r|$)*/s', '', $decoded));
                 }
 
                 $content = base64_encode($content);
@@ -161,8 +160,7 @@ class Blob
             return;
         }
 
-        // preg_match_all('/^\n*(---)(.*)(---)(\n|$)*/s', $decoded, $matches);
-        preg_match('/^[\n\r]*(?:---)([.\n\r]*)(?:---)/', $decoded, $matches);
-        return Yaml::parse(str_replace('---', '', $matches[0][0]));
+        preg_match('/^(?:\n|\r)*(?:---)((.|\n|\r)*)(?:---)/', $decoded, $matches);
+        return Yaml::parse($matches[1]);
     }
 }

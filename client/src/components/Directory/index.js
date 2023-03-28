@@ -96,7 +96,7 @@ function Directory() {
       setTree({
         sha: data.sha,
         children: data.children.filter((d) => ["data", "assets"].indexOf(d.name) === -1),
-        data: data.children.find((d) => d.name === "data").children || [],
+        data: data.children.find((d) => d.name === "data")?.children || [],
         assets: data.children.find((d) => d.name === "assets")?.children || [],
       });
     });

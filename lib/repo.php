@@ -1,5 +1,6 @@
 <?php
 require_once realpath(__DIR__ . DS . 'dotfile.php');
+// require_once realpath(__DIR__ . DS . 'cache.php');
 require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
@@ -21,9 +22,7 @@ class Repo
 
     public function get()
     {
-        if ($this->data) {
-            return $this->data;
-        }
+        if ($this->data) return $this->data;
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint, array(
@@ -37,9 +36,45 @@ class Repo
         return $this->data;
     }
 
+    public function post($name, $template_slug = false)
+    {
+        $payload = array(
+            'name' => $name,
+            'description' => 'This is a vocero site',
+            'private' => false,
+        );
+
+        $endpoint = $this->endpoint;
+        if ($template_slug) {
+            $payload['owner'] = $this->env['GH_USER'];
+            $payload['include_all_branches'] = false;
+            $endpoint = $this->template_url($template_slug);
+        }
+
+        $client = new Client(array('base_uri' => $this->base_url));
+        $response = $client->request('POST', $endpoint, array(
+            'headers' => array(
+                'Accept' => 'application/vnd.github+json',
+                'Authorization' => 'Bearer ' . $this->env['GH_ACCESS_TOKEN']
+            ),
+            'json' => $payload
+        ));
+
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
+
+        // return $this->cache->post($data);
+    }
+
     public function defaultBranch()
     {
         $data = $this->get();
         return $data['default_branch'];
+    }
+
+    private function template_url($template_slug)
+    {
+        list($owner, $repo) = explode('/', $template_slug);
+        return 'repos/' . $owner . '/' . $repo . '/generate';
     }
 }

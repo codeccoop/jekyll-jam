@@ -9,7 +9,11 @@ const Component = ({ Warehouse, children }) => {
   const [state, setState] = useState({});
 
   useEffect(() => {
-    getBranch().then(setState);
+    getBranch()
+      .then(setState)
+      .catch((err) => {
+        console.warn("Can't fetch branch");
+      });
   }, []);
 
   return <Warehouse value={[state, setState]}>{children}</Warehouse>;

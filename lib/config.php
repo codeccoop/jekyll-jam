@@ -40,10 +40,12 @@ class Config
         return $this->cache->post($data);
     }
 
-    public function put($key, $value)
+    public function put($entries)
     {
         $data = $this->get();
-        $data[$key] = $value;
+        foreach ($entries as $key => $val) {
+            $data[$key] = $val;
+        }
         $content = Yaml::dump($data);
         $data = $this->blob->post($content);
         return $this->cache->post($data);

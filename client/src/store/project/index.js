@@ -4,24 +4,38 @@ import { useNavigate } from "react-router-dom";
 
 /* SOURCE */
 import { getProject } from "../../services/api.js";
+import reducer from "./reducer";
 
 const Component = ({ Warehouse, children }) => {
-  const [state, setState] = useState({});
+  const [state, setState] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    getProject().then(setState);
+    getProject()
+      .then(setState)
+      .catch((err) => {
+        console.error("Can't fetch project");
+      });
   }, []);
 
   useEffect(() => {
-    if (state.GH_INIT !== void 0 && !state.GH_INIT) {
-      navigate("/settings");
+    if (!state) return;
+    if (!state.GH_INIT) {
+      navigate("/init");
     }
   }, [state]);
 
+  function updateProject(project) {
+    Promise.resolve(project).then((project) => {
+      setState({ ...state, ...project });
+    });
+  }
+
   return (
-    <Warehouse value={[state, () => {}]}>{state !== null ? children : void 0}</Warehouse>
+    <Warehouse value={[state, updateProject]}>
+      {state !== null ? children : void 0}
+    </Warehouse>
   );
 };
 
-export default { name: "project", Component };
+export default { name: "project", Component, reducer };

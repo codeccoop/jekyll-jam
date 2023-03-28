@@ -1,0 +1,102 @@
+.vocero-project {
+}
+
+.github-icon {
+  display: block;
+  width: 100px;
+  height: 100px;
+  margin: auto;
+  background-image: url("../../assets/images/github-icon.png");
+  background-size: contain;
+  background-position: center;
+}
+
+.vocero-project__mode-selector {
+  margin: 2em 0;
+
+  ul {
+    padding: 0;
+    list-style: none;
+    display: flex;
+    width: fit-content;
+    margin: auto;
+
+    li {
+      width: 120px;
+      border-bottom: 1px solid;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+      transition: color 200ms ease, border-color 200ms ease;
+      border-color: white;
+
+      &.active {
+        color: steelblue;
+        border-color: steelblue;
+      }
+    }
+  }
+}
+
+.vocero-project__form {
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  margin: auto;
+}
+
+.vocero-project__field {
+  margin-bottom: 1em;
+
+  > label {
+    display: block;
+    text-align: center;
+    font-weight: bold;
+  }
+
+  > input,
+  > select {
+    text-align: center;
+    width: 100%;
+    border: none;
+    outline: none;
+    border-bottom: 1px solid white;
+    padding: 0.6em 0 0.65em;
+    background-color: transparent;
+    cursor: pointer;
+    color: #333;
+    transition: border-color 200ms ease;
+
+    &:focus,
+    &:hover {
+      border-bottom: 1px solid;
+    }
+
+    &:hover {
+      color: #666;
+    }
+  }
+
+  &:not([data-error="true"]) > select:focus,
+  &:not([data-error="true"]) > input:focus {
+    color: steelblue;
+  }
+
+  &[data-error="true"] > select,
+  &[data-error="true"] > input {
+    color: red;
+    border-bottom: 1px solid;
+  }
+
+  &[data-error="undefined"] > select,
+  &[data-error="undefined"] > input {
+    cursor: progress;
+    color: #ccc !important;
+    border-bottom: 1px dotted;
+  }
+}
+
+.vocero-project__template-mode {
+  text-align: center;
+  margin-top: 0.5em;
+}

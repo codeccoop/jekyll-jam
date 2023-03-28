@@ -2,9 +2,10 @@ import React, { useEffect, useState } from "react";
 import "./style.scss";
 
 export default function YamlForm({ onUpdate, content }) {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState({});
 
   useEffect(() => {
+    if (!content) return;
     if (Object.prototype.isPrototypeOf(content)) {
       setData(content);
     } else {

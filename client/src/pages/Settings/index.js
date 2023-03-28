@@ -21,22 +21,51 @@ function Settings() {
     setReady(true);
   }, [project?.GH_REPO]);
 
+  function updateProject(ev) {}
+
+  function updateConfig(config) {}
+
   return (
     <>
       <h1>Settings</h1>
       <h2>GitHub</h2>
       <label>User</label>
-      <input type="text" value={project?.GH_USER} />
+      <input
+        type="text"
+        value={project.GH_USER || ""}
+        name="GH_USER"
+        onChange={updateProject}
+      />
       <label>Email</label>
-      <input type="text" value={project?.GH_EMAIL} />
+      <input
+        type="text"
+        value={project.GH_EMAIL || ""}
+        name="GH_EMAIL"
+        onChange={updateProject}
+      />
       <label>Repo</label>
-      <input type="text" value={project?.GH_REPO} />
+      <input
+        type="text"
+        value={project.GH_REPO || ""}
+        name="GH_REPO"
+        onChange={updateProject}
+      />
       <label>Branch</label>
-      <input type="text" value={project?.GH_BRANCH} />
+      <input
+        type="text"
+        value={project.GH_BRANCH || ""}
+        name="GH_BRANCH"
+        onChange={updateProject}
+      />
       <label>Domain</label>
-      <input type="text" value={project?.GH_DOMAIN} />
-      <h2>Jekyll</h2>
-      <YamlForm content={config} />
+      <input
+        type="text"
+        value={project.GH_DOMAIN || ""}
+        name="GH_DOMAIN"
+        onChange={updateProject}
+      />
+      <h2>Jekyll Config</h2>
+      <YamlForm content={config} onUpdate={updateConfig} />
     </>
   );
 }

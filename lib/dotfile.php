@@ -20,6 +20,11 @@ class Dotfile
         } else {
             $this->path = realpath(__DIR__ . DS . '..' . DS . '.env');
         }
+
+        if (!file_exists($this->path)) {
+            $tmp = fopen($this->path, "w") or die("Unable to open file!");
+            fclose($tmp);
+        }
     }
 
     private function format($value, $mode = 'r')
@@ -39,9 +44,9 @@ class Dotfile
 
     private function read()
     {
-        $envfile = fopen($this->path, "r");
-        $content = fread($envfile, filesize($this->path));
-        fclose($envfile);
+        $dotfile = fopen($this->path, "r");
+        $content = fread($dotfile, filesize($this->path));
+        fclose($dotfile);
         $env = array();
 
         foreach (explode(PHP_EOL, $content) as $l) {
@@ -62,9 +67,9 @@ class Dotfile
             $content .= $name . '=' . $this->format($env[$name], 'w') . PHP_EOL;
         }
 
-        $envfile = fopen($this->path, 'w');
-        fwrite($envfile, $content);
-        fclose($envfile);
+        $dotfile = fopen($this->path, 'w');
+        fwrite($dotfile, $content);
+        fclose($dotfile);
     }
 
     public function get()
@@ -72,20 +77,24 @@ class Dotfile
         return $this->read();
     }
 
-    public function post($name, $value)
+    public function post($entries)
     {
         $env = $this->read();
-        $env[$name] = $value;
+        foreach ($entries as $key => $val) {
+            $env[$key] = $val;
+        }
         $this->write($env);
 
         return $this->get();
     }
 
-    public function put($name, $value)
+    public function put($entries)
     {
         $env = $this->read();
-        if (in_array($name, array_keys($env))) {
-            $env[$name] = $value;
+        foreach ($entries as $key => $value) {
+            if (in_array($key, array_keys($env))) {
+                $env[$key] = $value;
+            }
         }
         $this->write($env);
 
