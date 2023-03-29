@@ -160,6 +160,7 @@ class Tree
             $named_children['assets'] = $tree['children']['assets'];
         }
         $tree['children'] = $named_children;
+        $tree['is_file'] = false;
 
         return $tree;
     }
@@ -190,5 +191,34 @@ class Tree
 
         $this->_config =  json_decode((new Config($this->get()))->json(), true);
         return $this->_config;
+    }
+
+    public function find_file($sha)
+    {
+        $tree = $this->_build_tree();
+        $files = $this->_traverse_tree($tree);
+        $file = array_pop(array_filter($files, function ($file) {
+            global $sha;
+            return $file['sha'] === $sha;
+        }));
+
+        return $file;
+    }
+
+    private function _traverse_tree($node, $files = [])
+    {
+        if ($node['type'] === 'blob') {
+            $files[] = $node;
+        } else {
+            foreach ($node['children'] as $child) {
+                if ($node['type'] === 'blob') {
+                    $files[] = $child;
+                } else {
+                    $files = $this->_traverse_tree($child, $files);
+                }
+            }
+        }
+
+        return $files;
     }
 }

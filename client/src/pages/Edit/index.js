@@ -90,7 +90,7 @@ function EditorPage() {
       payload: {
         sha,
         path,
-        content: btoa(renderBlocks(editorContent, marked).replace(/\n|\r/g, "\n")),
+        content: btoa(renderBlocks(editorContent, marked)), // .replace(/\n|\r/g, "\n")),
         frontmatter: blob.frontmatter,
       },
     });

@@ -77,7 +77,11 @@ export function getBlob({ sha, path }) {
 }
 
 export function commit(changes) {
-  const data = changes.map(({ path, content }) => ({ path, content }));
+  const data = changes.map(({ path, content, frontmatter }) => ({
+    path,
+    content,
+    frontmatter,
+  }));
   return request("commit", { method: "POST", data });
 }
 

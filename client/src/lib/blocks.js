@@ -41,7 +41,8 @@ export function renderBlocks(src, marked) {
   tokens.forEach((token) => {
     if (token.renderer) {
       const block = token.renderer.call({ parser: marked.Parser }, token, true);
-      rendered += block;
+      rendered +=
+        token.raw.match(/^(\n|\r)*/)[0] + block + token.raw.match(/(\n|\r)*$/)[0];
     } else {
       rendered += token.raw;
     }
@@ -53,13 +54,15 @@ export function renderBlocks(src, marked) {
 export function hydrateBlocks(md) {
   if (!md) return "";
 
-  while (md.match(/<!-- vocero-block/g)) {
+  while (/<!-- vocero-block/g.test(md)) {
     const uuid = md.match(/(?<=<!-- vocero-block=")([^"]+)" /)[1];
     const block = atob(
       md.match(new RegExp(`(?<=<!-- vocero-block="${uuid}" )(.(?!-->))*(?= -->)`))[0]
     );
     md = md.replace(
-      new RegExp(`\n<!-- vocero-block="${uuid}" (\n|.)+/vocero-block="${uuid}" -->\n`),
+      new RegExp(
+        `\n\n<!-- vocero-block="${uuid}" (\n|\r|.)+/vocero-block="${uuid}" -->\n\n`
+      ),
       block
     );
   }
@@ -69,9 +72,9 @@ export function hydrateBlocks(md) {
 
 export function genBlocksMarkedExtensions(blocks) {
   const renderers = blocks.map((blockDefn) => {
-    const openPattern = `(\n|\s)*<(${blockDefn.name}(\n|\\s)+[^>]*|${blockDefn.name}(?=>))>`;
-    const contentPattern = `(((\n|.)(?!/${blockDefn.name}>))*)`;
-    const closePattern = `</${blockDefn.name}>(\n||s)*`;
+    const openPattern = `(\n|\r|\\s)*<(${blockDefn.name}(\n|\r|\\s)+[^>]*|${blockDefn.name}(?=>))>`;
+    const contentPattern = `(((\n|\r|.)(?!/${blockDefn.name}>))*)`;
+    const closePattern = `<\/${blockDefn.name}>(\n|\r|\\s)*`;
 
     function renderer(token, meta = false) {
       if (meta) meta = JSON.parse(JSON.stringify(token));
@@ -140,7 +143,6 @@ export function genBlocksMarkedExtensions(blocks) {
         return src.match(rule)?.index;
       },
       tokenizer(src) {
-        // , tokens) {
         const rule = new RegExp(`^${openPattern}${contentPattern}${closePattern}`);
         const match = rule.exec(src);
 

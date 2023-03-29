@@ -24,13 +24,13 @@ $changes = array();
 foreach ($payload as $file) {
     $path = base64_decode($file['path']);
     $content = base64_decode($file['content']);
-    $blob = (new Blob(null, $path))->post($content, $frontmatter);
-    array_push($changes, array(
+    $blob = (new Blob(null, $path))->post($content, $file['frontmatter']);
+    $changes[] = array(
         'path' => $path,
         'type' => 'blob',
         'mode' => '100644',
         'sha' => $blob['sha']
-    ));
+    );
 }
 
 $commit = (new Branch($env['GH_BRANCH']))->get()['commit'];
@@ -38,7 +38,7 @@ $commit = (new Branch($env['GH_BRANCH']))->get()['commit'];
 $tree = (new Tree())->post($commit['sha'], $changes);
 
 $commit = (new Commit())->post(
-    "Update {$filename} by Jekyll JAM",
+    "Update {$filename} by Vocero",
     $commit['sha'],
     $tree['sha']
 );

@@ -52,6 +52,7 @@ class Branch
         if (!$this->cache->is_cached()) {
             $this->cache->reset();
         }
+
         return $this->cache->post($this->data);
     }
 

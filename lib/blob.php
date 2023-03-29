@@ -2,6 +2,7 @@
 require_once realpath(__DIR__ . DS . 'dotfile.php');
 require_once realpath(__DIR__ . DS . 'cache.php');
 require_once realpath(__DIR__ . DS . 'link.php');
+require_once realpath(__DIR__ . DS . 'tree.php');
 require_once realpath(__DIR__ . DS . '..' . DS . 'vendor' . DS . 'autoload.php');
 
 use GuzzleHttp\Client;
@@ -12,6 +13,7 @@ class Blob
     public $sha;
     private $env;
     private $cache;
+    private $data;
     private $path;
     private $base_url = 'https://api.github.com';
     private $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
@@ -58,9 +60,30 @@ class Blob
         return $content;
     }
 
+    private function get_cached()
+    {
+        $branch_cache = new Cache('branch');
+        if (!$branch_cache->is_cached()) return;
+
+        $branch = $branch_cache->get();
+        $tree = new Tree($branch['commit']['sha']);
+
+        if ($this->cache->is_cached()) {
+            $cache = $this->cache->get();
+            $file = $tree->find_file($cache['sha']);
+            if ($file['sha'] === $cache['sha']) {
+                $this->data = $cache;
+                return $this->data;
+            }
+        }
+    }
+
     public function get()
     {
-        if ($this->cache->is_cached()) return $this->cache->get();
+        if ($this->data) return $this->data;
+
+        $cached = $this->get_cached();
+        if ($cached) return $cached;
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->sha, array(
@@ -70,8 +93,8 @@ class Blob
             )
         ));
 
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($this->data);
     }
 
     public function post($content, $frontmatter = array(), $encoding = 'base64')
@@ -80,10 +103,13 @@ class Blob
             if ($this->is_markdown) {
                 $content = $this->absolute_links($content);
             }
+
+            if ($frontmatter !== null && sizeof($frontmatter) > 0) {
+                $content = '---\n' . Yaml::dump($frontmatter) . '---\n\n' . $content;
+            }
+
             $content = base64_encode($content);
         }
-
-        $content = Yaml::dump($frontmatter) . '\n\n' . $content;
 
         $payload = array(
             'content' => str_replace(PHP_EOL, '\n', $content),
@@ -99,8 +125,8 @@ class Blob
             )
         ));
 
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $data;
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->data;
     }
 
     public function json()
@@ -136,7 +162,7 @@ class Blob
                 if ($this->is_yaml) {
                     $content = json_encode(Yaml::parse($decoded));
                 } else {
-                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---((.|\n|\r)*)---(\n|\r|$)*/s', '', $decoded));
+                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---((.|\n|\r)*)---(\n|\r)*/', '', $decoded));
                 }
 
                 $content = base64_encode($content);
@@ -162,7 +188,7 @@ class Blob
             return;
         }
 
-        preg_match('/^(?:\n|\r)*(?:---)((.|\n|\r)*)(?:---)/', $decoded, $matches);
+        preg_match('/^(?:\n|\r)*---((.|\n|\r)*)---/', $decoded, $matches);
         if (sizeof($matches) > 0) {
             return Yaml::parse($matches[1]);
         } else {

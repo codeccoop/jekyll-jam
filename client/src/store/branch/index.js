@@ -6,7 +6,7 @@ import reducer from "./reducer";
 import { getBranch } from "../../services/api.js";
 
 const Component = ({ Warehouse, children }) => {
-  const [state, setState] = useState({});
+  const [state, setState] = useState();
 
   useEffect(() => {
     getBranch()
@@ -16,7 +16,11 @@ const Component = ({ Warehouse, children }) => {
       });
   }, []);
 
-  return <Warehouse value={[state, setState]}>{children}</Warehouse>;
+  return (
+    <Warehouse value={[state, setState]}>
+      {state === void 0 ? void 0 : children}
+    </Warehouse>
+  );
 };
 
 export default { name: "branch", Component, reducer };
