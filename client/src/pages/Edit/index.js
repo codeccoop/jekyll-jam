@@ -7,7 +7,7 @@ import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
 import { getBlob } from "../../services/api";
-import { hydrateBlocks } from "../../lib/blocks";
+import { hydrateBlocks, renderBlocks } from "../../lib/blocks";
 import useMarked from "../../hooks/useMarked";
 
 import "./style.scss";
@@ -90,7 +90,7 @@ function EditorPage() {
       payload: {
         sha,
         path,
-        content: btoa(editorContent),
+        content: btoa(renderBlocks(editorContent, marked).replace(/\n|\r/g, "\n")),
         frontmatter: blob.frontmatter,
       },
     });

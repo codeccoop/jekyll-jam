@@ -23,8 +23,8 @@ $payload = json_decode(file_get_contents('php://input'), true);
 $changes = array();
 foreach ($payload as $file) {
     $path = base64_decode($file['path']);
-    $content = $file['content'];
-    $blob = (new Blob(null, $path))->post($content);
+    $content = base64_decode($file['content']);
+    $blob = (new Blob(null, $path))->post($content, $frontmatter);
     array_push($changes, array(
         'path' => $path,
         'type' => 'blob',

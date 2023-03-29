@@ -74,7 +74,7 @@ class Blob
         return $this->cache->post($data);
     }
 
-    public function post($content, $encoding = 'base64')
+    public function post($content, $frontmatter = array(), $encoding = 'base64')
     {
         if ($encoding == 'base64') {
             if ($this->is_markdown) {
@@ -82,6 +82,8 @@ class Blob
             }
             $content = base64_encode($content);
         }
+
+        $content = Yaml::dump($frontmatter) . '\n\n' . $content;
 
         $payload = array(
             'content' => str_replace(PHP_EOL, '\n', $content),
@@ -161,6 +163,10 @@ class Blob
         }
 
         preg_match('/^(?:\n|\r)*(?:---)((.|\n|\r)*)(?:---)/', $decoded, $matches);
-        return Yaml::parse($matches[1]);
+        if (sizeof($matches) > 0) {
+            return Yaml::parse($matches[1]);
+        } else {
+            return array();
+        }
     }
 }

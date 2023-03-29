@@ -41,7 +41,9 @@ function Sidebar({ toggleVisibility }) {
   }
 
   function commitChanges() {
-    commit(changes.map((c) => ({ ...c, content: atob(c.content) }))).then((commit) => {
+    commit(
+      changes.map((c) => ({ ...c, content: c.content, frontmatter: c.frontmatter }))
+    ).then((commit) => {
       const changeMap = changes.reduce((acum, from) => {
         return acum.concat([
           [from.sha, commit.changes.find((to) => to.path === atob(from.path)).sha],

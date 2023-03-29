@@ -19,7 +19,7 @@ export default function Editor({ onUpdate, content, defaultContent }) {
     update(ev.target.value);
   }
 
-  content = content ? content : defaultContent;
+  content = content !== null ? content : defaultContent;
 
   function onKeyDown(ev) {
     const textArea = textAreaRef.current;
