@@ -1,30 +1,20 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useState } from "react";
 
 import reducer from "./reducer";
-import { getStyleURL } from "../../services/api";
 
 const Component = ({ store, Warehouse, children }) => {
-  const [css, storeCss] = useState();
-  const [branch, setBranch] = store.branch;
+  const [css, setCss] = useState();
 
-  const currentBranch = useMemo(() => branch.sha, [branch.sha]);
+  async function storeCss(req) {
+    try {
+      const css = await req;
+      setCss(css);
+    } catch (err) {
+      console.error("Can't load css");
+    }
+  }
 
-  useEffect(() => {
-    if (!currentBranch) return;
-    getStyleURL(currentBranch).then((data) => {
-      fetch(atob(data.url), {
-        headers: {
-          "Accept": "text/css",
-        },
-      })
-        .then((res) => res.text())
-        .then((data) => {
-          storeCss(data);
-        });
-    });
-  }, [currentBranch]);
-
-  return <Warehouse value={[css, setBranch]}>{children}</Warehouse>;
+  return <Warehouse value={[css, storeCss]}>{children}</Warehouse>;
 };
 
 export default { name: "style", Component, reducer };

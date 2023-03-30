@@ -6,7 +6,7 @@ import Preview from "../../components/Preview";
 import AssetViewer from "../../components/AssetViewer";
 import YamlForm from "../../components/YamlForm";
 
-import { getBlob } from "../../services/api";
+import { getBlob, getStyleURL } from "../../services/api";
 import { hydrateBlocks, renderBlocks } from "../../lib/blocks";
 import useMarked from "../../hooks/useMarked";
 
@@ -43,7 +43,17 @@ function EditorPage() {
 
   const [editorContent, setEditorContent] = useState(defaultContent);
 
-  const [{ query, changes }, dispatch] = useStore();
+  const [{ query, changes, style, branch }, dispatch] = useStore();
+
+  useEffect(() => {
+    getStyleURL(branch.sha).then((res) => {
+      console.log(res);
+      dispatch({
+        action: "STORE_CSS",
+        payload: res,
+      });
+    });
+  }, [branch]);
 
   const [hasChanged, setHasChanged] = useState(false);
 

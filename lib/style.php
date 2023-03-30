@@ -35,7 +35,7 @@ class Style
     {
         return array_reduce($nodes, function ($carry, $node) {
             if ($carry !== null) return $carry;
-            if (preg_match('/_?styles?\.s?css$/', $node['path'])) {
+            if (preg_match('/^assets\/vocero.scss$/', $node['path'])) {
                 return $node;
             }
             return null;
@@ -64,10 +64,7 @@ class Style
             $domain = 'https://' . $this->env['GH_DOMAIN'];
         }
 
-        preg_match('/_?styles?\.s?css$/', $this->path, $matches);
-        $filename = preg_replace('/\.scss$/', '.css', preg_replace('/^_/', '', $matches[0]));
-        $filepath = str_replace($matches[0], $filename, $this->path);
-
+        $filepath = preg_replace('/\.scss$/', '.css', $this->path);
         return base64_encode($domain . '/' . $filepath);
     }
 }

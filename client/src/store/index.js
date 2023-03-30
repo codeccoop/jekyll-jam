@@ -7,6 +7,6 @@ import style from "./style";
 import changes from "./changes";
 import blocks from "./blocks";
 
-const Store = () => createStore([project, branch, query, style, blocks, changes]);
+const Store = () => createStore([blocks, changes, style, query, branch, project]);
 
 export default Store();
