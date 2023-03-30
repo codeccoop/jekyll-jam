@@ -18,7 +18,7 @@ use GuzzleHttp\Exception\ClientException;
 $dotfile = new Dotfile();
 $env = $dotfile->get();
 
-if (!in_array('GH_INIT', array_keys($env))) {
+if (!in_array('GH_INIT', array_keys($env)) || !$env['GH_INIT']) {
     require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'branch.php');
     require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'repo.php');
     require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'page.php');
@@ -36,13 +36,30 @@ if (!in_array('GH_INIT', array_keys($env))) {
         }
     }
 
+    function branch_searcher($branch, $try = 0)
+    {
+        if ($try < 10) {
+            try {
+                return (new Branch($branch))->get();
+            } catch (Exception $e) {
+                if ($e->getCode() === 404) {
+                    sleep(2);
+                    return branch_searcher($branch, $try + 1);
+                } else {
+                    throw $e;
+                }
+            }
+        } else {
+            throw new Exception("Timeout error while getting the repo branch", 500);
+        }
+    }
+
     $branch = new Branch();
     try {
         $branch = $branch->get();
     } catch (ClientException $e) {
         if ($e->getCode() === 404) {
-            $default = (new Branch($repo->defaultBranch()))->get();
-            // TODO: AIxò no ha acabat de funcionar
+            $default = branch_searcher($repo->defaultBranch());
             $branch = $branch->post($default['commit']['sha']);
         } else {
             throw $e;
