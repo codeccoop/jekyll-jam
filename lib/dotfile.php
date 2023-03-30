@@ -18,7 +18,7 @@ class Dotfile
         if ($path) {
             $this->path = $path;
         } else {
-            $this->path = realpath(__DIR__ . DS . '..' . DS . '.env');
+            $this->path = __DIR__ . DS . '..' . DS . '.env';
         }
 
         if (!file_exists($this->path)) {
@@ -42,11 +42,29 @@ class Dotfile
         }
     }
 
+    private function read_file()
+    {
+        try {
+            $dotfile = fopen($this->path, "r");
+        } catch (Exception $e) {
+            $dotfile = fopen($this->path, "w") or die("Unable to open file!");
+        }
+
+        $filesize = filesize($this->path);
+        if ($filesize > 0) {
+            $content = fread($dotfile, filesize($this->path));
+        } else {
+            $content = "";
+        }
+
+        fclose($dotfile);
+
+        return $content;
+    }
+
     private function read()
     {
-        $dotfile = fopen($this->path, "r");
-        $content = fread($dotfile, filesize($this->path));
-        fclose($dotfile);
+        $content = $this->read_file();
         $env = array();
 
         foreach (explode(PHP_EOL, $content) as $l) {
@@ -56,6 +74,8 @@ class Dotfile
             $pair = explode('=', $l);
             $env[$pair[0]] = $this->format($pair[1]);
         }
+
+        $env['GH_INIT'] = isset($env['GH_INIT']) ? $env['GH_INIT'] : false;
 
         return $env;
     }
