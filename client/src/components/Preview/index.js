@@ -1,32 +1,22 @@
 import React, { useEffect, useRef } from "react";
-// import { marked } from "marked";
 import { useStore } from "colmado";
 
 import useMarked from "../../hooks/useMarked";
 
-// import { genBMLMakredExtension } from "../../utils/blocks";
-
-//marked.setOptions({
-//  breaks: false,
-//  smartLists: true,
-//  //smartypants: true,
-//});
+function classedWrapper(text) {
+  return `<main class="vocero-preview"><div class="vocero-preview__content">${text}</div></main>`;
+}
 
 export default function Preview({ text }) {
   const elRef = useRef();
   const shadowRef = useRef();
   const rendererRef = useRef(document.createElement("template"));
-  // const [{ blocks, style }] = useStore();
   const [{ style }] = useStore();
   const marked = useMarked();
   const css = style;
 
-  // useEffect(() => {
-  //   if (blocks.length) marked.use({ extensions: genBMLMakredExtension(blocks) });
-  // }, [blocks]);
-
   useEffect(() => {
-    const el = elRef.current;
+    const el = elRef.current.children[0];
     const html = el.innerHTML;
     const renderer = rendererRef.current;
     renderer.innerHTML = html;
@@ -40,10 +30,10 @@ export default function Preview({ text }) {
     if (!(shadowRef.current && text)) return;
     const shadow = shadowRef.current;
     const renderer = rendererRef.current;
-    const contentEl = renderer.content.querySelector(".previewContent");
+    const contentWrapper = renderer.content.querySelector(".vocero-preview__wrapper");
 
-    if (contentEl) {
-      contentEl.innerHTML = marked.parse(text);
+    if (contentWrapper) {
+      contentWrapper.innerHTML = marked.parse(text);
       const rendererHTML = renderer.innerHTML;
       shadow.innerHTML = "";
       shadow.appendChild(renderer.content);
@@ -70,8 +60,8 @@ export default function Preview({ text }) {
   return (
     <div ref={elRef} className="preview">
       <div
-        className="previewContent"
-        dangerouslySetInnerHTML={{ __html: marked.parse(text) }}
+        className="preview-content"
+        dangerouslySetInnerHTML={{ __html: classedWrapper(marked.parse(text)) }}
       ></div>
     </div>
   );
