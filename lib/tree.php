@@ -150,14 +150,19 @@ class Tree
         }
 
         if (in_array('_data', array_keys($tree['children']))) {
-            $data['children'] = array_filter($tree['children']['_data']['children'], function ($node) {
+            $data = $tree['children']['_data'];
+            $data['children'] = array_filter($data['children'], function ($node) {
                 return $this->_prune_branch($node, "yml");
             });
             $named_children['data'] = $data;
         }
 
         if (in_array('assets', array_keys($tree['children']))) {
-            $named_children['assets'] = $tree['children']['assets'];
+            $assets = $tree['children']['assets'];
+            $assets['children'] = array_filter($assets['children'], function ($node) {
+                return isset($node['path']) ? $node['path'] !== 'assets/vocero.scss' : true;
+            });
+            $named_children['assets'] = $assets;
         }
         $tree['children'] = $named_children;
         $tree['is_file'] = false;

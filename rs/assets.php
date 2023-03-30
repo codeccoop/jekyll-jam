@@ -7,13 +7,12 @@ if ('GET' != $_SERVER['REQUEST_METHOD']) {
     exit;
 }
 
-// TODO: Dynamic MIM Types based on file extension
-// header('Content-Type: ' . mime_content_type(basename($_GET['path'])));
-header('Content-Type: text/css');
-
 define('DS', DIRECTORY_SEPARATOR);
 
 require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'dotfile.php');
+require_once realpath(__DIR__ . DS . '..' . DS . 'lib' . DS . 'utils' . DS . 'mimetypes.php');
+
+header('Content-Type: ' . get_filename_mimetype(basename($_GET['path'])));
 
 $env = (new Dotfile())->get();
 
@@ -33,7 +32,6 @@ $url = 'http://' . $env['GH_DOMAIN'] . $base_url . '/' . $_GET['path'];
 
 
 $content = file_get_contents($url);
-echo mime_content_type($url);
 
 if ($content) {
     echo $content;
