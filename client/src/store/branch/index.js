@@ -13,14 +13,11 @@ const Component = ({ Warehouse, children }) => {
       .then(setState)
       .catch((err) => {
         console.warn("Can't fetch branch");
+        setState({});
       });
   }, []);
 
-  return (
-    <Warehouse value={[state, setState]}>
-      {state === void 0 ? void 0 : children}
-    </Warehouse>
-  );
+  return <Warehouse value={[state, setState]}>{children}</Warehouse>;
 };
 
 export default { name: "branch", Component, reducer };

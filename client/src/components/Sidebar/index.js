@@ -65,7 +65,7 @@ function Sidebar({ toggleVisibility }) {
     <div className="sidebar">
       <div className="sidebar__head">
         <h2>
-          {branch["repo"] || "REPO NAME"}
+          {branch?.repo || "REPO NAME"}
           <span onClick={toggleVisibility}>&laquo;</span>
         </h2>
       </div>
@@ -74,7 +74,7 @@ function Sidebar({ toggleVisibility }) {
         <div className="sidebar__controls">
           <a
             className="icon settings"
-            disabled={branch.ahead_by > 0 ? "" : " disabled"}
+            disabled={branch?.ahead_by > 0 ? "" : " disabled"}
             onClick={goSettings}
           >
             <abbr title="Settings"></abbr>

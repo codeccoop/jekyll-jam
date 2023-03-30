@@ -103,10 +103,10 @@ function Directory() {
   }
 
   useEffect(() => {
-    if (branch.sha) {
+    if (branch?.sha) {
       fetchTree();
     }
-  }, [branch.ahead_by]);
+  }, [branch?.ahead_by]);
 
   function toggleVisibility(path) {
     setVisibilities({ ...visibilities, [path]: !visibilities[path] });

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "colmado";
 
 import "./style.scss";
@@ -79,22 +79,49 @@ function validateEmail(email) {
 }
 
 function Project({ mode }) {
-  const [{ project }] = useStore();
+  const [{ project }, dispatch] = useStore();
   const [state, setState] = useState({
     GH_TEMPLATE: "codeccoop/vocero-minima",
     GH_BRANCH: "vocero",
-    GH_DOMAIN: "github.io",
+    GH_DOMAIN: "username.github.io",
   });
 
   useEffect(() => {
-    console.dir(project);
+    dispatch({
+      action: "PATCH_PROJECT",
+      payload: { ...state, ...project },
+    });
+  }, []);
+
+  useEffect(() => {
     setState({ ...state, ...project });
   }, [project]);
+
+  const lastState = useRef(state);
+  useEffect(() => {
+    if (lastState.current.GH_USER !== state.GH_USER) {
+      if (/\.github\.io$/.test(state.GH_DOMAIN)) {
+        dispatch({
+          action: "PATCH_PROJECT",
+          payload: { GH_DOMAIN: state.GH_USER + ".github.io" },
+        });
+      }
+    }
+
+    return () => {
+      lastState.current = state;
+    };
+  }, [state]);
 
   return (
     <div className="vocero-project">
       <form className="vocero-project__form">
-        {mode === "new" && <TemplateSelector validation={validateTemplate} />}
+        {mode === "new" && (
+          <TemplateSelector
+            validation={validateTemplate}
+            defaultValue={state.GH_TEMPLATE}
+          />
+        )}
         <ProjectField
           field="GH_EMAIL"
           type="email"
@@ -121,11 +148,17 @@ function Project({ mode }) {
             validation={(slug) => validateExistingRepo(project.GH_USER, slug)}
           />
         )}
-        <ProjectField field="GH_BRANCH" label="Git Branch" validation={validated} />
+        <ProjectField
+          field="GH_BRANCH"
+          label="Git Branch"
+          validation={validated}
+          defaultValue={state.GH_BRANCH}
+        />
         <ProjectField
           field="GH_DOMAIN"
           label="Public domain"
           validation={validateDomain}
+          defaultValue={state.GH_DOMAIN}
         />
       </form>
     </div>

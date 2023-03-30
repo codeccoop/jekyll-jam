@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "colmado";
 
-function ProjectField({ label, type = "text", field, validation }) {
+function ProjectField({ label, type = "text", field, validation, defaultValue = "" }) {
   const [{ project }, dispatch] = useStore();
   const [value, setValue] = useState(project[field]);
   const [error, setError] = useState(false);
@@ -48,7 +48,7 @@ function ProjectField({ label, type = "text", field, validation }) {
       <input
         name={field}
         type={type}
-        value={value || ""}
+        value={value || defaultValue}
         onChange={(e) => {
           setError(void 0);
           setValue(e.target.value);

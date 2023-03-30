@@ -29,7 +29,9 @@ const validateProject = (() => {
 
   return (project, mode) => {
     const projectFields = mode === "new" ? newProjectFields : existingModeFields;
-    const fields = Array.apply(null, Object.keys(project));
+    const fields = Array.apply(null, Object.keys(project)).filter(
+      (field) => field !== "GH_INIT"
+    );
     let isValid =
       fields.filter((f) => projectFields.indexOf(f) > -1).length === projectFields.length;
 

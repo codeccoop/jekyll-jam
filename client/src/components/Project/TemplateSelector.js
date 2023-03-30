@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useStore } from "colmado";
 
-const options = ["", "codeccoop/vocero-minima"];
+const options = ["codeccoop/vocero-minima", "codeccoop/vocero-yat"];
 
 function TemplateOption({ index, value }) {
   return <option value={index}>{value}</option>;
