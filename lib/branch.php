@@ -33,6 +33,7 @@ class Branch
     public function get()
     {
         if ($this->data) return $this->data;
+        // if ($this->cache->is_cached()) return $this->cache->get();
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->name, array(

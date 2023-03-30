@@ -2,7 +2,7 @@ const path = require("path");
 import resolve from "@rollup/plugin-node-resolve";
 import babel from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
-import replace from "@rollup/plugin-replace";
+import replace from "rollup-plugin-replace";
 import postcss from "rollup-plugin-postcss";
 import url from "postcss-url";
 import autoprefixer from "autoprefixer";
@@ -18,7 +18,9 @@ export default {
   plugins: [
     resolve(),
     replace({
+      preventAssignment: true,
       "process.env.NODE_ENV": JSON.stringify("development"),
+      "process.env.BASE_URL": JSON.stringify(process.env.BASE_URL || "/"),
     }),
     babel({
       presets: ["@babel/preset-react"],

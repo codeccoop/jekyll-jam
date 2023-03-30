@@ -10,7 +10,7 @@ use GuzzleHttp\Client;
 class Tree
 {
     public $sha;
-    private $_config;
+    private $data;
     private $env;
     private $cache;
     private $base_url = 'https://api.github.com';
@@ -27,7 +27,8 @@ class Tree
 
     public function get()
     {
-        if ($this->cache->is_cached()) return $this->cache->get();
+        if ($this->data) return $this->data;
+        if ($this->cache->is_cached()) $this->cache->get();
 
         $client = new Client(array('base_uri' => $this->base_url));
         $response = $client->request('GET', $this->endpoint . '/' . $this->sha . '?recursive=1', array(
@@ -36,8 +37,8 @@ class Tree
                 'Accept' => 'application/vnd.github+json',
             )
         ));
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($this->data);
     }
 
     public function post($base_sha, $changes)
@@ -56,8 +57,8 @@ class Tree
             )
         ));
 
-        $data = json_decode($response->getBody()->getContents(), true);
-        return $this->cache->post($data);
+        $this->data = json_decode($response->getBody()->getContents(), true);
+        return $this->cache->post($this->data);
     }
 
     public function json()
@@ -90,16 +91,18 @@ class Tree
 
     private function _build_tree()
     {
-        $items = $this->get()['tree'];
+        $data = $this->get();
+        $items = $data['tree'];
 
-        $tree = array('children' => array());
-        foreach ($items as $item) {
+        $tree = array('children' => []);
+        for ($i = 0; $i < sizeof($items); $i++) {
+            $item = $items[$i];
             $path = explode('/', $item['path']);
-            $path_length = count($path);
+            $path_length = sizeof($path);
 
             $node = &$tree;
-            for ($i = 0; $i < $path_length; $i++) {
-                $level = $path[$i];
+            for ($j = 0; $j < $path_length; $j++) {
+                $level = $path[$j];
                 if (!in_array($level, array_keys($node['children']))) {
                     $node['children'][$level] = array('children' => array());
                 }
@@ -116,14 +119,15 @@ class Tree
 
     private function _prune_tree($tree)
     {
-        $config = $this->config();
+        $config = (new Config($this->get()))->get();
+
         $paths = array(
             '_posts',
             '_drafts',
         );
 
         if (isset($config['collections'])) {
-            foreach ($config['collections'] as $coll => $values) {
+            foreach (array_keys($config['collections']) as $coll) {
                 if (isset($config['collections_dir'])) {
                     array_push($paths, preg_replace('/\/$/', '', $config['collections_dir']) . '/' . $coll);
                 } else {
@@ -152,7 +156,7 @@ class Tree
         if (in_array('_data', array_keys($tree['children']))) {
             $data = $tree['children']['_data'];
             $data['children'] = array_filter($data['children'], function ($node) {
-                return $this->_prune_branch($node, "yml");
+                return $this->_prune_branch($node, ["yml"]);
             });
             $named_children['data'] = $data;
         }
@@ -160,8 +164,16 @@ class Tree
         if (in_array('assets', array_keys($tree['children']))) {
             $assets = $tree['children']['assets'];
             $assets['children'] = array_filter($assets['children'], function ($node) {
-                return isset($node['path']) ? $node['path'] !== 'assets/vocero.scss' : true;
+                return $this->_prune_branch($node, ['png', 'jpg', 'jpeg', 'webp', 'tif', 'tiff', 'jpe', 'gif', 'svg', 'bmp', 'ico', 'svgz']);
             });
+            /* $assets['children'] = array_filter($assets['children'], function ($node) { */
+            /*     $invalid_extensions = ['sass', 'scss', 'css', 'htm', 'html', 'js', 'json', 'yml', 'yaml', 'md', 'makrdown']; */
+            /*     if (isset($node['path'])) { */
+            /*         $filename = basename($node['path']); */
+            /*         $ext = strtolower(end(explode('.', $filename))); */
+            /*         return $filename !== 'vocero.scss' and in_array($ext, $invalid_extensions) === false; */
+            /*     } */
+            /* }); */
             $named_children['assets'] = $assets;
         }
         $tree['children'] = $named_children;
@@ -170,12 +182,22 @@ class Tree
         return $tree;
     }
 
-    private function _prune_branch($node, $file_type = "md")
+    private function _match_extension($path, $ext)
+    {
+        return preg_match('/\.' . $ext . '$/', $path);
+    }
+
+    private function _prune_branch($node, $file_types = ["md"])
     {
         if ($node['type'] == 'blob') {
-            return preg_match('/\.' . $file_type . '$/', $node['path']);
+            return array_reduce($file_types, function ($carry, $ext) use ($node) {
+                return $carry || $this->_match_extension($node['path'], $ext);
+            }, false);
+            // return preg_match('/\.' . $file_type . '$/', $node['path']);
         }
-        $children = array_filter($node['children'], array($this, '_prune_branch'));
+        $children = array_filter($node['children'], function ($node) use ($file_types) {
+            return $this->_prune_tree($node, $file_types);
+        }); // array($this, '_prune_branch'));
         $named_children = array();
         foreach ($children as $child) {
             foreach ($node['children'] as $name => $_node) {
@@ -188,42 +210,30 @@ class Tree
         return true;
     }
 
-    public function config()
-    {
-        if ($this->_config) {
-            return $this->_config;
-        }
-
-        $this->_config =  json_decode((new Config($this->get()))->json(), true);
-        return $this->_config;
-    }
-
     public function find_file($sha)
     {
-        $tree = $this->_build_tree();
-        $files = $this->_traverse_tree($tree);
-        $file = array_pop(array_filter($files, function ($file) {
-            global $sha;
+        $tree = $this->get()['tree'];
+        $file = array_pop(array_filter($tree, function ($file) use ($sha) {
             return $file['sha'] === $sha;
         }));
 
         return $file;
     }
 
-    private function _traverse_tree($node, $files = [])
-    {
-        if ($node['type'] === 'blob') {
-            $files[] = $node;
-        } else {
-            foreach ($node['children'] as $child) {
-                if ($node['type'] === 'blob') {
-                    $files[] = $child;
-                } else {
-                    $files = $this->_traverse_tree($child, $files);
-                }
-            }
-        }
+    /* private function _traverse_tree($node, $files = []) */
+    /* { */
+    /*     if ($node['type'] === 'blob') { */
+    /*         $files[] = $node; */
+    /*     } else { */
+    /*         foreach ($node['children'] as $child) { */
+    /*             if ($node['type'] === 'blob') { */
+    /*                 $files[] = $child; */
+    /*             } else { */
+    /*                 $files = $this->_traverse_tree($child, $files); */
+    /*             } */
+    /*         } */
+    /*     } */
 
-        return $files;
-    }
+    /*     return $files; */
+    /* } */
 }

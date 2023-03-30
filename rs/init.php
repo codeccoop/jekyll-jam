@@ -66,17 +66,6 @@ if (!in_array('GH_INIT', array_keys($env)) || !$env['GH_INIT']) {
         }
     }
 
-    $page = new Page();
-    try {
-        $page->get();
-    } catch (ClientException $e) {
-        if ($e->getCode() === 404) {
-            $page->post(($branch->get())['name']);
-        } else {
-            throw $e;
-        }
-    }
-
     $tree = (new Tree($branch['commit']['sha']))->get();
     $config = new Config($tree);
     $settings = $config->get();
@@ -95,6 +84,20 @@ if (!in_array('GH_INIT', array_keys($env)) || !$env['GH_INIT']) {
 
     $settings['baseurl'] = $baseurl;
     (new Config($tree))->put($settings);
+
+    $page = new Page();
+    try {
+        $data = $page->get();
+        if ($data['source']['branch'] != $env['GH_BRANCH']) {
+            $page->put(array('branch' => $env['GH_BRANCH']));
+        }
+    } catch (ClientException $e) {
+        if ($e->getCode() === 404) {
+            $page->post($env['GH_BRANCH']);
+        } else {
+            throw $e;
+        }
+    }
 
     $dotfile->post(array('GH_INIT' => true));
 }

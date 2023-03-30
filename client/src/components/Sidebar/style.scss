@@ -12,9 +12,10 @@
     }
   }
 
-  h2 {
+  .sidebar__head {
     position: relative;
-    margin: 0px;
+    height: 0px;
+    // margin: 0px;
 
     > span {
       cursor: pointer;

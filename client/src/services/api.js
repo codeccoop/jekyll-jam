@@ -1,4 +1,4 @@
-const BASE = "/rs";
+const BASE = process.env.BASE_URL.replace(/\/$/, "") + "/rs";
 
 function request(
   endpoint,

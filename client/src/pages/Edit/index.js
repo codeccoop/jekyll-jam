@@ -46,8 +46,8 @@ function EditorPage() {
   const [{ query, changes, style, branch }, dispatch] = useStore();
 
   useEffect(() => {
+    if (!branch) return;
     getStyleURL(branch.sha).then((res) => {
-      console.log(res);
       dispatch({
         action: "STORE_CSS",
         payload: res,

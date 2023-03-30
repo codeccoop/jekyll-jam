@@ -51,10 +51,14 @@ class Config
         return $this->cache->post($data);
     }
 
+    public function parsed()
+    {
+        return Yaml::parse($this->content());
+    }
+
     public function json()
     {
-        $response = Yaml::parse($this->content());
-        return json_encode($response);
+        return json_encode($this->parsed());
     }
 
     public function yaml()

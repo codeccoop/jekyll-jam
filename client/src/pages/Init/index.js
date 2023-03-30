@@ -71,6 +71,9 @@ function Init() {
         });
       })
       .then(() => init())
+      .then(() => {
+        window.location = "/";
+      })
       .catch((err) => {
         console.error(err);
       });

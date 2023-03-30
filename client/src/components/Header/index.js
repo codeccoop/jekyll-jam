@@ -1,3 +1,4 @@
+import { useStore } from "colmado";
 import React from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -5,6 +6,7 @@ import "./style.scss";
 
 export default function Header() {
   const navigate = useNavigate();
+  const [{ project }] = useStore();
   function goHome() {
     navigate("/");
   }
@@ -17,6 +19,9 @@ export default function Header() {
           <img src="static/images/app-logo.png" type="image/png" />
         </picture>
         Vocero
+      </div>
+      <div className="site-name">
+        <p>{project.GH_REPO}</p>
       </div>
     </header>
   );

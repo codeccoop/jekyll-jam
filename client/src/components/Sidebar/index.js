@@ -64,10 +64,7 @@ function Sidebar({ toggleVisibility }) {
   return (
     <div className="sidebar">
       <div className="sidebar__head">
-        <h2>
-          {branch?.repo || "REPO NAME"}
-          <span onClick={toggleVisibility}>&laquo;</span>
-        </h2>
+        <span onClick={toggleVisibility}>&laquo;</span>
       </div>
       <Directory />
       <div className="sidebar__bottom">

@@ -1,5 +1,6 @@
 .header {
   z-index: 100;
+  display: flex;
 }
 
 .brand {
@@ -8,6 +9,19 @@
   font-size: 2rem;
   font-weight: bold;
   padding: 7px 0;
+}
+
+.site-name {
+  display: flex;
+  align-items: center;
+  margin-left: 1em;
+
+  > p {
+    font-size: 1.4em;
+    // font-weight: bold;
+    padding-left: 1em;
+    border-left: 1px solid;
+  }
 }
 
 .brand-logo {

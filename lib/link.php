@@ -76,20 +76,22 @@ class Link
     {
         $links = [];
         $parsed_line = str_trim($line);
+        $i = 0;
         while (strlen($parsed_line) > 0) {
-            preg_match('/^[^\s|\n|\r]+(\s|\n|\r)+/', $parsed_line, $chunk);
-            if (sizeof($chunk) > 0) {
-                $parsed_line = str_trim(substr($parsed_line, strlen($chunk[0])));
-            }
-
             preg_match(Link::$rule, $parsed_line, $match);
             if (sizeof($match) > 0) {
                 $links[] = new Link(...$match);
                 $parsed_line = str_replace($match[0], '', $parsed_line);
             }
 
-            preg_match('/^[^\s|\n|\r]+$/', $parsed_line, $end_match);
+            preg_match('/^[^\s\n\r]+(\s|\n|\r)+/', $parsed_line, $chunk);
+            if (sizeof($chunk) > 0) {
+                $parsed_line = str_trim(substr($parsed_line, strlen($chunk[0])));
+            }
+
+            preg_match('/^[^\s\n\r]+$/', $parsed_line, $end_match);
             if (sizeof($end_match)) break;
+            $i++;
         }
 
         return $links;
@@ -99,7 +101,7 @@ class Link
     {
         // $code_scaped = '';
         $skip_code_block = false;
-        foreach (preg_split('/\r\n|\n|\r/', $markdown) as $line) {
+        foreach (preg_split('/\n|\r/', $markdown) as $line) {
             if ($skip_code_block) {
                 preg_match('/^\s*`{1,3}/', $line, $is_code_block);
                 if ($is_code_block) {

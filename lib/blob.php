@@ -105,14 +105,14 @@ class Blob
             }
 
             if ($frontmatter !== null && sizeof($frontmatter) > 0) {
-                $content = '---\n' . Yaml::dump($frontmatter) . '---\n\n' . $content;
+                $content = '---' . PHP_EOL . Yaml::dump($frontmatter) . '---' . PHP_EOL . PHP_EOL . $content;
             }
 
             $content = base64_encode($content);
         }
 
         $payload = array(
-            'content' => str_replace(PHP_EOL, '\n', $content),
+            'content' => $content, // str_replace(PHP_EOL, '\n', $content),
             'encoding' => $encoding
         );
 
@@ -162,7 +162,7 @@ class Blob
                 if ($this->is_yaml) {
                     $content = json_encode(Yaml::parse($decoded));
                 } else {
-                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---((.|\n|\r)*)---(\n|\r)*/', '', $decoded));
+                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---\n[^-{3}]+\n---\n*/', '', $decoded));
                 }
 
                 $content = base64_encode($content);
@@ -188,7 +188,7 @@ class Blob
             return;
         }
 
-        preg_match('/^(?:\n|\r)*---((.|\n|\r)*)---/', $decoded, $matches);
+        preg_match('/^(\n|\r)*---\n([^-{3}]+)\n---\n*/', $decoded, $matches);
         if (sizeof($matches) > 0) {
             return Yaml::parse($matches[1]);
         } else {

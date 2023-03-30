@@ -25,6 +25,10 @@
     position: relative;
     text-indent: 0.5em;
 
+    &:first-child {
+      margin-top: 1em;
+    }
+
     &::before {
       content: "\003E";
       position: absolute;
