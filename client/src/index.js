@@ -62,7 +62,7 @@ function App() {
   const [{ project }] = useStore();
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={process.env.BASE_URL}>
       <Store>
         <MainLayout>{project ? <AppRoutes /> : <Spinner />}</MainLayout>
       </Store>
