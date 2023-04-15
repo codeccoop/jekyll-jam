@@ -6,15 +6,23 @@
     flex: 1;
   }
 
-  textarea {
-    resize: none;
+  .editor-container {
     flex: 7;
-    height: calc(100% - 2rem);
-    border: none;
-    outline: none;
-    font-size: 1.2rem;
+    max-width: unset;
+  }
+
+  .vocero-block p {
+    margin: 0;
+  }
+
+  .vocero-block-token {
     color: #444;
-    padding: 1.25rem 0.85rem;
-    margin: 0.5em;
+    padding: 0 0.65em;
+    font-family: monospace;
+
+    &:before,
+    &:after {
+      content: unset;
+    }
   }
 }
