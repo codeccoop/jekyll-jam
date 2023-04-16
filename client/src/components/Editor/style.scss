@@ -11,18 +11,24 @@
     max-width: unset;
   }
 
-  .vocero-block p {
-    margin: 0;
-  }
+  .vocero-block {
+    display: contents;
 
-  .vocero-block-token {
-    color: #444;
-    padding: 0 0.65em;
-    font-family: monospace;
+    .block-editor-input {
+      // all: inherit;
+      display: inherit;
+      position: inherit;
+      flex: inherit;
+      outline: 1px solid #0001;
 
-    &:before,
-    &:after {
-      content: unset;
+      &:focus-visible {
+        outline: none;
+        box-shadow: 1px 2px 5px #0002;
+      }
+
+      &:only-child {
+        width: 100%;
+      }
     }
   }
 }

@@ -4,171 +4,122 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import {
   createCommand,
   COMMAND_PRIORITY_EDITOR,
-  COMMAND_PRIORITY_LOW,
-  KEY_ENTER_COMMAND,
-  DELETE_CHARACTER_COMMAND,
+  KEY_ARROW_DOWN_COMMAND,
   $getSelection,
-  $isRangeSelection,
-  $createTextNode,
-  $createParagraphNode,
   $getRoot,
+  $insertNodes,
+  $isTextNode,
+  $isRootNode,
+  $getNearestRootOrShadowRoot,
 } from "lexical";
-import {
-  $shouldInsertTextAfterOrBeforeTextNode,
-  mergeRegister,
-  $insertNodeToNearestRoot,
-} from "@lexical/utils";
+import { mergeRegister } from "@lexical/utils";
 
 /* SOURCE */
 import BlockNode, { $createBlockNode, $isBlockNode } from "../nodes/BlockNode";
-import BlockContentNode, {
-  $createBlockContentNode,
-  $isBlockContentNode,
-} from "../nodes/BlockContentNode";
-import BlockTokenNode, {
-  $createBlockTokenNode,
-  $isBlockTokenNode,
-} from "../nodes/BlockTokenNode";
 import useMarked from "../../../hooks/useMarked";
 
 export const INSERT_BLOCK_NODE = createCommand();
+export const INSERT_NESTED_BLOCK_NODE = createCommand();
 
-function onBlockTokenTransform(node) {
-  const parent = node.getParent();
-  const siblings = parent.getChildren();
-
-  if (!$isBlockNode(parent)) {
-    node.remove();
-  } else if (node.token.trim() !== node.getTextContent().trim()) {
-    // siblings.forEach((sibling) => {
-    //   if ($isBlockTokenNode(sibling)) {
-    //     sibling.remove();
-    //   }
-    // });
-  }
+function uuidv4() {
+  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
+    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+  );
 }
 
-function onBlockContentTransform(node) {
-  const parent = node.getParent();
-
-  if (!$isBlockNode(parent)) {
-    const children = node.getChildren();
-    for (const child of children) {
-      node.insertAfter(child);
-    }
-    node.remove();
-  }
+function isFamily(hierarchy, ancestors) {
+  return (
+    hierarchy.filter((id) => ancestors.find((ancestor) => ancestor === id)).length > 0
+  );
 }
 
-function onBlockTransform(node) {
-  const children = node.getChildren();
-
-  if (children.length === 0) {
-    node.replace($createParagraphNode());
-  } else if (children.filter((child) => $isBlockTokenNode(child)).length < 2) {
-    children.forEach((child) => {
-      if ($isBlockContentNode(child))
-        child.getChildren().forEach((child) => child.remove());
-      child.remove();
-    });
-  }
-}
-
-function BlockNodesPlugin() {
+function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
   const [editor] = useLexicalComposerContext();
+  console.log(editor);
   const marked = useMarked();
 
+  function insertBlock(defn, ancestors) {
+    editor.update(() => {
+      const selection = $getSelection();
+      if (selection) {
+        const blockNode = $createBlockNode({
+          defn,
+          ID: uuidv4(),
+          ancestors: ancestors,
+        });
+        let anchor = selection.anchor.getNode();
+
+        if ($isTextNode(anchor)) {
+          anchor = anchor.getParent();
+        }
+
+        if ($isRootNode(anchor)) {
+          anchor.append(blockNode);
+        } else if (anchor.isEmpty()) {
+          anchor.replace(blockNode);
+        } else {
+          const parent = anchor.getParent();
+          parent.append(blockNode);
+        }
+        blockNode.focus();
+      } else {
+        const root = $getRoot();
+        root.getChildren().forEach((node) => {
+          try {
+            if ($isBlockNode(node)) {
+              node.editor.dispatchCommand(INSERT_NESTED_BLOCK_NODE, {
+                defn,
+                ancestors: node.ancestors.concat(node.ID),
+              });
+            }
+          } catch (e) {
+            console.warn(e);
+          }
+        });
+      }
+    });
+  }
+
   useEffect(() => {
-    if (!editor.hasNodes([BlockNode, BlockContentNode, BlockTokenNode])) {
+    if (!editor.hasNodes([BlockNode])) {
       throw new Error(
         "VoceroBlocks: BlockNode is not registered on editor (initialConfig.nodes)"
       );
     }
     return mergeRegister(
-      // editor.registerNodeTransform(BlockContentNode, onBlockContentTransform),
-      // editor.registerNodeTransform(BlockTokenNode, onBlockTokenTransform),
-      editor.registerNodeTransform(BlockNode, onBlockTransform),
+      editor.registerCommand(
+        KEY_ARROW_DOWN_COMMAND,
+        () => {
+          editor.getEditorState().read(() => {
+            const selection = $getSelection();
+            const anchor = selection.anchor.getNode();
+            const root = $getNearestRootOrShadowRoot(anchor);
+            console.log(root);
+            if (!$isBlockNode(root)) return;
+
+            console.log(root);
+          });
+        },
+        COMMAND_PRIORITY_EDITOR
+      ),
       editor.registerCommand(
         INSERT_BLOCK_NODE,
-        (defn) => {
-          editor.update(() => {
-            const selection = $getSelection();
-            if (!$isRangeSelection(selection)) return;
-            const isLastChild = selection.getNodes().pop().isLastChild();
-
-            const blockNode = $createBlockNode(defn, marked);
-
-            let nodeToFocus;
-            if (defn.selfClosed) {
-              const tokenNode = $createBlockTokenNode(defn, 2);
-              tokenNode.append($createTextNode(tokenNode.token));
-              blockNode.append(tokenNode);
-              nodeToFocus = tokenNode;
-            } else {
-              const openTokenNode = $createBlockTokenNode(defn, 0);
-              // openTokenNode.append($createTextNode(openTokenNode.token));
-              const blockContentNode = $createBlockContentNode();
-              // blockContentNode.append($createParagraphNode());
-              const closeTokenNode = $createBlockTokenNode(defn, 1);
-              // closeTokenNode.append($createTextNode(closeTokenNode.token));
-              blockNode.append(openTokenNode, blockContentNode, closeTokenNode);
-              nodeToFocus = blockContentNode;
-            }
-
-            const toAppend = [blockNode];
-            if (isLastChild) {
-              toAppend.push($createParagraphNode());
-            }
-            selection.insertNodes(toAppend);
-            nodeToFocus.selectStart();
-            // $insertNodeToNearestRoot(blockNode);
-          });
-
+        ({ defn }) => {
+          if (hierarchy.length) return;
+          insertBlock(defn, []);
           return true;
         },
         COMMAND_PRIORITY_EDITOR
       ),
-      // editor.registerCommand(
-      //   DELETE_CHARACTER_COMMAND,
-      //   () => {
-      //     const selection = $getSelection();
-      //     if (!$isRangeSelection(selection)) return;
-      //     const anchorNode = selection.anchor.getNode();
-      //     if ($isBlockTokenNode(anchorNode)) {
-      //       anchorNode.remove();
-      //       return true;
-      //     }
-      //     return false;
-      //   },
-      //   COMMAND_PRIORITY_LOW
-      // ),
       editor.registerCommand(
-        KEY_ENTER_COMMAND,
-        (ev) => {
-          const selection = $getSelection();
-          if (!$isRangeSelection(selection)) return;
-
-          const anchorNode = selection.anchor.getNode();
-          if ($isBlockTokenNode(anchorNode)) {
-            const p = $createParagraphNode();
-            if (anchorNode.position === 0) {
-              $insertNodeToNearestRoot(p);
-            } else {
-              const parent = anchorNode.getParent();
-              if (parent.isLastChild()) {
-                const root = $getRoot();
-                root.append(p);
-              } else {
-                $shouldInsertTextAfterOrBeforeTextNode(selection, p);
-              }
-            }
-
-            return true;
-          }
-
-          return false;
+        INSERT_NESTED_BLOCK_NODE,
+        ({ defn, ancestors }) => {
+          if (!hierarchy.length) return;
+          if (!isFamily(hierarchy, ancestors)) retrun;
+          insertBlock(defn, ancestors);
+          return true;
         },
-        COMMAND_PRIORITY_LOW
+        COMMAND_PRIORITY_EDITOR
       )
     );
   }, [editor]);

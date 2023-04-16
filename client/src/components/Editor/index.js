@@ -29,83 +29,16 @@ import BlockNodesPlugin from "./plugins/BlockNodesPlugin";
 
 /* NODES */
 import BlockNode from "./nodes/BlockNode";
-import BlockContentNode from "./nodes/BlockContentNode";
-import BlockTokenNode from "./nodes/BlockTokenNode";
-// import ParagraphBlockNode from "./nodes/ParagraphBlockNode";
+
+import EditorContext from "./context";
 import Blocks from "../Blocks";
 
 /* STYLE */
 import "./style.scss";
 import "./lexical.scss";
 
-// const history = [];
-export default function Editor({ onUpdate, content, defaultContent }) {
-  // const textAreaRef = useRef();
-
-  // function update(value) {
-  //   history.push(value);
-  //   if (history.length > 50) {
-  //     history.splice(0, 1);
-  //   }
-  //   onUpdate(value);
-  // }
-
-  // function onInput(ev) {
-  //   update(ev.target.value);
-  // }
-
+export default function Editor({ onPreview, setContent, content, defaultContent }) {
   content = content !== null ? content : defaultContent;
-
-  // function onKeyDown(ev) {
-  //   const textArea = textAreaRef.current;
-  //   if (ev.keyCode === 9) {
-  //     ev.stopPropagation();
-  //     ev.preventDefault();
-
-  //     const cursor = textArea.selectionStart;
-  //     textArea.value =
-  //       textArea.value.slice(0, cursor) +
-  //       "  " +
-  //       textArea.value.slice(cursor, cursor + 1) +
-  //       textArea.value.slice(cursor + 1);
-
-  //     textArea.selectionStart = cursor + 2;
-  //     textArea.selectionEnd = cursor + 2;
-  //     update(textArea.value);
-  //   } else if (ev.keyCode === 90) {
-  //     history.pop();
-  //     const stage = history.pop();
-  //     if (stage) {
-  //       textArea.value = stage;
-  //       onUpdate(textArea.value);
-  //     }
-  //   }
-  // }
-
-  // function onSelectBlock(block) {
-  //   let args = block.args.map((arg) => arg + '=""\n').join("  ");
-  //   if (block.args.length) args = "\n  " + args;
-  //   let mark = `<${block.name}${args}`;
-  //   // if (block.selfClosed === true) mark += "/>";
-  //   // else
-  //   mark += `>\n</${block.name}>`;
-  //   const textArea = textAreaRef.current;
-  //   const cursor = textArea.selectionStart;
-  //   textArea.value =
-  //     textArea.value.slice(0, cursor).replace(/\n$/, "") +
-  //     `\n${mark}\n` +
-  //     textArea.value.slice(cursor + 1).replace(/^\n/, "");
-  //   textArea.selectionStart = cursor + mark.length - 1;
-  //   textArea.selectionEnd = cursor + mark.length - 1;
-  //   update(textArea.value);
-  // }
-
-  // return (
-  //   <div className="editor" onKeyDown={onKeyDown}>
-  //     <textarea ref={textAreaRef} onInput={onInput} value={content}></textarea>
-  //     <Blocks onSelect={onSelectBlock} />
-  //   </div>
-  // );
 
   const editorConfig = {
     editorState: () => $convertFromMarkdownString(content, TRANSFORMERS),
@@ -126,37 +59,36 @@ export default function Editor({ onUpdate, content, defaultContent }) {
       AutoLinkNode,
       LinkNode,
       BlockNode,
-      BlockTokenNode,
-      BlockContentNode,
-      // ParagraphBlockNode,
     ],
   };
 
   return (
-    <LexicalComposer initialConfig={editorConfig}>
-      <div className="editor-container">
-        <ToolbarPlugin />
-        <div className="editor-inner">
-          <RichTextPlugin
-            contentEditable={<ContentEditable className="editor-input" />}
-            ErrorBoundary={LexicalErrorBoundary}
-          />
-          <HistoryPlugin />
-          <AutoFocusPlugin />
-          <CodeHighlightPlugin />
-          <ListPlugin />
-          <LinkPlugin />
-          <ListMaxIndentLevelPlugin maxDepth={7} />
-          <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <MarkdownCodecPlugin onUpdate={onUpdate} />
-          <MarkdownInitialContentPlugin
-            content={content}
-            defaultContent={defaultContent}
-          />
-          <BlockNodesPlugin />
+    <EditorContext>
+      <LexicalComposer initialConfig={editorConfig}>
+        <div className="editor-container">
+          <ToolbarPlugin />
+          <div className="editor-inner">
+            <RichTextPlugin
+              contentEditable={<ContentEditable className="editor-input" />}
+              ErrorBoundary={LexicalErrorBoundary}
+            />
+            <HistoryPlugin />
+            <AutoFocusPlugin />
+            <CodeHighlightPlugin />
+            <ListPlugin />
+            <LinkPlugin />
+            <ListMaxIndentLevelPlugin maxDepth={7} />
+            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <MarkdownCodecPlugin onPreview={onPreview} setContent={setContent} />
+            <MarkdownInitialContentPlugin
+              content={content}
+              defaultContent={defaultContent}
+            />
+            <BlockNodesPlugin />
+          </div>
         </div>
-      </div>
-      <Blocks />
-    </LexicalComposer>
+        <Blocks />
+      </LexicalComposer>
+    </EditorContext>
   );
 }

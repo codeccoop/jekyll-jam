@@ -1,36 +1,50 @@
 /* VENDOR */
-import { ElementNode } from "lexical";
+import React from "react";
+import { $getNodeByKey, createEditor, DecoratorNode } from "lexical";
 
-class BlockNode extends ElementNode {
+/* SOURCE */
+import BlockComponent from "./BlockComponent";
+
+class BlockNode extends DecoratorNode {
   static getType() {
     return "block";
   }
 
   static clone(node) {
-    return new BlockNode({ defn: node.defn, marked: node.marked });
+    return new BlockNode({
+      defn: node.defn,
+      ID: node.ID,
+      ancestors: node.ancestors,
+      editor: node.editor,
+    });
   }
 
   static importJSON(serializedNode) {
     return $createBlockNode(serializedNode);
   }
 
-  static toText(defn) {
-    const args = defn.args.length ? " " + defn.args.map((a) => a + '=""').join(" ") : "";
-    return `<${defn.name}${args}>\n</${defn.name}>`;
-  }
-
-  constructor({ defn, marked }, key) {
+  constructor({ defn, ID, ancestors = [], editor }, key) {
     super(key);
     this.__defn = defn;
-    this.__marked = marked;
+    this.__ID = ID;
+    this.__ancestors = ancestors;
+    this.__editor = editor || createEditor();
   }
 
   get defn() {
     return JSON.parse(JSON.stringify(this.__defn));
   }
 
-  get marked() {
-    return this.__marked;
+  get ID() {
+    return this.__ID;
+  }
+
+  get ancestors() {
+    return JSON.parse(JSON.stringify(this.__ancestors));
+  }
+
+  get editor() {
+    return this.__editor;
   }
 
   createDOM(config, editor) {
@@ -39,19 +53,28 @@ class BlockNode extends ElementNode {
     return el;
   }
 
-  updateDOM(prevNode, dom, config) {
-    if (prevNode.getTextContentSize() === 0) {
-      this.remove();
-    }
+  updateDOM(_prevNode, _dom, _config) {
     return false;
   }
 
   exportDOM(editor) {
-    const template = document.createElement("template");
-    template.innerHTML = this.marked.parse(BlockNode.toText(this.defn));
-    return {
-      element: template.content,
-    };
+    const t = document.createElement("template");
+    t.classList.add("vocero-block");
+    t.id = this.ID;
+    return { element: t };
+    // const template = document.createElement("template");
+    // template.innerHTML = this.marked.parse(BlockNode.toText(this.defn));
+    // return {
+    //   element: template.content,
+    // };
+  }
+
+  getTextContent() {
+    return `<VoceroBlock id="${this.ID}" />`;
+    // const args = this.defn.args.length
+    //   ? " " + this.defn.args.map((a) => a + '=""').join(" ")
+    //   : "";
+    // return `<${this.defn.name}${args}>\n</${this.defn.name}>`;
   }
 
   exportJSON() {
@@ -60,19 +83,36 @@ class BlockNode extends ElementNode {
       version: 1,
       type: "block",
       defn: this.defn,
-      marked: this.marked,
+      editor: this.editor,
+      ID: this.ID,
+      ancestors: this.ancestors,
     };
   }
 
-  canBeEmpty() {
-    return false;
+  decorate(editor, config) {
+    return (
+      <BlockComponent
+        blockID={this.ID}
+        defn={this.defn}
+        editor={this.editor}
+        ancestors={this.ancestors}
+      />
+    );
+  }
+
+  isIsolated() {
+    return true;
+  }
+
+  focus() {
+    this.editor.focus();
   }
 }
 
 export default BlockNode;
 
-export function $createBlockNode(defn, marked) {
-  return new BlockNode({ defn, marked });
+export function $createBlockNode({ defn, ID, ancestors }) {
+  return new BlockNode({ defn, ID, ancestors });
 }
 
 export function $isBlockNode(node) {

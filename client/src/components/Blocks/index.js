@@ -52,7 +52,7 @@ export default function Blocks() {
   // }
 
   function onSelectBlock(block) {
-    editor.dispatchCommand(INSERT_BLOCK_NODE, block);
+    editor.dispatchCommand(INSERT_BLOCK_NODE, { defn: block });
     // editor.update(() => {
     //   const selection = $getSelection();
     //   const nodes = selection.extract();

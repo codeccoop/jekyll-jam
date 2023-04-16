@@ -11,6 +11,7 @@ import { hydrateBlocks, renderBlocks } from "../../lib/blocks";
 import useMarked from "../../hooks/useMarked";
 
 import "./style.scss";
+import { useSearchParams } from "react-router-dom";
 
 function getEditMode(queryPath) {
   let path;
@@ -139,9 +140,10 @@ function EditorPage() {
         {!preview ? (
           getEditMode(query.path) === "editor" ? (
             <Editor
-              onUpdate={setEditorContent}
+              setContent={setEditorContent}
               content={editorContent}
               defaultContent={defaultContent}
+              onPreview={preview}
             />
           ) : getEditMode(query.path) === "data" ? (
             <YamlForm onUpdate={setEditorContent} content={editorContent} />
@@ -160,7 +162,7 @@ function EditorPage() {
         <a className="btn" onClick={toTheClippBoard}>
           Get URL
         </a>
-        <a className="btn" onClick={() => setPreview(!preview)}>
+        <a className="btn" onClick={() => setPreview(preview)}>
           {preview ? "Edit" : "Preview"}
         </a>
         <a className={"btn" + (hasChanged ? "" : " disabled")} onClick={storeEdit}>
