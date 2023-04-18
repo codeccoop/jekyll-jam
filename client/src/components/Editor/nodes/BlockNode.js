@@ -1,6 +1,6 @@
 /* VENDOR */
 import React from "react";
-import { $getNodeByKey, createEditor, DecoratorNode } from "lexical";
+import { createEditor, DecoratorNode } from "lexical";
 
 /* SOURCE */
 import BlockComponent from "./BlockComponent";
@@ -23,16 +23,18 @@ class BlockNode extends DecoratorNode {
     return $createBlockNode(serializedNode);
   }
 
-  constructor({ defn, ID, ancestors = [], editor }, key) {
+  constructor({ defn, ID, ancestors = [], props = {}, editorState = {} }, key) {
     super(key);
     this.__defn = defn;
     this.__ID = ID;
     this.__ancestors = ancestors;
-    this.__editor = editor || createEditor();
+    this.__editor = createEditor();
+    this.__editorState = editorState;
+    this.__props = props;
   }
 
   get defn() {
-    return JSON.parse(JSON.stringify(this.__defn));
+    return this.__defn;
   }
 
   get ID() {
@@ -40,11 +42,23 @@ class BlockNode extends DecoratorNode {
   }
 
   get ancestors() {
-    return JSON.parse(JSON.stringify(this.__ancestors));
+    return this.__ancestors;
   }
 
   get editor() {
     return this.__editor;
+  }
+
+  get props() {
+    return this.__props;
+  }
+
+  set props(props) {
+    Object.keys(props).forEach((key) => (this.__props[key] = props[key]));
+  }
+
+  get editorState() {
+    return this.__editorState;
   }
 
   createDOM(config, editor) {
@@ -58,34 +72,25 @@ class BlockNode extends DecoratorNode {
   }
 
   exportDOM(editor) {
-    const t = document.createElement("template");
-    t.classList.add("vocero-block");
-    t.id = this.ID;
-    return { element: t };
-    // const template = document.createElement("template");
-    // template.innerHTML = this.marked.parse(BlockNode.toText(this.defn));
-    // return {
-    //   element: template.content,
-    // };
-  }
-
-  getTextContent() {
-    return `<VoceroBlock id="${this.ID}" />`;
-    // const args = this.defn.args.length
-    //   ? " " + this.defn.args.map((a) => a + '=""').join(" ")
-    //   : "";
-    // return `<${this.defn.name}${args}>\n</${this.defn.name}>`;
+    const el = document.createElement("div");
+    el.classList.add("vocero-block");
+    el.id = this.ID;
+    el.setAttribute(
+      "data-editor",
+      btoa(JSON.stringify(editor.getEditorState().toJSON()))
+    );
+    return { element: el };
   }
 
   exportJSON() {
     return {
-      ...super.exportJSON(),
       version: 1,
       type: "block",
       defn: this.defn,
-      editor: this.editor,
+      editor: this.editor.getEditorState().toJSON(),
       ID: this.ID,
       ancestors: this.ancestors,
+      props: this.props,
     };
   }
 
@@ -96,6 +101,9 @@ class BlockNode extends DecoratorNode {
         defn={this.defn}
         editor={this.editor}
         ancestors={this.ancestors}
+        initProps={JSON.parse(JSON.stringify(this.props))}
+        shareProps={(props) => (this.props = props)}
+        editorState={this.editorState}
       />
     );
   }
@@ -103,16 +111,12 @@ class BlockNode extends DecoratorNode {
   isIsolated() {
     return true;
   }
-
-  focus() {
-    this.editor.focus();
-  }
 }
 
 export default BlockNode;
 
-export function $createBlockNode({ defn, ID, ancestors }) {
-  return new BlockNode({ defn, ID, ancestors });
+export function $createBlockNode({ defn, ID, ancestors, initState, editorState }) {
+  return new BlockNode({ defn, ID, ancestors, editorState, initState });
 }
 
 export function $isBlockNode(node) {

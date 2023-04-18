@@ -1,17 +1,27 @@
-import React, { useState, useEffect } from "react";
+/* VENDOR */
+import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "colmado";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
+import {
+  $convertFromMarkdownString,
+  $convertToMarkdownString,
+  TRANSFORMERS,
+} from "@lexical/markdown";
 
-import Editor from "../../components/Editor";
-import Preview from "../../components/Preview";
-import AssetViewer from "../../components/AssetViewer";
-import YamlForm from "../../components/YamlForm";
+/* SOURCE */
+import Editor from "components/Editor";
+import Preview from "components/Preview";
+import AssetViewer from "components/AssetViewer";
+import YamlForm from "components/YamlForm";
 
-import { getBlob, getStyleURL } from "../../services/api";
-import { hydrateBlocks, renderBlocks } from "../../lib/blocks";
-import useMarked from "../../hooks/useMarked";
+import { getBlob, getStyleURL } from "services/api";
+import { hydrateBlocks, renderBlocks } from "lib/blocks";
+import { genBlockTransformer, genBlockSerializer } from "lib/markdownTransformers";
+import useMarked from "hooks/useMarked";
 
+/* STYLE */
 import "./style.scss";
-import { useSearchParams } from "react-router-dom";
+import { createEditor } from "lexical";
 
 function getEditMode(queryPath) {
   let path;
@@ -29,10 +39,26 @@ function getEditMode(queryPath) {
   }
 }
 
-function EditorPage() {
-  const defaultContent = "# Loading file contents...";
+const defaultContent = "# Loading file contents...";
 
+function EditComponent({ mode, content, setContent, blob }) {
+  switch (mode) {
+    case "editor":
+      return <Editor content={content} defaultContent={defaultContent} />;
+    case "data":
+      return <YamlForm onUpdate={setContent} content={content} />;
+    case "asset":
+      return (
+        <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
+      );
+  }
+}
+
+function EditorPage() {
   const marked = useMarked();
+  const [editor] = useLexicalComposerContext();
+  const [{ query, changes, branch, editor: editorContext, blocks }, dispatch] =
+    useStore();
 
   const [blob, setBlob] = useState({
     content: null,
@@ -42,9 +68,33 @@ function EditorPage() {
     encoding: null,
   });
 
+  const isContentLoaded = useRef(false);
   const [editorContent, setEditorContent] = useState(defaultContent);
+  const [previewContent, setPreviewContent] = useState(null);
+  useEffect(() => {
+    if (
+      !isContentLoaded.current ||
+      (isContentLoaded.current && editorContent === defaultContent)
+    ) {
+      editor.update(() => {
+        $convertFromMarkdownString(editorContent, [
+          ...TRANSFORMERS,
+          genBlockSerializer((block) => {
+            // const editor = createEditor();
+            // const state = editor.parseEditorState(block.editor);
+            // editor.setEditorState(state);
+            // block.editor = editor;
+            dispatch({
+              action: "ADD_BLOCK",
+              payload: block,
+            });
+          }),
+        ]);
+      });
+    }
 
-  const [{ query, changes, style, branch }, dispatch] = useStore();
+    return () => (isContentLoaded.current = editorContent !== defaultContent);
+  }, [editorContent]);
 
   useEffect(() => {
     if (!branch) return;
@@ -56,16 +106,30 @@ function EditorPage() {
     });
   }, [branch]);
 
-  const [hasChanged, setHasChanged] = useState(false);
-
-  const [preview, setPreview] = useState(false);
-
   useEffect(() => {
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
     if (query.sha) retriveBlob();
   }, [query.sha]);
 
+  const [preview, setPreview] = useState(false);
+  useEffect(() => {
+    if (preview) {
+      editor.getEditorState().read(() => {
+        setPreviewContent(
+          $convertToMarkdownString([
+            ...TRANSFORMERS,
+            genBlockTransformer(editorContext.blocks),
+          ])
+        );
+      });
+    }
+    return () => {
+      setPreviewContent(null);
+    };
+  }, [preview]);
+
+  const [hasChanged, setHasChanged] = useState(false);
   useEffect(() => {
     const hasChanged =
       getEditMode(query.path) !== "asset" &&
@@ -96,14 +160,21 @@ function EditorPage() {
       new URLSearchParams(location.search).entries()
     );
 
-    dispatch({
-      action: "ADD_CHANGE",
-      payload: {
-        sha,
-        path,
-        content: btoa(renderBlocks(editorContent, marked)), // .replace(/\n|\r/g, "\n")),
-        frontmatter: blob.frontmatter,
-      },
+    editor.getEditorState().read(() => {
+      const content = $convertToMarkdownString([
+        ...TRANSFORMERS,
+        genBlockTransformer(editorContext.blocks),
+      ]);
+
+      dispatch({
+        action: "ADD_CHANGE",
+        payload: {
+          sha,
+          path,
+          content: btoa(renderBlocks(content, marked)), // .replace(/\n|\r/g, "\n")),
+          frontmatter: blob.frontmatter,
+        },
+      });
     });
   }
 
@@ -134,38 +205,28 @@ function EditorPage() {
         className={[
           "edit__content",
           getEditMode(query.path),
-          preview ? " preview" : "edit",
+          preview && previewContent ? " preview" : "edit",
         ].join(" ")}
       >
-        {!preview ? (
-          getEditMode(query.path) === "editor" ? (
-            <Editor
-              setContent={setEditorContent}
-              content={editorContent}
-              defaultContent={defaultContent}
-              onPreview={preview}
-            />
-          ) : getEditMode(query.path) === "data" ? (
-            <YamlForm onUpdate={setEditorContent} content={editorContent} />
-          ) : (
-            <AssetViewer
-              content={blob.content}
-              encoding={blob.encoding}
-              path={blob.path}
-            />
-          )
-        ) : (
-          <Preview text={editorContent} />
-        )}
+        <EditComponent
+          mode={getEditMode(query.path)}
+          content={editorContent}
+          setContent={setEditorContent}
+          blob={blob}
+        />
+        {preview && previewContent && <Preview text={previewContent} />}
       </div>
       <div className="edit__controls">
         <a className="btn" onClick={toTheClippBoard}>
           Get URL
         </a>
-        <a className="btn" onClick={() => setPreview(preview)}>
+        <a className="btn" onClick={() => setPreview(!preview)}>
           {preview ? "Edit" : "Preview"}
         </a>
-        <a className={"btn" + (hasChanged ? "" : " disabled")} onClick={storeEdit}>
+        <a
+          className={"btn" + (hasChanged || true ? "" : " disabled")}
+          onClick={storeEdit}
+        >
           Save
         </a>
       </div>

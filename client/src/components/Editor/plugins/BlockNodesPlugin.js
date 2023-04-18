@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   createCommand,
+  COMMAND_PRIORITY_LOW,
   COMMAND_PRIORITY_EDITOR,
   KEY_ARROW_DOWN_COMMAND,
   $getSelection,
@@ -13,19 +14,15 @@ import {
   $getNearestRootOrShadowRoot,
 } from "lexical";
 import { mergeRegister } from "@lexical/utils";
+import { useStore } from "colmado";
 
 /* SOURCE */
 import BlockNode, { $createBlockNode, $isBlockNode } from "../nodes/BlockNode";
-import useMarked from "../../../hooks/useMarked";
+// import useMarked from "hooks/useMarked";
+import { uuid } from "lib/helpers";
 
 export const INSERT_BLOCK_NODE = createCommand();
 export const INSERT_NESTED_BLOCK_NODE = createCommand();
-
-function uuidv4() {
-  return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
-  );
-}
 
 function isFamily(hierarchy, ancestors) {
   return (
@@ -35,8 +32,8 @@ function isFamily(hierarchy, ancestors) {
 
 function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
   const [editor] = useLexicalComposerContext();
-  console.log(editor);
-  const marked = useMarked();
+  const [{ editor: editorContext }] = useStore();
+  // const marked = useMarked();
 
   function insertBlock(defn, ancestors) {
     editor.update(() => {
@@ -44,7 +41,7 @@ function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
       if (selection) {
         const blockNode = $createBlockNode({
           defn,
-          ID: uuidv4(),
+          ID: uuid(),
           ancestors: ancestors,
         });
         let anchor = selection.anchor.getNode();
@@ -61,7 +58,6 @@ function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
           const parent = anchor.getParent();
           parent.append(blockNode);
         }
-        blockNode.focus();
       } else {
         const root = $getRoot();
         root.getChildren().forEach((node) => {
@@ -87,20 +83,31 @@ function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
       );
     }
     return mergeRegister(
+      // editor.registerUpdateListener(({ editorState }) => {
+      //   console.log(editorState.toJSON());
+      // }),
+      editor.registerDecoratorListener((decorators) => {
+        Object.keys(decorators).forEach((key) => {
+          const decorator = decorators[key];
+          console.log(editorContext.blocks);
+          // console.log(decorator.props);
+        });
+      }),
       editor.registerCommand(
         KEY_ARROW_DOWN_COMMAND,
         () => {
           editor.getEditorState().read(() => {
             const selection = $getSelection();
             const anchor = selection.anchor.getNode();
-            const root = $getNearestRootOrShadowRoot(anchor);
-            console.log(root);
+            if (!anchor) return;
+            const root = $isRootNode(anchor)
+              ? anchor
+              : $getNearestRootOrShadowRoot(anchor);
             if (!$isBlockNode(root)) return;
-
-            console.log(root);
           });
+          return true;
         },
-        COMMAND_PRIORITY_EDITOR
+        COMMAND_PRIORITY_LOW
       ),
       editor.registerCommand(
         INSERT_BLOCK_NODE,

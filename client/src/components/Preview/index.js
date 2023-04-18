@@ -1,7 +1,12 @@
+/* VENDOR */
 import React, { useEffect, useRef } from "react";
 import { useStore } from "colmado";
 
-import useMarked from "../../hooks/useMarked";
+/* SOURCE */
+import useMarked from "hooks/useMarked";
+
+/* STYLE */
+import "./style.scss";
 
 function classedWrapper(text) {
   return `<main class="vocero-preview"><div class="vocero-preview__content">${text}</div></main>`;

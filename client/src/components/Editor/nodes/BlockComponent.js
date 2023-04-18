@@ -1,4 +1,6 @@
-import React, { forwardRef, useEffect, useRef, useState } from "react";
+/* VENDOR */
+import React, { useEffect, useRef, useState } from "react";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
@@ -8,15 +10,13 @@ import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPl
 import { ListPlugin } from "@lexical/react/LexicalListPlugin.js";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin.js";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin.js";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { useStore } from "colmado";
 
-import baseTheme from "../theme";
+/* SOURCE */
 import CodeHighlightPlugin from "../plugins/CodeHighlight.js";
 import ListMaxIndentLevelPlugin from "../plugins/ListMaxIndentLevelPlugin.js";
-import ToolbarPlugin from "../plugins/ToolbarPlugin";
+// import ToolbarPlugin from "../plugins/ToolbarPlugin";
 import BlockNodesPlugin from "../plugins/BlockNodesPlugin";
-import { useEditorContext } from "../context";
 
 function BlockControl({ name, value, setValue }) {
   return (
@@ -58,7 +58,6 @@ function BlockEditor({ hierarchy }) {
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
-      <AutoFocusPlugin />
       <CodeHighlightPlugin />
       <ListPlugin />
       <LinkPlugin />
@@ -69,37 +68,70 @@ function BlockEditor({ hierarchy }) {
   );
 }
 
-function BlockComponent({ defn, editor, blockID, ancestors, focus = false }) {
-  const [{ blocks }] = useStore();
+function BlockComponent({
+  defn,
+  editor,
+  blockID,
+  ancestors,
+  shareProps,
+  initProps = {},
+  editorState = {},
+  focus = false,
+}) {
+  const [{ blocks }, dispatch] = useStore();
+  const [, { getTheme }] = useLexicalComposerContext();
 
-  const blockRender = blocks.find((block) => block.name === defn.name).fn;
-  let BlockInner;
-  if (ancestors.length) {
-    BlockInner = ({ props, children }) => blockRender({ props, React, children }, null);
-  } else {
-    BlockInner = forwardRef(({ props, children }, ref) => {
-      return blockRender({ ...props, React, children }, ref);
-    });
-  }
-  const blockContent = useRef();
-  const [, addBlockContent] = useEditorContext();
   useEffect(() => {
-    ancestors.length === 0 && addBlockContent(blockID, blockContent);
+    if (Object.keys(editorState).length) {
+      if (editorState.root.children.length === 0) {
+        editorState.root.children.push({
+          "children": [],
+          "direction": "ltr",
+          "format": "",
+          "indent": 0,
+          "type": "paragraph",
+          "version": 1,
+        });
+      }
+      const state = editor.parseEditorState(editorState);
+      editor.setEditorState(state);
+    }
   }, []);
 
-  const [state, setState] = useState({});
+  const BlockInner = blocks.find((block) => block.name === defn.name)?.fn || (() => {});
+  const wrapper = useRef();
+  useEffect(() => {
+    const dom = ancestors.length === 0 && wrapper.current;
+    dispatch({
+      action: "ADD_BLOCK",
+      payload: {
+        id: blockID,
+        dom: dom,
+        defn: defn,
+        props: state,
+        editor: editor,
+      },
+    });
+  }, [wrapper]);
+
+  const [state, setState] = useState(initProps);
   useEffect(() => {
     if (!defn) return;
     setState(Object.fromEntries(defn.args.map((a) => [a, null])));
   }, [defn]);
+  useEffect(() => {
+    shareProps(state);
+  }, [state]);
 
   return (
-    <LexicalNestedComposer initialEditor={editor} initialTheme={baseTheme}>
+    <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
       {focus && <BlockControls args={defn.args} state={[state, setState]} />}
-      {focus && <ToolbarPlugin />}
-      <BlockInner props={state} ref={blockContent}>
-        {!defn.selfClosed && <BlockEditor hierarchy={ancestors.concat(blockID)} />}
-      </BlockInner>
+      {/* focus && <ToolbarPlugin /> */}
+      <div id={blockID} className="vocero-block-wrapper" ref={wrapper}>
+        <BlockInner {...state} React={React}>
+          {!defn.selfClosed && <BlockEditor hierarchy={ancestors.concat(blockID)} />}
+        </BlockInner>
+      </div>
     </LexicalNestedComposer>
   );
 }

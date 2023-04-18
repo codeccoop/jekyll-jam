@@ -8,6 +8,7 @@ import url from "postcss-url";
 import autoprefixer from "autoprefixer";
 import json from "@rollup/plugin-json";
 import dev from "rollup-plugin-dev";
+import alias from "@rollup/plugin-alias";
 
 export default {
   input: "src/index.js",
@@ -17,6 +18,50 @@ export default {
   },
   plugins: [
     resolve(),
+    alias({
+      entries: [
+        {
+          find: "assets",
+          replacement: path.resolve(__dirname, "src/assets"),
+        },
+        {
+          find: "components",
+          replacement: path.resolve(__dirname, "src/components"),
+        },
+        {
+          find: "lib",
+          replacement: path.resolve(__dirname, "src/lib"),
+        },
+        {
+          find: "asset",
+          replacement: path.resolve(__dirname, "src/assets"),
+        },
+        {
+          find: "hooks",
+          replacement: path.resolve(__dirname, "src/hooks"),
+        },
+        {
+          find: "layouts",
+          replacement: path.resolve(__dirname, "src/layouts"),
+        },
+        {
+          find: "pages",
+          replacement: path.resolve(__dirname, "src/pages"),
+        },
+        {
+          find: "services",
+          replacement: path.resolve(__dirname, "src/services"),
+        },
+        {
+          find: "store",
+          replacement: path.resolve(__dirname, "src/store"),
+        },
+        {
+          find: "style",
+          replacement: path.resolve(__dirname, "src/style"),
+        },
+      ],
+    }),
     replace({
       preventAssignment: true,
       "process.env.NODE_ENV": JSON.stringify("development"),

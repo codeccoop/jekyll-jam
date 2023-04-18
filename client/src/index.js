@@ -1,15 +1,18 @@
+/* VENDOR */
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 
-import Home from "./pages/Home";
-import Edit from "./pages/Edit";
-import Settings from "./pages/Settings";
-import Init from "./pages/Init";
-import MainLayout from "./layouts/main";
+/* SOURCE */
+import Home from "pages/Home";
+import Edit from "pages/Edit";
+import Settings from "pages/Settings";
+import Init from "pages/Init";
+import MainLayout from "layouts/main";
 import { useStore } from "colmado";
 
-import Store from "./store";
+import Store from "store";
+import LexicalContext from "lib/contexts/LexicalContext";
 
 function Spinner() {
   return <h1>Loading...</h1>;
@@ -63,9 +66,11 @@ function App() {
 
   return (
     <BrowserRouter basename={process.env.BASE_URL}>
-      <Store>
-        <MainLayout>{project ? <AppRoutes /> : <Spinner />}</MainLayout>
-      </Store>
+      <LexicalContext>
+        <Store>
+          <MainLayout>{project ? <AppRoutes /> : <Spinner />}</MainLayout>
+        </Store>
+      </LexicalContext>
     </BrowserRouter>
   );
 }
