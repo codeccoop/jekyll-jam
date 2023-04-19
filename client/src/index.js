@@ -12,7 +12,7 @@ import MainLayout from "layouts/main";
 import { useStore } from "colmado";
 
 import Store from "store";
-import LexicalContext from "lib/contexts/LexicalContext";
+import LexicalContext from "lib/contexts/Lexical";
 
 function Spinner() {
   return <h1>Loading...</h1>;

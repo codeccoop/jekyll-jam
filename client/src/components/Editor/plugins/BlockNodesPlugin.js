@@ -1,6 +1,5 @@
 /* VENDOR */
 import { useEffect } from "react";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import {
   createCommand,
   COMMAND_PRIORITY_LOW,
@@ -12,13 +11,15 @@ import {
   $isTextNode,
   $isRootNode,
   $getNearestRootOrShadowRoot,
+  COMMAND_PRIORITY_HIGH,
+  $getNodeByKey,
 } from "lexical";
-import { mergeRegister } from "@lexical/utils";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import { useStore } from "colmado";
+import { mergeRegister } from "@lexical/utils";
 
 /* SOURCE */
-import BlockNode, { $createBlockNode, $isBlockNode } from "../nodes/BlockNode";
-// import useMarked from "hooks/useMarked";
+import BlockNode, { $createBlockNode, $isBlockNode } from "../nodes/BlockNode.js";
 import { uuid } from "lib/helpers";
 
 export const INSERT_BLOCK_NODE = createCommand();
@@ -26,14 +27,21 @@ export const INSERT_NESTED_BLOCK_NODE = createCommand();
 
 function isFamily(hierarchy, ancestors) {
   return (
-    hierarchy.filter((id) => ancestors.find((ancestor) => ancestor === id)).length > 0
+    hierarchy.filter((ID) => ancestors.find((ancestor) => ancestor === ID)).length ==
+    ancestors.length
   );
 }
 
-function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
-  const [editor] = useLexicalComposerContext();
+function BlockNodesPlugin({ hierarchy = [] }) {
   const [{ editor: editorContext }] = useStore();
-  // const marked = useMarked();
+
+  let editor;
+  if (hierarchy.length) {
+    const parentId = hierarchy[hierarchy.length - 1];
+    editor = editorContext.blocks[parentId]?.editor;
+  } else {
+    [editor] = useLexicalComposerContext();
+  }
 
   function insertBlock(defn, ancestors) {
     editor.update(() => {
@@ -77,22 +85,15 @@ function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
   }
 
   useEffect(() => {
+    if (!editor) return;
+
     if (!editor.hasNodes([BlockNode])) {
       throw new Error(
         "VoceroBlocks: BlockNode is not registered on editor (initialConfig.nodes)"
       );
     }
+
     return mergeRegister(
-      // editor.registerUpdateListener(({ editorState }) => {
-      //   console.log(editorState.toJSON());
-      // }),
-      editor.registerDecoratorListener((decorators) => {
-        Object.keys(decorators).forEach((key) => {
-          const decorator = decorators[key];
-          console.log(editorContext.blocks);
-          // console.log(decorator.props);
-        });
-      }),
       editor.registerCommand(
         KEY_ARROW_DOWN_COMMAND,
         () => {
@@ -112,19 +113,19 @@ function BlockNodesPlugin({ hierarchy = [], descendants = [] }) {
       editor.registerCommand(
         INSERT_BLOCK_NODE,
         ({ defn }) => {
-          if (hierarchy.length) return;
+          if (hierarchy.length) return false;
           insertBlock(defn, []);
-          return true;
+          return false;
         },
         COMMAND_PRIORITY_EDITOR
       ),
       editor.registerCommand(
         INSERT_NESTED_BLOCK_NODE,
         ({ defn, ancestors }) => {
-          if (!hierarchy.length) return;
-          if (!isFamily(hierarchy, ancestors)) retrun;
+          if (!hierarchy.length) return false;
+          if (!isFamily(hierarchy, ancestors)) return;
           insertBlock(defn, ancestors);
-          return true;
+          return false;
         },
         COMMAND_PRIORITY_EDITOR
       )

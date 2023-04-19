@@ -1,16 +1,4 @@
-/* VENDOR */
-import React from "react";
-import { LexicalComposer } from "@lexical/react/LexicalComposer";
-import { HeadingNode, QuoteNode } from "@lexical/rich-text";
-import { TableCellNode, TableNode, TableRowNode } from "@lexical/table";
-import { ListItemNode, ListNode } from "@lexical/list";
-import { CodeHighlightNode, CodeNode } from "@lexical/code";
-import { AutoLinkNode, LinkNode } from "@lexical/link";
-
-/* SOURCE */
-import BlockNode from "components/Editor/nodes/BlockNode";
-
-const editorTheme = {
+const theme = {
   ltr: "ltr",
   rtl: "rtl",
   placeholder: "editor-placeholder",
@@ -78,29 +66,4 @@ const editorTheme = {
   },
 };
 
-function LexicalContext({ children }) {
-  const editorConfig = {
-    theme: editorTheme,
-    onError(error) {
-      console.error(error);
-    },
-    nodes: [
-      HeadingNode,
-      ListNode,
-      ListItemNode,
-      QuoteNode,
-      CodeNode,
-      CodeHighlightNode,
-      TableNode,
-      TableCellNode,
-      TableRowNode,
-      AutoLinkNode,
-      LinkNode,
-      BlockNode,
-    ],
-  };
-
-  return <LexicalComposer initialConfig={editorConfig}>{children}</LexicalComposer>;
-}
-
-export default LexicalContext;
+export default theme;

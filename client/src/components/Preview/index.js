@@ -7,6 +7,7 @@ import useMarked from "hooks/useMarked";
 
 /* STYLE */
 import "./style.scss";
+import previewStyle from "./style";
 
 function classedWrapper(text) {
   return `<main class="vocero-preview"><div class="vocero-preview__content">${text}</div></main>`;
@@ -54,6 +55,8 @@ export default function Preview({ text }) {
     const style = document.createElement("style");
     if (style.styleSheet) style.styleSheet.cssText = css;
     else style.appendChild(document.createTextNode(css));
+
+    renderer.content.prepend(previewStyle);
 
     renderer.content.prepend(style);
     const rendererHTML = renderer.innerHTML;

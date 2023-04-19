@@ -14,10 +14,8 @@ import { TRANSFORMERS } from "@lexical/markdown";
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
 import CodeHighlightPlugin from "./plugins/CodeHighlight";
 import ListMaxIndentLevelPlugin from "./plugins/ListMaxIndentLevelPlugin";
-// import MarkdownCodecPlugin from "./plugins/MarkdownCodecPlugin";
 import BlockNodesPlugin from "./plugins/BlockNodesPlugin";
 
-// import EditorContext from "./context";
 import Blocks from "components/Blocks";
 
 /* STYLE */
@@ -29,7 +27,6 @@ export default function Editor({ content, defaultContent }) {
 
   return (
     <>
-      {/* <EditorContext> */}
       <div className="editor-container">
         <ToolbarPlugin />
         <div className="editor-inner">
@@ -44,12 +41,10 @@ export default function Editor({ content, defaultContent }) {
           <LinkPlugin />
           <ListMaxIndentLevelPlugin maxDepth={7} />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          {/* <MarkdownCodecPlugin /> */}
           <BlockNodesPlugin />
         </div>
       </div>
       <Blocks />
-      {/* </EditorContext> */}
     </>
   );
 }

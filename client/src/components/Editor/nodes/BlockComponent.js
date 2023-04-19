@@ -1,5 +1,6 @@
 /* VENDOR */
 import React, { useEffect, useRef, useState } from "react";
+import { $getNodeByKey } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
@@ -16,7 +17,8 @@ import { useStore } from "colmado";
 import CodeHighlightPlugin from "../plugins/CodeHighlight.js";
 import ListMaxIndentLevelPlugin from "../plugins/ListMaxIndentLevelPlugin.js";
 // import ToolbarPlugin from "../plugins/ToolbarPlugin";
-import BlockNodesPlugin from "../plugins/BlockNodesPlugin";
+import BlockNodesPlugin from "../plugins/BlockNodesPlugin.js";
+import { $isBlockNode } from "./BlockNode.js";
 
 function BlockControl({ name, value, setValue }) {
   return (
@@ -32,8 +34,18 @@ function BlockControl({ name, value, setValue }) {
   );
 }
 
-function BlockControls({ state }) {
+function BlockControls({ state, editor, nodeKey }) {
   const [values, setValues] = state;
+
+  const handleDelete = () => {
+    editor._parentEditor.update(() => {
+      const node = $getNodeByKey(nodeKey);
+      if ($isBlockNode(node)) {
+        node.remove();
+      }
+    });
+  };
+
   return (
     <div className="vocero-block__controls">
       <form>
@@ -46,11 +58,12 @@ function BlockControls({ state }) {
           />
         ))}
       </form>
+      <button onClick={handleDelete}>DELETE</button>
     </div>
   );
 }
 
-function BlockEditor({ hierarchy }) {
+function BlockEditor({ blockID, hierarchy }) {
   return (
     <>
       <RichTextPlugin
@@ -63,40 +76,22 @@ function BlockEditor({ hierarchy }) {
       <LinkPlugin />
       <ListMaxIndentLevelPlugin maxDepth={7} />
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      <BlockNodesPlugin hierarchy={hierarchy} />
+      <BlockNodesPlugin blockID={blockID} hierarchy={hierarchy} />
     </>
   );
 }
 
 function BlockComponent({
+  nodeKey,
   defn,
   editor,
   blockID,
   ancestors,
-  shareProps,
   initProps = {},
-  editorState = {},
   focus = false,
 }) {
   const [{ blocks }, dispatch] = useStore();
   const [, { getTheme }] = useLexicalComposerContext();
-
-  useEffect(() => {
-    if (Object.keys(editorState).length) {
-      if (editorState.root.children.length === 0) {
-        editorState.root.children.push({
-          "children": [],
-          "direction": "ltr",
-          "format": "",
-          "indent": 0,
-          "type": "paragraph",
-          "version": 1,
-        });
-      }
-      const state = editor.parseEditorState(editorState);
-      editor.setEditorState(state);
-    }
-  }, []);
 
   const BlockInner = blocks.find((block) => block.name === defn.name)?.fn || (() => {});
   const wrapper = useRef();
@@ -105,14 +100,14 @@ function BlockComponent({
     dispatch({
       action: "ADD_BLOCK",
       payload: {
-        id: blockID,
+        ID: blockID,
         dom: dom,
         defn: defn,
         props: state,
         editor: editor,
       },
     });
-  }, [wrapper]);
+  }, [nodeKey]);
 
   const [state, setState] = useState(initProps);
   useEffect(() => {
@@ -120,14 +115,26 @@ function BlockComponent({
     setState(Object.fromEntries(defn.args.map((a) => [a, null])));
   }, [defn]);
   useEffect(() => {
-    shareProps(state);
+    editor._parentEditor.update(() => {
+      const node = $getNodeByKey(nodeKey);
+      if ($isBlockNode(node)) {
+        node.props = state;
+      }
+    });
   }, [state]);
 
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
-      {focus && <BlockControls args={defn.args} state={[state, setState]} />}
+      {
+        <BlockControls
+          args={defn.args}
+          state={[state, setState]}
+          editor={editor}
+          nodeKey={nodeKey}
+        />
+      }
       {/* focus && <ToolbarPlugin /> */}
-      <div id={blockID} className="vocero-block-wrapper" ref={wrapper}>
+      <div className="vocero-block-wrapper" ref={wrapper}>
         <BlockInner {...state} React={React}>
           {!defn.selfClosed && <BlockEditor hierarchy={ancestors.concat(blockID)} />}
         </BlockInner>

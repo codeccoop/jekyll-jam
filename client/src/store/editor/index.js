@@ -10,6 +10,14 @@ const Component = ({ Warehouse, children }) => {
     blocks: {},
   });
 
+  useEffect(() => {
+    console.log(state.blocks);
+  }, [state]);
+
+  // function proxySetState(state) {
+  //   setState(state);
+  // }
+
   return <Warehouse value={[state, setState]}>{children}</Warehouse>;
 };
 
