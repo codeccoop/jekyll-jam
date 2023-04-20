@@ -34,47 +34,45 @@ function pruneDom(dom, selectors) {
   }, dom);
 }
 
-function blockMeta(ID, block) {
+function blockMeta(block) {
   const meta = {
-    ID: ID,
     props: block.props,
     defn: block.defn,
-    editor: block.editor.getEditorState().toJSON(),
+    editorState: block.editor.getEditorState().toJSON(),
   };
   return `<!-- VoceroBlock meta="${b64e(JSON.stringify(meta))}" -->`;
 }
 
-function blockReplacer(parentNode, children, match) {
+function blockReplacer(parentNode, _, match) {
   const meta = JSON.parse(b64d(match[1]));
-  this.storeBlock(meta);
   const node = $createBlockNode({
     defn: meta.defn,
-    ID: meta.ID,
-    editor: meta.editor,
+    editorState: meta.editorState,
     props: meta.props,
   });
   parentNode.replace(node);
+  // console.log(node.editor.getRootElement().click());
   // node.select(0, 0);
 }
 
 export function genBlockSerializer(storeBlock) {
   return {
     regExp: /^<!-- VoceroBlock meta="([^"]+)".*/,
-    replace: blockReplacer.bind({ storeBlock }),
+    replace: blockReplacer,
     type: "element",
   };
 }
 
-function blockExporter(node, exportChildren) {
+function blockExporter(node) {
   if (!$isBlockNode(node)) return null;
-  const block = this.blocks[node.ID];
+  const block = this.blocks[node.getKey()];
   if (block.dom) {
     const dom = pruneDom(htmlToDom(block.dom.innerHTML), [
       ".vocero-block-wrapper",
       ".vocero-block",
       ".block-editor-input",
     ]);
-    return blockMeta(node.ID, block) + domToHtml(dom);
+    return blockMeta(block) + domToHtml(dom);
   }
   return "";
 }

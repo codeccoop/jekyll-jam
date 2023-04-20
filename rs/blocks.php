@@ -22,7 +22,7 @@ try {
         args: ["url", "width", "height"],
         selfClosed: true,
         // fn: ({ React, src, width = "500px", height = "auto" }, ref) => React.createElement("video", {src, width, height}),
-        fn: ({ React, src, width = "500px", height = "auto" }) => React.createElement("video", {src, width, height}),
+        fn: ({ React, src, width = "500px", height = "auto" }) => React.createElement("video", {width, height}, React.createElement("source", {src,type:"video/mp4"})),
     }, {
         family: "layout",
         name: "Columns",

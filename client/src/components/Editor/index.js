@@ -16,7 +16,7 @@ import CodeHighlightPlugin from "./plugins/CodeHighlight";
 import ListMaxIndentLevelPlugin from "./plugins/ListMaxIndentLevelPlugin";
 import BlockNodesPlugin from "./plugins/BlockNodesPlugin";
 
-import Blocks from "components/Blocks";
+import Toolbar from "components/Toolbar";
 
 /* STYLE */
 import "./style.scss";
@@ -44,7 +44,7 @@ export default function Editor({ content, defaultContent }) {
           <BlockNodesPlugin />
         </div>
       </div>
-      <Blocks />
+      <Toolbar />
     </>
   );
 }

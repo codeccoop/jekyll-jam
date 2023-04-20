@@ -19,6 +19,7 @@ import ListMaxIndentLevelPlugin from "../plugins/ListMaxIndentLevelPlugin.js";
 // import ToolbarPlugin from "../plugins/ToolbarPlugin";
 import BlockNodesPlugin from "../plugins/BlockNodesPlugin.js";
 import { $isBlockNode } from "./BlockNode.js";
+import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 
 function BlockControl({ name, value, setValue }) {
   return (
@@ -34,11 +35,11 @@ function BlockControl({ name, value, setValue }) {
   );
 }
 
-function BlockControls({ state, editor, nodeKey }) {
+function BlockControls({ state, parentEditor, nodeKey }) {
   const [values, setValues] = state;
 
   const handleDelete = () => {
-    editor._parentEditor.update(() => {
+    parentEditor.update(() => {
       const node = $getNodeByKey(nodeKey);
       if ($isBlockNode(node)) {
         node.remove();
@@ -63,7 +64,7 @@ function BlockControls({ state, editor, nodeKey }) {
   );
 }
 
-function BlockEditor({ blockID, hierarchy }) {
+function BlockEditor({ hierarchy }) {
   return (
     <>
       <RichTextPlugin
@@ -76,7 +77,7 @@ function BlockEditor({ blockID, hierarchy }) {
       <LinkPlugin />
       <ListMaxIndentLevelPlugin maxDepth={7} />
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      <BlockNodesPlugin blockID={blockID} hierarchy={hierarchy} />
+      <BlockNodesPlugin hierarchy={hierarchy} />
     </>
   );
 }
@@ -85,28 +86,28 @@ function BlockComponent({
   nodeKey,
   defn,
   editor,
-  blockID,
+  parentEditor,
   ancestors,
   initProps = {},
-  focus = false,
+  // focus = false,
 }) {
-  const [{ blocks }, dispatch] = useStore();
+  const [{ blocks }] = useStore();
+  const blockRegistry = useBlockRegistryContext();
   const [, { getTheme }] = useLexicalComposerContext();
-
-  const BlockInner = blocks.find((block) => block.name === defn.name)?.fn || (() => {});
   const wrapper = useRef();
+
+  const BlockInner =
+    blocks.find((block) => block.name === defn.name)?.fn || (() => {});
+
   useEffect(() => {
     const dom = ancestors.length === 0 && wrapper.current;
-    dispatch({
-      action: "ADD_BLOCK",
-      payload: {
-        ID: blockID,
-        dom: dom,
-        defn: defn,
-        props: state,
-        editor: editor,
-      },
-    });
+    blockRegistry[nodeKey] = {
+      dom,
+      defn,
+      editor,
+      key: nodeKey,
+      props: state,
+    };
   }, [nodeKey]);
 
   const [state, setState] = useState(initProps);
@@ -114,8 +115,9 @@ function BlockComponent({
     if (!defn) return;
     setState(Object.fromEntries(defn.args.map((a) => [a, null])));
   }, [defn]);
+
   useEffect(() => {
-    editor._parentEditor.update(() => {
+    parentEditor.update(() => {
       const node = $getNodeByKey(nodeKey);
       if ($isBlockNode(node)) {
         node.props = state;
@@ -129,14 +131,16 @@ function BlockComponent({
         <BlockControls
           args={defn.args}
           state={[state, setState]}
-          editor={editor}
+          parentEditor={parentEditor}
           nodeKey={nodeKey}
         />
       }
       {/* focus && <ToolbarPlugin /> */}
       <div className="vocero-block-wrapper" ref={wrapper}>
         <BlockInner {...state} React={React}>
-          {!defn.selfClosed && <BlockEditor hierarchy={ancestors.concat(blockID)} />}
+          {!defn.selfClosed && (
+            <BlockEditor hierarchy={ancestors.concat(nodeKey)} />
+          )}
         </BlockInner>
       </div>
     </LexicalNestedComposer>

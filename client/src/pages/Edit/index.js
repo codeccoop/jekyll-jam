@@ -17,8 +17,12 @@ import YamlForm from "components/YamlForm";
 import { getBlob, getStyleURL } from "services/api";
 import { hydrateBlocks, renderBlocks } from "lib/blocks";
 import { b64d, b64e } from "lib/helpers";
-import { genBlockTransformer, genBlockSerializer } from "lib/markdownTransformers";
+import {
+  genBlockTransformer,
+  genBlockSerializer,
+} from "lib/markdownTransformers";
 import useMarked from "hooks/useMarked";
+import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 
 /* STYLE */
 import "./style.scss";
@@ -49,7 +53,11 @@ function EditComponent({ mode, content, setContent, blob }) {
       return <YamlForm onUpdate={setContent} content={content} />;
     case "asset":
       return (
-        <AssetViewer content={blob.content} encoding={blob.encoding} path={blob.path} />
+        <AssetViewer
+          content={blob.content}
+          encoding={blob.encoding}
+          path={blob.path}
+        />
       );
   }
 }
@@ -57,7 +65,8 @@ function EditComponent({ mode, content, setContent, blob }) {
 function EditorPage() {
   const marked = useMarked();
   const [editor] = useLexicalComposerContext();
-  const [{ query, changes, branch, editor: editorContext }, dispatch] = useStore();
+  const blocksRegistry = useBlockRegistryContext();
+  const [{ query, changes, branch }, dispatch] = useStore();
 
   const [blob, setBlob] = useState({
     content: null,
@@ -78,12 +87,7 @@ function EditorPage() {
       editor.update(() => {
         $convertFromMarkdownString(editorContent, [
           ...TRANSFORMERS,
-          genBlockSerializer((block) => {
-            dispatch({
-              action: "ADD_BLOCK",
-              payload: block,
-            });
-          }),
+          genBlockSerializer(),
         ]);
       });
     }
@@ -114,7 +118,7 @@ function EditorPage() {
         setPreviewContent(
           $convertToMarkdownString([
             ...TRANSFORMERS,
-            genBlockTransformer(editorContext.blocks),
+            genBlockTransformer(blocksRegistry),
           ])
         );
       });
@@ -158,7 +162,7 @@ function EditorPage() {
     editor.getEditorState().read(() => {
       const content = $convertToMarkdownString([
         ...TRANSFORMERS,
-        genBlockTransformer(editorContext.blocks),
+        genBlockTransformer(blocksRegistry),
       ]);
 
       dispatch({

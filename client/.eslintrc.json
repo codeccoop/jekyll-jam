@@ -1,6 +1,6 @@
 {
   "root": true,
-  "extends": ["eslint:recommended", "react-app", "prettier"],
+  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
   "plugins": ["prettier"],
   "ignorePatterns": ["src/**/*.test.ts"]
 }

@@ -7,8 +7,9 @@ import postcss from "rollup-plugin-postcss";
 import url from "postcss-url";
 import autoprefixer from "autoprefixer";
 import json from "@rollup/plugin-json";
-import dev from "rollup-plugin-dev";
 import alias from "@rollup/plugin-alias";
+import serve from "rollup-plugin-serve";
+import livereload from "rollup-plugin-livereload";
 
 export default {
   input: "src/index.js",
@@ -75,15 +76,12 @@ export default {
       plugins: [autoprefixer(), url({ url: "inline" })],
     }),
     json(),
-    dev({
+    serve({
+      open: false,
+      contentBase: "../",
       port: 3000,
-      spa: true,
-      dirs: ["../"],
-      proxy: [{ from: "/api", to: "http://jekyll-jam.orzopad.net/api" }],
-      server: {
-        connectionTimeout: 1e4,
-      },
     }),
+    livereload()
   ],
   preserveSymlinks: true,
 };

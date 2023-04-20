@@ -3,62 +3,51 @@ import React from "react";
 import { createEditor, DecoratorNode } from "lexical";
 
 /* SOURCE */
-// import ToolbarPlugin from "../plugins/ToolbarPlugin";
-import editorConfig from "lib/contexts/Lexical/config";
 import BlockComponent from "./BlockComponent";
 import { b64e } from "lib/helpers";
 
 const EMPTY_STATE = () => ({
-  "root": {
-    "children": [
+  root: {
+    children: [
       {
-        "children": [],
-        "direction": null,
-        "format": "",
-        "indent": 0,
-        "type": "paragraph",
-        "version": 1,
+        children: [],
+        direction: null,
+        format: "",
+        indent: 0,
+        type: "paragraph",
+        version: 1,
       },
     ],
-    "direction": null,
-    "format": "",
-    "indent": 0,
-    "type": "root",
-    "version": 1,
+    direction: null,
+    format: "",
+    indent: 0,
+    type: "root",
+    version: 1,
   },
 });
 
 const PARAGRAPH_NODE = () => ({
-  "children": [],
-  "direction": "ltr",
-  "format": "",
-  "indent": 0,
-  "type": "paragraph",
-  "version": 1,
+  children: [],
+  direction: "ltr",
+  format: "",
+  indent: 0,
+  type: "paragraph",
+  version: 1,
 });
 
-function initBlockEditor(state, config = {}) {
-  const editor = createEditor({ ...editorConfig, ...config });
-  LexicalEditorPrototype = editor.__proto__;
+function initBlockEditor(editorState) {
+  editorState = editorState || EMPTY_STATE();
 
-  if (!state) {
-    state = EMPTY_STATE();
+  if (editorState.root.children.length === 0) {
+    editorState.root.children.push(PARAGRAPH_NODE());
   }
 
-  if (state.root.children.length === 0) {
-    state.root.children.push(PARAGRAPH_NODE());
-  }
-
-  state = editor.parseEditorState(state);
-  editor.setEditorState(state);
+  const editor = createEditor();
+  editor.setEditorState(editor.parseEditorState(editorState));
   editor.setEditable(true);
 
   return editor;
 }
-
-let LexicalEditorPrototype = {
-  isPrototypeOf: () => false,
-};
 
 class BlockNode extends DecoratorNode {
   static getType() {
@@ -69,7 +58,6 @@ class BlockNode extends DecoratorNode {
     return new BlockNode(
       {
         defn: node.defn,
-        ID: node.ID,
         ancestors: node.ancestors,
         editor: node.editor,
         props: node.props,
@@ -82,27 +70,16 @@ class BlockNode extends DecoratorNode {
     return $createBlockNode(serializedNode);
   }
 
-  constructor({ ID, defn, editor, ancestors = [], props = {} }, key) {
+  constructor({ defn, editor, editorState, ancestors = [], props = {} }, key) {
     super(key);
-    this.__ID = ID;
     this.__defn = defn;
     this.__ancestors = ancestors;
-    this.__editor = LexicalEditorPrototype.isPrototypeOf(editor)
-      ? editor
-      : initBlockEditor(editor, { namespace: ID });
+    this.__editor = editor || initBlockEditor(editorState);
     this.__props = props;
-  }
-
-  get keyHandler() {
-    return this.__keyHandler;
   }
 
   get defn() {
     return this.__defn;
-  }
-
-  get ID() {
-    return this.__ID;
   }
 
   get ancestors() {
@@ -122,21 +99,21 @@ class BlockNode extends DecoratorNode {
     Object.keys(props).forEach((key) => (writable.__props[key] = props[key]));
   }
 
-  createDOM(config, editor) {
+  createDOM(/* config, editor */) {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
-    el.id = this.ID;
+    el.id = this.getKey();
     return el;
   }
 
-  updateDOM(_prevNode, _dom, _config) {
+  updateDOM(/* _prevNode, _dom, _config */) {
     return false;
   }
 
   exportDOM(editor) {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
-    el.id = this.ID;
+    el.id = this.getKey();
     el.setAttribute(
       "data-editor",
       b64e(JSON.stringify(editor.getEditorState().toJSON()))
@@ -145,25 +122,23 @@ class BlockNode extends DecoratorNode {
   }
 
   exportJSON() {
-    debugger;
     return {
       version: 1,
       type: "block",
       defn: this.defn,
-      editor: this.editor.getEditorState().toJSON(),
-      ID: this.ID,
+      editorState: this.editor.getEditorState().toJSON(),
       ancestors: this.ancestors,
       props: this.props,
     };
   }
 
-  decorate(editor, config) {
+  decorate(editor /*, config */) {
     return (
       <BlockComponent
         nodeKey={this.getKey()}
-        blockID={this.ID}
         defn={this.defn}
         editor={this.editor}
+        parentEditor={editor}
         ancestors={this.ancestors}
         initProps={this.props}
       />
@@ -175,8 +150,8 @@ class BlockNode extends DecoratorNode {
   }
 }
 
-export function $createBlockNode({ defn, ID, ancestors, props, editor }) {
-  return new BlockNode({ defn, ID, ancestors, props, editor });
+export function $createBlockNode({ defn, ancestors, props, editorState }) {
+  return new BlockNode({ defn, ancestors, props, editorState });
 }
 
 export function $isBlockNode(node) {
