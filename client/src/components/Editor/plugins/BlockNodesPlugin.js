@@ -10,12 +10,14 @@ import {
   // $insertNodes,
   $isTextNode,
   $isRootNode,
+  $getNodeByKey,
   // $getNearestRootOrShadowRoot,
   // COMMAND_PRIORITY_HIGH,
   // $getNodeByKey,
 } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import { mergeRegister } from "@lexical/utils";
+import { useStore } from "colmado";
 
 /* SOURCE */
 import BlockNode, {
@@ -39,13 +41,14 @@ function isFamily(hierarchy, ancestors) {
   );
 }
 
-function BlockNodesPlugin({ hierarchy = [] }) {
+function BlockNodesPlugin({ parentEditor, hierarchy = [] }) {
+  const nodeKey = hierarchy[hierarchy.length - 1];
   const blocksRegistry = useBlockRegistryContext();
+  const [, dispatch] = useStore();
 
   let editor;
   if (hierarchy.length) {
-    const parentKey = hierarchy[hierarchy.length - 1];
-    editor = blocksRegistry[parentKey]?.editor;
+    editor = blocksRegistry[nodeKey]?.editor;
   } else {
     [editor] = useLexicalComposerContext();
   }
@@ -109,6 +112,13 @@ function BlockNodesPlugin({ hierarchy = [] }) {
     return [command, _callback];
   } */
 
+  function blurBlocks() {
+    dispatch({
+      action: "SET_BLOCK",
+      payload: null,
+    });
+  }
+
   useEffect(() => {
     if (!editor) return;
 
@@ -164,6 +174,13 @@ function BlockNodesPlugin({ hierarchy = [] }) {
         },
         COMMAND_PRIORITY_LOW
       ), */
+      editor.registerRootListener((el) => {
+        if (!parentEditor) {
+          el.removeEventListener("focus", blurBlocks);
+          el.addEventListener("focus", blurBlocks);
+        }
+        return true;
+      }),
       editor.registerCommand(
         INSERT_BLOCK_NODE,
         ({ defn }) => {

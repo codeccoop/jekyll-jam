@@ -61,6 +61,7 @@ class BlockNode extends DecoratorNode {
         ancestors: node.ancestors,
         editor: node.editor,
         props: node.props,
+        focus: node.isFocus,
       },
       node.getKey()
     );
@@ -70,12 +71,16 @@ class BlockNode extends DecoratorNode {
     return $createBlockNode(serializedNode);
   }
 
-  constructor({ defn, editor, editorState, ancestors = [], props = {} }, key) {
+  constructor(
+    { defn, editor, editorState, ancestors = [], props = {}, focus = 0 },
+    key
+  ) {
     super(key);
     this.__defn = defn;
     this.__ancestors = ancestors;
     this.__editor = editor || initBlockEditor(editorState);
     this.__props = props;
+    this.__focus = focus;
   }
 
   get defn() {
@@ -99,10 +104,26 @@ class BlockNode extends DecoratorNode {
     Object.keys(props).forEach((key) => (writable.__props[key] = props[key]));
   }
 
-  createDOM(/* config, editor */) {
+  get isFocus() {
+    return this.__focus;
+  }
+
+  focus() {
+    const writable = this.getWritable();
+    writable.__focus += 1;
+  }
+
+  createDOM(_, editor) {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
     el.id = this.getKey();
+    el.addEventListener(
+      "click",
+      () => {
+        editor.update(() => this.focus());
+      },
+      true
+    );
     return el;
   }
 
@@ -141,6 +162,7 @@ class BlockNode extends DecoratorNode {
         parentEditor={editor}
         ancestors={this.ancestors}
         initProps={this.props}
+        focus={this.isFocus}
       />
     );
   }

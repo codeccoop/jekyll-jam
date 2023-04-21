@@ -1,5 +1,5 @@
 /* VENDOR */
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { $getNodeByKey } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
@@ -64,7 +64,7 @@ function BlockControls({ state, parentEditor, nodeKey }) {
   );
 }
 
-function BlockEditor({ hierarchy }) {
+function BlockEditor({ parentEditor, hierarchy }) {
   return (
     <>
       <RichTextPlugin
@@ -77,7 +77,7 @@ function BlockEditor({ hierarchy }) {
       <LinkPlugin />
       <ListMaxIndentLevelPlugin maxDepth={7} />
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      <BlockNodesPlugin hierarchy={hierarchy} />
+      <BlockNodesPlugin parentEditor={parentEditor} hierarchy={hierarchy} />
     </>
   );
 }
@@ -88,21 +88,18 @@ function BlockComponent({
   editor,
   parentEditor,
   ancestors,
+  focus,
   initProps = {},
-  // focus = false,
 }) {
-  const [{ blocks }] = useStore();
+  const [{ blocks, block }, dispatch] = useStore();
   const blockRegistry = useBlockRegistryContext();
   const [, { getTheme }] = useLexicalComposerContext();
-  const wrapper = useRef();
 
   const BlockInner =
     blocks.find((block) => block.name === defn.name)?.fn || (() => {});
 
   useEffect(() => {
-    const dom = ancestors.length === 0 && wrapper.current;
     blockRegistry[nodeKey] = {
-      dom,
       defn,
       editor,
       key: nodeKey,
@@ -125,24 +122,29 @@ function BlockComponent({
     });
   }, [state]);
 
+  useEffect(() => {
+    dispatch({
+      action: "SET_BLOCK",
+      payload: {
+        nodeKey: nodeKey,
+        props: state,
+        setProps: (state) => setState(state),
+        parentEditor: parentEditor,
+      },
+    });
+  }, [focus]);
+
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
-      {
-        <BlockControls
-          args={defn.args}
-          state={[state, setState]}
-          parentEditor={parentEditor}
-          nodeKey={nodeKey}
-        />
-      }
       {/* focus && <ToolbarPlugin /> */}
-      <div className="vocero-block-wrapper" ref={wrapper}>
-        <BlockInner {...state} React={React}>
-          {!defn.selfClosed && (
-            <BlockEditor hierarchy={ancestors.concat(nodeKey)} />
-          )}
-        </BlockInner>
-      </div>
+      <BlockInner {...state} React={React}>
+        {!defn.selfClosed && (
+          <BlockEditor
+            parentEditor={parentEditor}
+            hierarchy={ancestors.concat(nodeKey)}
+          />
+        )}
+      </BlockInner>
     </LexicalNestedComposer>
   );
 }

@@ -1,9 +1,20 @@
 /* VENDOR */
-import React, { useStore } from "colmado";
+import React, { useRef } from "react";
+import { useStore } from "colmado";
+import { $getNodeByKey } from "lexical";
 
 /* SOURCE */
+import { $isBlockNode } from "components/Editor/nodes/BlockNode";
 
 function BlockControl({ name, value, setValue }) {
+  const debounce = useRef();
+
+  function handleOnChange({ target }) {
+    clearTimeout(debounce.current);
+    const value = target.value;
+    debounce.current = setTimeout(() => setValue(value), 300);
+  }
+
   return (
     <>
       <label htmlFor={name}>{name}</label>
@@ -11,36 +22,42 @@ function BlockControl({ name, value, setValue }) {
         type="text"
         name={name}
         value={value || ""}
-        onChange={(ev) => setValue(ev.target.value)}
+        onInput={handleOnChange}
       />
     </>
   );
 }
 
 function BlockControls() {
-  const [{ editor }] = useStore();
+  const [{ block }, dispatch] = useStore();
 
   const handleDelete = () => {
-    editor._parentEditor.update(() => {
-      const node = $getNodeByKey(nodeKey);
+    block.parentEditor.update(() => {
+      const node = $getNodeByKey(block.nodeKey);
       if ($isBlockNode(node)) {
         node.remove();
+        dispatch({
+          action: "SET_BLOCK",
+          payload: null,
+        });
       }
     });
   };
 
+  if (!block) return <h2>Select one block</h2>;
   return (
     <div className="block-control">
       <form>
-        {editor.block &&
-          Object.entries(editor.block.props).map((prop, i) => (
-            <BlockControl
-              key={`${prop[0]}-${i}`}
-              name={prop[0]}
-              value={prop[1]}
-              setValue={(val) => setValues({ ...values, [prop[0]]: val })}
-            />
-          ))}
+        {Object.entries(block.props).map((prop, i) => (
+          <BlockControl
+            key={`${prop[0]}-${i}`}
+            name={prop[0]}
+            value={prop[1]}
+            setValue={(val) =>
+              block.setProps({ ...block.props, [prop[0]]: val })
+            }
+          />
+        ))}
       </form>
       <button onClick={handleDelete}>DELETE</button>
     </div>

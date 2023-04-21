@@ -63,11 +63,18 @@ export function genBlockSerializer(storeBlock) {
   };
 }
 
+function searchParent(el, className) {
+  while (el.parentElement) {
+    el = el.parentElement;
+    if (el.className === className) return el;
+  }
+}
 function blockExporter(node) {
   if (!$isBlockNode(node)) return null;
   const block = this.blocks[node.getKey()];
-  if (block.dom) {
-    const dom = pruneDom(htmlToDom(block.dom.innerHTML), [
+  const wrapper = searchParent(block.editor.getRootElement(), "vocero-block");
+  if (wrapper) {
+    const dom = pruneDom(htmlToDom(wrapper.innerHTML), [
       ".vocero-block-wrapper",
       ".vocero-block",
       ".block-editor-input",

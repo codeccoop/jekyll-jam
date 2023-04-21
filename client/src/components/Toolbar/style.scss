@@ -1,0 +1,40 @@
+.toolbar {
+  display: flex;
+
+  nav {
+    flex: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #0001;
+
+    .toolbar-tab {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      position: relative;
+
+      &.active {
+        color: white;
+        background-color: steelblue;
+      }
+
+      &[data-tab="blocks"]:after {
+        content: "\1F371";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      &[data-tab="block"]:after {
+        content: "\1F359";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+}
