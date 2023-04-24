@@ -58,17 +58,25 @@ From the root directory install php dependencies with
 composer install
 ```
 
-Enter the client directory, install js dependencies and build the client for development
+Enter the client directory, install js dependencies and start a node server listening on port 3000 and
+watching for changes that will output bundles to the `static` directories.
+
 ```bash
 cd client && npm install && npm start
 ```
 
-To get your instance running, start your environment using docker
+Then, open a new console and start the php server.
+
+```bash
+php -S localhost:8000
+```
+
+To test your instance running inside apache, start your environment using docker. Docker will be listening
+on the ssl port 443 with a self signed certificate.
+
 ```bash
 bin/docker-cli run
 ```
-
-The Vocero instance will be exposed on the localhost:443
 
 ## Config
 
