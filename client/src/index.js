@@ -65,7 +65,7 @@ function App() {
   const [{ project }] = useStore();
 
   return (
-    <BrowserRouter basename={process.env.BASE_URL}>
+    <BrowserRouter basename={process.env.VOCERO_BASE_URL}>
       <LexicalContext>
         <Store>
           <MainLayout>{project ? <AppRoutes /> : <Spinner />}</MainLayout>

@@ -11,6 +11,10 @@ import alias from "@rollup/plugin-alias";
 import serve from "rollup-plugin-serve";
 import livereload from "rollup-plugin-livereload";
 
+const dotenv_path =
+  process.env.NODE_ENV === "development" ? ".env.development" : ".env";
+require("dotenv").config({ path: dotenv_path, debug: process.env.NODE_ENV === "development" });
+
 export default {
   input: "src/index.js",
   output: {
@@ -64,9 +68,14 @@ export default {
       ],
     }),
     replace({
-      preventAssignment: true,
+      "preventAssignment": true,
       "process.env.NODE_ENV": JSON.stringify("development"),
-      "process.env.BASE_URL": JSON.stringify(process.env.BASE_URL || "/"),
+      "process.env.VOCERO_BASE_URL": JSON.stringify(
+        process.env.VOCERO_BASE_URL || "/"
+      ),
+      "process.env.VOCERO_API_URL": JSON.stringify(
+        process.env.VOCERO_API_URL || "/"
+      ),
     }),
     babel({
       presets: ["@babel/preset-react"],
@@ -81,7 +90,7 @@ export default {
       contentBase: "../",
       port: 3000,
     }),
-    livereload()
+    livereload(),
   ],
   preserveSymlinks: true,
 };

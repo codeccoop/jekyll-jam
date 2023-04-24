@@ -1,10 +1,10 @@
-const BASE = process.env.BASE_URL.replace(/\/$/, "") + "/rs";
+const API_URL = process.env.VOCERO_API_URL;
 
 function request(
   endpoint,
-  { method = "GET", data = null, headers = { "Accept": "application/json" } }
+  { method = "GET", data = null, headers = { Accept: "application/json" } }
 ) {
-  let path = `${BASE}/${endpoint}.php`;
+  let path = `${API_URL}/index.php/${endpoint}`;
   if (method === "GET") {
     if (data !== null) {
       path +=
@@ -56,7 +56,7 @@ export function getStyleURL(sha) {
 export function getBlocks(sha) {
   return request("blocks", {
     data: { sha },
-    headers: { "Accept": "text/javascript" },
+    headers: { Accept: "text/javascript" },
   });
 }
 
@@ -126,14 +126,14 @@ export function observeWorkflowRun(interval = 10e3, timeout = 3e2) {
 
 export function getArtifact() {
   return request("artifact", {
-    headers: { "Accept": "application/zip, application/json" },
+    headers: { Accept: "application/zip, application/json" },
   }).then((res) => res.blob());
 }
 
 export function getRepo(slug) {
   return fetch(`https://api.github.com/repos/${slug}`, {
     headers: {
-      "Accept": "application/vnd.github+json",
+      Accept: "application/vnd.github+json",
     },
   }).then((res) => res.json());
 }
@@ -141,7 +141,7 @@ export function getRepo(slug) {
 export function getUser(slug) {
   return fetch(`https://api.github.com/users/${slug}`, {
     headers: {
-      "Accept": "application/vnd.github+json",
+      Accept: "application/vnd.github+json",
     },
   }).then((res) => res.json());
 }
@@ -149,8 +149,8 @@ export function getUser(slug) {
 export function getAuthenticatedUser(token) {
   return fetch("https://api.github.com/users", {
     headers: {
-      "Accept": "application/vnd.github+json",
-      "Authorization": `Bearer ${token}`,
+      Accept: "application/vnd.github+json",
+      Authorization: `Bearer ${token}`,
     },
   }).then((res) => res.json());
 }
