@@ -14,11 +14,16 @@ class Blob extends BaseResource
 
     private string $type;
     private string $path;
+    private ?array $payload = null;
 
-    public function __construct(string $sha, string $path)
+    public function __construct(string $sha, string $path, ?array $payload = null)
     {
         $this->sha = $sha;
         $this->path = $path;
+        if ($payload) {
+            $this->payload = $payload;
+        }
+
         $this->cache_key = $this->cache_key . '/' . $this->path;
 
         if (preg_match('/^assets/', $this->path)) $this->type = 'asset';
@@ -75,16 +80,15 @@ class Blob extends BaseResource
         }
     }
 
-    protected function req_payload(string $method)
+    protected function get_payload(string $method): ?array
     {
-        $payload = $this->req['payload'];
-        if ($payload['encoding'] == 'base64') {
+        if ($this->payload['encoding'] == 'base64') {
             if ($this->type === 'markdown') {
-                $content = $this->absolute_links($payload['content']);
+                $content = $this->absolute_links($this->payload['content']);
             }
 
-            if ($payload['frontmatter'] !== null && sizeof($payload['frontmatter']) > 0) {
-                $content = '---' . PHP_EOL . Yaml::dump($payload['frontmatter']) . '---' . PHP_EOL . PHP_EOL . $content;
+            if ($this->payload['frontmatter'] !== null && sizeof($this->payload['frontmatter']) > 0) {
+                $content = '---' . PHP_EOL . Yaml::dump($this->payload['frontmatter']) . '---' . PHP_EOL . PHP_EOL . $content;
             }
 
             $content = base64_encode($content);
@@ -92,7 +96,7 @@ class Blob extends BaseResource
 
         $output = [
             'content' => $content,
-            'encoding' => $payload['encoding']
+            'encoding' => $this->payload['encoding']
         ];
 
         return $output;

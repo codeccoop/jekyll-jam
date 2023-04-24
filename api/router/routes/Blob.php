@@ -2,6 +2,7 @@
 
 require_once VOCERO_API_ROOT . 'router/routes/BaseRoute.php';
 require_once VOCERO_API_ROOT . 'resources/Blob.php';
+require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class BlobRoute extends BaseRoute
 {
@@ -13,7 +14,7 @@ class BlobRoute extends BaseRoute
             throw new Exception("Invalid query arguments", 400);
         }
 
-        $blob = new Blob($this->req['query']['sha'], $this->req['query']['path']);
+        $blob = new Blob($this->req['query']['sha'], b64d($this->req['query']['path']));
         $response = $blob->json();
         $this->send_output($response);
     }
