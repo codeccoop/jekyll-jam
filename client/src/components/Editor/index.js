@@ -9,6 +9,7 @@ import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin";
 import { ListPlugin } from "@lexical/react/LexicalListPlugin";
 import { MarkdownShortcutPlugin } from "@lexical/react/LexicalMarkdownShortcutPlugin";
 import { TRANSFORMERS } from "@lexical/markdown";
+import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 /* SOURCE */
 import ToolbarPlugin from "./plugins/ToolbarPlugin";
@@ -24,6 +25,7 @@ import "./lexical.scss";
 
 export default function Editor({ content, defaultContent }) {
   content = content !== null ? content : defaultContent;
+  const [editor] = useLexicalComposerContext();
 
   return (
     <>
@@ -31,7 +33,7 @@ export default function Editor({ content, defaultContent }) {
         <ToolbarPlugin />
         <div className="editor-inner">
           <RichTextPlugin
-            contentEditable={<ContentEditable className="editor-input" />}
+            contentEditable={<ContentEditable className="vocero-root-editor" />}
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />
@@ -41,7 +43,7 @@ export default function Editor({ content, defaultContent }) {
           <LinkPlugin />
           <ListMaxIndentLevelPlugin maxDepth={7} />
           <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-          <BlockNodesPlugin />
+          <BlockNodesPlugin editor={editor} />
         </div>
       </div>
       <Toolbar />

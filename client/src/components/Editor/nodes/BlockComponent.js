@@ -21,54 +21,11 @@ import BlockNodesPlugin from "../plugins/BlockNodesPlugin.js";
 import { $isBlockNode } from "./BlockNode.js";
 import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 
-function BlockControl({ name, value, setValue }) {
-  return (
-    <>
-      <label htmlFor={name}>{name}</label>
-      <input
-        type="text"
-        name={name}
-        value={value || ""}
-        onChange={(ev) => setValue(ev.target.value)}
-      />
-    </>
-  );
-}
-
-function BlockControls({ state, parentEditor, nodeKey }) {
-  const [values, setValues] = state;
-
-  const handleDelete = () => {
-    parentEditor.update(() => {
-      const node = $getNodeByKey(nodeKey);
-      if ($isBlockNode(node)) {
-        node.remove();
-      }
-    });
-  };
-
-  return (
-    <div className="vocero-block__controls">
-      <form>
-        {Object.entries(values).map((prop, i) => (
-          <BlockControl
-            key={`${prop[0]}-${i}`}
-            name={prop[0]}
-            value={prop[1]}
-            setValue={(val) => setValues({ ...values, [prop[0]]: val })}
-          />
-        ))}
-      </form>
-      <button onClick={handleDelete}>DELETE</button>
-    </div>
-  );
-}
-
-function BlockEditor({ parentEditor, hierarchy }) {
+function BlockEditor({ editor, parentEditor, hierarchy = [] }) {
   return (
     <>
       <RichTextPlugin
-        contentEditable={<ContentEditable className="block-editor-input" />}
+        contentEditable={<ContentEditable className="vocero-block-editor" />}
         ErrorBoundary={LexicalErrorBoundary}
       />
       <HistoryPlugin />
@@ -77,7 +34,11 @@ function BlockEditor({ parentEditor, hierarchy }) {
       <LinkPlugin />
       <ListMaxIndentLevelPlugin maxDepth={7} />
       <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
-      <BlockNodesPlugin parentEditor={parentEditor} hierarchy={hierarchy} />
+      <BlockNodesPlugin
+        editor={editor}
+        parentEditor={parentEditor}
+        hierarchy={hierarchy}
+      />
     </>
   );
 }
@@ -91,7 +52,7 @@ function BlockComponent({
   focus,
   initProps = {},
 }) {
-  const [{ blocks, block }, dispatch] = useStore();
+  const [{ blocks }, dispatch] = useStore();
   const blockRegistry = useBlockRegistryContext();
   const [, { getTheme }] = useLexicalComposerContext();
 
@@ -126,6 +87,7 @@ function BlockComponent({
     dispatch({
       action: "SET_BLOCK",
       payload: {
+        defn: defn,
         nodeKey: nodeKey,
         props: state,
         setProps: (state) => setState(state),
@@ -140,6 +102,7 @@ function BlockComponent({
       <BlockInner {...state} React={React}>
         {!defn.selfClosed && (
           <BlockEditor
+            editor={editor}
             parentEditor={parentEditor}
             hierarchy={ancestors.concat(nodeKey)}
           />

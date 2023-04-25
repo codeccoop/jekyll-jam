@@ -1,5 +1,5 @@
 /* VENDOR */
-import React, { useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useStore } from "colmado";
 import { $getNodeByKey } from "lexical";
 
@@ -7,14 +7,6 @@ import { $getNodeByKey } from "lexical";
 import { $isBlockNode } from "components/Editor/nodes/BlockNode";
 
 function BlockControl({ name, value, setValue }) {
-  const debounce = useRef();
-
-  function handleOnChange({ target }) {
-    clearTimeout(debounce.current);
-    const value = target.value;
-    debounce.current = setTimeout(() => setValue(value), 300);
-  }
-
   return (
     <>
       <label htmlFor={name}>{name}</label>
@@ -22,7 +14,7 @@ function BlockControl({ name, value, setValue }) {
         type="text"
         name={name}
         value={value || ""}
-        onInput={handleOnChange}
+        onInput={(ev) => setValue(ev.target.value)}
       />
     </>
   );
@@ -44,18 +36,37 @@ function BlockControls() {
     });
   };
 
+  const [props, setProps] = useState(Object.assign({}, block.props));
+  useEffect(() => {
+    if (Object.keys(props).length === 0) return;
+    debouncedSetter(props);
+  }, [props]);
+
+  useEffect(() => {
+    if (!block) return;
+    setProps(block.props);
+    return () => setProps({});
+  }, [block]);
+
+  const delay = useRef();
+  function debouncedSetter(props) {
+    clearTimeout(delay.current);
+    delay.current = setTimeout(() => {
+      block.setProps({ ...block.props, ...props });
+    }, 500);
+  }
+
   if (!block) return <h2>Select one block</h2>;
   return (
     <div className="block-control">
+      <h3>{block.defn.name}</h3>
       <form>
-        {Object.entries(block.props).map((prop, i) => (
+        {Object.entries(props).map((prop, i) => (
           <BlockControl
             key={`${prop[0]}-${i}`}
             name={prop[0]}
             value={prop[1]}
-            setValue={(val) =>
-              block.setProps({ ...block.props, [prop[0]]: val })
-            }
+            setValue={(val) => setProps({ ...props, [prop[0]]: val })}
           />
         ))}
       </form>

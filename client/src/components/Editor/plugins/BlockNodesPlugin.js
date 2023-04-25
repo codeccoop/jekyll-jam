@@ -1,37 +1,24 @@
 /* VENDOR */
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   createCommand,
-  // COMMAND_PRIORITY_LOW,
   COMMAND_PRIORITY_EDITOR,
-  // KEY_ARROW_DOWN_COMMAND,
   $getSelection,
   $getRoot,
-  // $insertNodes,
   $isTextNode,
   $isRootNode,
   $getNodeByKey,
-  // $getNearestRootOrShadowRoot,
-  // COMMAND_PRIORITY_HIGH,
-  // $getNodeByKey,
 } from "lexical";
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import { mergeRegister } from "@lexical/utils";
-import { useStore } from "colmado";
 
 /* SOURCE */
 import BlockNode, {
   $createBlockNode,
   $isBlockNode,
 } from "../nodes/BlockNode.js";
-import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
+import { useStore } from "colmado";
 
 export const INSERT_BLOCK_NODE = createCommand();
-export const INSERT_NESTED_BLOCK_NODE = createCommand();
-
-/* function isParent(hierarchy, ancestors) {
-  return hierarchy[hierarchy.length - 1] === ancestors[ancestors.length - 1];
-} */
 
 function isFamily(hierarchy, ancestors) {
   return (
@@ -41,17 +28,25 @@ function isFamily(hierarchy, ancestors) {
   );
 }
 
-function BlockNodesPlugin({ parentEditor, hierarchy = [] }) {
+function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   const nodeKey = hierarchy[hierarchy.length - 1];
-  const blocksRegistry = useBlockRegistryContext();
   const [, dispatch] = useStore();
 
-  let editor;
-  if (hierarchy.length) {
-    editor = blocksRegistry[nodeKey]?.editor;
-  } else {
-    [editor] = useLexicalComposerContext();
-  }
+  const exitDecorators = useRef({});
+  const [decorators, setDecorators] = useState();
+  useEffect(() => {
+    if (!decorators) return;
+
+    Object.keys(decorators)
+      .filter((k) => !exitDecorators.current[k])
+      .forEach((k, i, decorators) => {
+        editor.getEditorState().read(() => {
+          const node = $getNodeByKey(k);
+          // TODO: Initial focus
+        });
+      });
+    return () => (exitDecorators.current = decorators);
+  });
 
   function insertBlock(defn, ancestors) {
     editor.update(() => {
@@ -76,7 +71,7 @@ function BlockNodesPlugin({ parentEditor, hierarchy = [] }) {
         const root = $getRoot();
         root.getChildren().forEach((node) => {
           if ($isBlockNode(node)) {
-            node.editor.dispatchCommand(INSERT_NESTED_BLOCK_NODE, {
+            node.editor.dispatchCommand(INSERT_BLOCK_NODE, {
               defn,
               ancestors: node.ancestors.concat(node.getKey()),
             });
@@ -86,36 +81,19 @@ function BlockNodesPlugin({ parentEditor, hierarchy = [] }) {
     });
   }
 
-  /* function withPropagation(command, callback) {
-    function _callback(payload) {
-      try {
-        callback(payload);
-      } catch (e) {
-        editor.getEditorState().read(() => {
-          const root = $getRoot();
-          root.getChildren().forEach((node) => {
-            if ($isBlockNode(node)) {
-              const ancestors = payload.ancestors || [];
-              if (!isFamily(hierarchy, ancestors)) return false;
-              node.editor.dispatchCommand(command, {
-                ...payload,
-                ancestors: ancestors.concat(node.getKey()),
-              });
-            }
-          });
-        });
-      }
-
-      return true;
+  function handleOnFocus(ev) {
+    if (!parentEditor) {
+      return dispatch({
+        action: "SET_BLOCK",
+        payload: null,
+      });
     }
 
-    return [command, _callback];
-  } */
-
-  function blurBlocks() {
-    dispatch({
-      action: "SET_BLOCK",
-      payload: null,
+    parentEditor.update(() => {
+      const node = $getNodeByKey(nodeKey);
+      if ($isBlockNode(node)) {
+        node.focus();
+      }
     });
   }
 
@@ -129,73 +107,18 @@ function BlockNodesPlugin({ parentEditor, hierarchy = [] }) {
     }
 
     return mergeRegister(
-      /* editor.registerCommand(
-        KEY_ARROW_DOWN_COMMAND,
-        (payload) => {
-          editor.getEditorState().read(() => {
-            const ancestors = payload.ancestors || [];
-            const root = $getRoot();
-            root.getChildren().forEach((node) => {
-              if (!$isBlockNode(node)) return;
-              if (isFamily(hierarchy, ancestors)) {
-              } else {
-                node.editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, {
-                  ancestors: ancestors.concat(node.getKey()),
-                });
-              }
-            });
-          });
-          return true;
-          if (ev.currentTarget.__lexicalEditor.getKey() === editor.getKey()) {
-            editor.update(() => {
-              // const selection = $getSelection();
-              // if (!selection) return;
-              // const anchor = selection.anchor.getNode();
-              // if (!anchor) return;
-              // const root = $isRootNode(anchor)
-              //   ? anchor
-              //   : $getNearestRootOrShadowRoot(anchor);
-              debugger;
-              const root = $getRoot();
-              if (!$isBlockNode(root)) return false;
-              console.log("Append paragraph");
-            });
-          } else {
-            editor.getEditorState().read(() => {
-              const root = $getRoot();
-              root.getChildren().forEach((node) => {
-                if ($isBlockNode(node)) {
-                  node.editor.dispatchCommand(KEY_ARROW_DOWN_COMMAND, ev);
-                }
-              });
-            });
-          }
-          return true;
-        },
-        COMMAND_PRIORITY_LOW
-      ), */
-      editor.registerRootListener((el) => {
-        if (!parentEditor) {
-          el.removeEventListener("focus", blurBlocks);
-          el.addEventListener("focus", blurBlocks);
-        }
-        return true;
+      editor.registerRootListener((el, prev) => {
+        if (prev) prev.removeEventListener("focus", handleOnFocus);
+        if (el) el.addEventListener("focus", handleOnFocus);
       }),
-      editor.registerCommand(
-        INSERT_BLOCK_NODE,
-        ({ defn }) => {
-          if (!hierarchy.length) {
-            insertBlock(defn, []);
-          }
-          return true;
-        },
-        COMMAND_PRIORITY_EDITOR
+      editor.registerDecoratorListener((decorators) =>
+        setDecorators(decorators)
       ),
       editor.registerCommand(
-        INSERT_NESTED_BLOCK_NODE,
-        ({ defn, ancestors }) => {
-          if (hierarchy.length && isFamily(hierarchy, ancestors)) {
-            insertBlock(defn, ancestors);
+        INSERT_BLOCK_NODE,
+        ({ defn, ancestors = [] }) => {
+          if (isFamily(hierarchy, ancestors)) {
+            insertBlock(defn, []);
           }
           return true;
         },

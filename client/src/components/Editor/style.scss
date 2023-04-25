@@ -11,11 +11,10 @@
     max-width: unset;
   }
 
-  .vocero-block-wrapper,
   .vocero-block {
     display: contents;
 
-    .block-editor-input {
+    .vocero-block-editor {
       // all: inherit;
       display: inherit;
       position: inherit;
@@ -23,7 +22,7 @@
       outline: 1px solid #0001;
 
       &:focus-visible {
-        outline: none;
+        outline: 1px solid #4af;
         box-shadow: 1px 2px 5px #0002;
       }
 

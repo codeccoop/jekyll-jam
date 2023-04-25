@@ -117,13 +117,6 @@ class BlockNode extends DecoratorNode {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
     el.id = this.getKey();
-    el.addEventListener(
-      "click",
-      () => {
-        editor.update(() => this.focus());
-      },
-      true
-    );
     return el;
   }
 
