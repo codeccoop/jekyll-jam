@@ -10,10 +10,14 @@ class ConfigRoute extends BaseRoute
 
     public function get(): void
     {
-        $tree = (new Tree($this->req['query']['sha']))->get();
-        $sha = array_values(array_filter($tree['tree'], function ($node) {
-            return $node['path'] == '_config.yml';
-        }))[0]['sha'];
+        $tree = (new Tree($this->req['query']['tree_sha']))->get();
+
+        $node = Config::get_tree_node($tree)['sha'];
+        if (!$node) {
+            $this->handle_http_exception(new Exception("Config file not found", 404));
+        }
+
+        $sha = $node['sha'];
         $config = new Config($sha);
         $response = $config->json();
         $this->send_output($response);

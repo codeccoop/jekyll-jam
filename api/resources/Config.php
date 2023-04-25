@@ -7,34 +7,40 @@ class Config extends Blob
 {
     public static array $methods = ['GET', 'POST', 'PATCH'];
 
-    private string $path = '_config.yml';
+    public static string $path = '_config.yml';
     private string $default_path = VOCERO_API_ROOT . 'static/data/default_config.yml';
 
     public function __construct(string $sha)
     {
-        parent::__construct($sha, $this->path);
+        parent::__construct($sha, Config::$path);
     }
 
-    public function req_payload(string $method): array
+    public function put(?array $payload = null): array
     {
-        $output = [
-            'encoding' => 'base64',
-            'content' => null,
-        ];
+        return $this->request('POST', $payload);
+    }
 
-        if ($method === 'POST') {
+    public function get_payload(string $method, ?array $data = null): ?array
+    {
+        $data = parent::get_payload($method, $data);
+        if (!$data) return null;
+
+        if ($method === 'POST' && $_SERVER['REQUEST_METHOD'] === $method) {
             $file = fopen($this->default_path, 'r');
-            $output['content'] = fread($file, filesize($this->default_path));
+            $content = fread($file, filesize($this->default_path));
             fclose($file);
-        } else if ($method === 'PATCH') {
+        } else if ($method === 'POST' && $_SERVER['REQUEST_METHOD'] !== $method) {
             $data = $this->get();
-            foreach ($this->req['payload'] as $key => $val) {
+            foreach ($data as $key => $val) {
                 $data[$key] = $val;
             }
-            $output['content'] = Yaml::dump($data);
+            $content = Yaml::dump($data);
         }
 
-        return $output;
+        return [
+            'encoding' => 'base64',
+            'content' => $content,
+        ];
     }
 
     protected function decorate(?array $data = null): array
@@ -58,5 +64,18 @@ class Config extends Blob
         }
 
         return $decoded;
+    }
+
+    static function get_tree_node(array $tree): ?array
+    {
+        $nodes = array_values(array_filter($tree['tree'], function ($node) {
+            return $node['path'] == Config::$path;
+        }));
+
+        if (count($nodes) > 0) {
+            return $nodes[0];
+        }
+
+        return null;
     }
 }

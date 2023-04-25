@@ -10,7 +10,7 @@ class BaseResource
     protected string $endpoint;
     protected bool $cached = true;
     protected string $cache_key;
-    protected object $cache;
+    protected Cache $cache;
 
     private string $base_url = 'https://api.github.com';
     private ?array $data = null;
@@ -33,9 +33,8 @@ class BaseResource
      * HTTP Request
      *
      * @param string $method
-     * @param mixed $payload
      */
-    private function request(string $method): array
+    protected function request(string $method, ?array $payload = null): array
     {
         if ($method === 'GET') {
             if ($this->data) return $this->data;
@@ -46,12 +45,32 @@ class BaseResource
         $settings = [
             'headers' => $this->get_headers($method),
         ];
-        $payload = $this->get_payload($method);
+
+        $payload = $this->get_payload($method, $payload);
         if ($payload) {
-            $settings['body'] = $payload;
+            $settings['json'] = $payload;
         }
 
-        $response = $client->request($method, $this->get_endpoint($method), $settings);
+        $query = $this->get_query($method);
+        if ($query) {
+            $settings['query'] = $query;
+        }
+
+        $sink = $this->get_sink($method);
+        if ($sink) {
+            $sink = fopen($sink, 'w');
+            $settings['sink'] = $sink;
+        }
+
+        try {
+            $response = $client->request($method, $this->get_endpoint($method), $settings);
+        } catch (Exception $e) {
+            throw $e;
+        } finally {
+            if ($sink && is_resource($sink)) fclose($sink);
+        }
+
+        if ($sink) return [];
 
         $this->data = json_decode($response->getBody()->getContents(), true);
 
@@ -70,31 +89,31 @@ class BaseResource
     /**
      * HTTP POST Request
      *
-     * @param mixed $payload
+     * @param ?array $payload
      */
-    public function post(): array
+    public function post(?array $payload = null): array
     {
-        return $this->request('POST');
+        return $this->request('POST', $payload);
     }
 
     /**
      * HTTP PUT Request
      *
-     * param mixed $payload
+     * @param ?array $payload
      */
-    public function put(): array
+    public function put(?array $payload = null): array
     {
-        return $this->request('PUT');
+        return $this->request('PUT', $payload);
     }
 
     /**
      * HTTP PATCH Request
      *
-     * @param mixed $payload
+     * @param ?array $payload
      */
-    public function patch(): array
+    public function patch(?array $payload = null): array
     {
-        return $this->request('PATCH');
+        return $this->request('PATCH', $payload);
     }
 
     /**
@@ -109,10 +128,9 @@ class BaseResource
      * Decorate data before json serialization
      *
      */
-    protected function decorate(?array $data = null): array
+    protected function decorate(): array
     {
-        if (!$data) return $this->get();
-        return $data;
+        return $this->get();
     }
 
     /**
@@ -158,7 +176,19 @@ class BaseResource
         ];
     }
 
-    protected function get_payload(string $method): ?array
+    protected function get_payload(string $method, ?array $data = null): ?array
+    {
+        if (in_array($method, ['GET', 'DELETE'])) return null;
+
+        return $data;
+    }
+
+    protected function get_query(string $method): ?array
+    {
+        return null;
+    }
+
+    protected function get_sink(string $method): mixed
     {
         return null;
     }

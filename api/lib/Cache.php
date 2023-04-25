@@ -42,7 +42,7 @@ class Cache
     private function open(string $mode, ?array $content = null): ?array
     {
         if ($mode === 'w') {
-            if (!$content || count($content) === 0) return $content;
+            if ($content === null) return $content;
             $file = fopen($this->path, 'w');
             fwrite($file, json_encode($content));
             fclose($file);
@@ -100,6 +100,11 @@ class Cache
     {
         $this->content = $this->open('w', $content);
         return $this->content;
+    }
+
+    public function truncate(): void
+    {
+        $this->open('w', []);
     }
 
     public function reset(): void

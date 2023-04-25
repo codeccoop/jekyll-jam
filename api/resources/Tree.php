@@ -4,17 +4,33 @@ require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
 class Tree extends BaseResource
 {
-    public static array $methods = ['GET', 'POST'];
-
     public string $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
 
     protected string $cache_key = 'tree';
 
-    public function req_payload(string $method): array
+    public function __construct(?string $sha = null)
     {
+        $this->sha = $sha;
+        parent::__construct();
+    }
+
+    protected function get_endpoint(string $method): string
+    {
+        switch ($method) {
+            case 'GET':
+                return $this->endpoint . '/' . $this->sha . '?recursive=1';
+            default:
+                return $this->endpoint;
+        }
+    }
+
+    protected function get_payload(string $method, ?array $data = null): ?array
+    {
+        if (!$data) return null;
+
         return [
-            'base_tree' => $this->req['payload']['base_sha'],
-            'tree' => $this->req['payload']['changes']
+            'base_tree' => $data['base_sha'],
+            'tree' => $data['changes']
         ];
     }
 
@@ -48,9 +64,9 @@ class Tree extends BaseResource
     private function build_tree(): array
     {
         $data = $this->get();
-        $items = $data['tree'];
+        $tree = ['children' => [], 'sha' => $data['sha']];
 
-        $tree = ['children' => []];
+        $items = $data['tree'];
         for ($i = 0; $i < sizeof($items); $i++) {
             $item = $items[$i];
             $path = explode('/', $item['path']);
@@ -145,7 +161,7 @@ class Tree extends BaseResource
         return true;
     }
 
-    public function find_file(string $sha): array
+    public function find_file(string $sha): ?array
     {
         $tree = $this->get()['tree'];
         $file = array_pop(array_filter($tree, function ($file) use ($sha) {

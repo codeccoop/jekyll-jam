@@ -14,7 +14,7 @@ import Preview from "components/Preview";
 import AssetViewer from "components/AssetViewer";
 import YamlForm from "components/YamlForm";
 
-import { getBlob, getStyleURL } from "services/api";
+import { getBlob, getStyle } from "services/api";
 import { hydrateBlocks, renderBlocks } from "lib/blocks";
 import { b64d, b64e } from "lib/helpers";
 import {
@@ -97,7 +97,7 @@ function EditorPage() {
 
   useEffect(() => {
     if (!branch) return;
-    getStyleURL(branch.sha).then((res) => {
+    getStyle(branch.sha).then((res) => {
       dispatch({
         action: "STORE_CSS",
         payload: res,

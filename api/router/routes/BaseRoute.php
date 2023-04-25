@@ -76,23 +76,68 @@ class BaseRoute
     /**
      * Send API output.
      *
-     * @param mixed $data
-     * @param string $httpHeader
+     * @param string $data
+     * @param ?array $headers
+     * @param int $code
      */
-    protected function send_output(string $data, ?array $httpHeaders = null): void
+    protected function send_output(string $data, ?array $headers = null, int $code = 200): void
     {
-        if (!$httpHeaders) {
-            $httpHeaders = $this->get_headers($_SERVER['REQUEST_METHOD']);
+        if ($code >= 400) {
+            http_response_code($code);
+            echo $data;
+            exit;
+        }
+
+        if (!$headers) {
+            $headers = $this->get_headers($_SERVER['REQUEST_METHOD']);
+        } else {
+            $headers = array_reduce(array_keys($headers), function ($carry, $header) use ($headers) {
+                if ($headers[$header]) $carry[$header] = $headers[$header];
+                return $carry;
+            }, $this->get_headers($_SERVER['REQUEST_METHOD']));
         }
 
         // header_remove('Set-Cookie');
-        if (is_array($httpHeaders) && count($httpHeaders)) {
-            foreach ($httpHeaders as $httpHeader) {
-                header($httpHeader);
+        if (is_array($headers) && count($headers)) {
+            foreach ($headers as $header => $value) {
+                header("$header: $value");
             }
         }
 
         echo $data;
+        exit;
+    }
+
+    /**
+     * Send file
+     *
+     * @param string $filepath
+     * @param array $headers
+     * @param int $code
+     */
+    protected function send_file(string $filepath, array $headers, int $code = 200): void
+    {
+        if ($code >= 400) {
+            http_response_code($code);
+            echo '';
+            exit;
+        }
+
+        if (!is_file($filepath)) {
+            http_response_code(404);
+            echo '';
+            exit;
+        }
+
+        foreach ($headers as $header => $value) {
+            header("$header: $value");
+        }
+
+        $filename = basename($filepath);
+        header("Content-disposition: attachment; filename=$filename");
+        $size = filesize($filepath);
+        header("Content-Length: $size");
+        readfile($filepath);
         exit;
     }
 
@@ -104,9 +149,9 @@ class BaseRoute
     protected function get_headers(string $method): array
     {
         return [
-            'Content-Type: application/json',
-            'Allow: OPTIONS, ' . implode(', ', $this->methods),
-            'Access-Control-Allow-Origin: *',
+            'Content-Type' => 'application/json',
+            'Allow' => 'OPTIONS, ' . implode(', ', $this->methods),
+            'Access-Control-Allow-Origin' => '*',
         ];
     }
 
@@ -114,21 +159,25 @@ class BaseRoute
     {
         $code = $e->getCode();
         $output = VOCERO_DEBUG ? $e->getMessage() : '';
+        $headers = $this->get_headers($_SERVER['REQUEST_METHOD']);
         switch ($code) {
             case 400:
-                $this->send_output($output, ['HTTP/1.1 400 Bad Request']);
+                $this->send_output($output, $headers, 400);
                 break;
             case 401:
-                $this->send_output($output, ['HTTP/1.1 401 Unauthorized']);
+                $this->send_output($output, $headers, 401);
                 break;
             case 403:
-                $this->send_output($output, ['HTTP/1.1 403 Forbidden']);
+                $this->send_output($output, $headers, 403);
                 break;
             case 404:
-                $this->send_output($output, ['HTTP/1.1 404 Not Found']);
+                $this->send_output($output, $headers, 404);
+                break;
+            case 408:
+                $this->send_output($output, $headers, 408);
                 break;
             default:
-                $this->send_output($output, ['HTTP/1.1 500 Internal Server Error']);
+                $this->send_output($output, null, 500);
                 break;
         }
     }

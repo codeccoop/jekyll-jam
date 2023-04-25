@@ -2,27 +2,46 @@
 require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 require_once VOCERO_API_ROOT . 'resources/Tree.php';
 require_once VOCERO_API_ROOT . 'lib/Link.php';
+require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 use Symfony\Component\Yaml\Yaml;
 
+class BlobCache extends Cache
+{
+    private Cache $branch;
+
+    public function __construct(string $file_path, string $sha = null)
+    {
+        parent::__construct($file_path, $sha);
+        $this->branch = new Cache('branch');
+    }
+
+    public function is_cached(): bool
+    {
+        if (!parent::is_cached()) return false;
+        if (!$this->branch->is_cached()) return false;
+
+        $branch = $this->branch->get();
+        $tree = new Tree($branch['commit']['sha']);
+
+        $cache = parent::get();
+        $file = $tree->find_file($cache['sha']);
+        return $file['sha'] === $cache['sha'];
+    }
+}
+
 class Blob extends BaseResource
 {
-    static array $methods = ['GET', 'POST'];
-
     protected string $cache_key = 'blobs';
     protected string $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
 
     private string $type;
     private string $path;
-    private ?array $payload = null;
 
-    public function __construct(string $sha, string $path, ?array $payload = null)
+    public function __construct(?string $sha = null, string $path)
     {
         $this->sha = $sha;
         $this->path = $path;
-        if ($payload) {
-            $this->payload = $payload;
-        }
 
         $this->cache_key = $this->cache_key . '/' . $this->path;
 
@@ -33,9 +52,69 @@ class Blob extends BaseResource
 
         parent::__construct();
 
-        $this->cache->get = function () {
-            return $this->get_cached();
-        };
+        $this->cache = new BlobCache($this->cache_key, $this->sha);
+    }
+
+    public function post(?array $payload = null): array
+    {
+        $data = parent::post($payload);
+        $this->cache->truncate();
+        return (new Blob($data['sha'], $this->path))->get();
+    }
+
+    protected function decorate(): array
+    {
+        $data = $this->get();
+
+        $output = [
+            'sha' => $data['sha'],
+            'path' => b64e($this->path),
+            'frontmatter' => $this->get_frontmatter(),
+            'content' => $this->get_content()
+        ];
+
+        if ($this->type = 'asset') {
+            $output['encoding'] = $data['encoding'];
+        } else {
+            $output['encoding'] = 'base64';
+        }
+
+        return $output;
+    }
+
+    protected function get_payload(string $method, ?array $data = null): ?array
+    {
+        $data = parent::get_payload($method, $data);
+        if (!$data) return null;
+
+        if ($data['encoding'] == 'base64') {
+            if ($this->type === 'markdown') {
+                $content = $this->absolute_links($data['content']);
+
+                if ($data['frontmatter'] !== null && sizeof($data['frontmatter']) > 0) {
+                    $content = '---' . PHP_EOL . Yaml::dump($data['frontmatter']) . '---' . PHP_EOL . PHP_EOL . $content;
+                }
+            } else {
+                $content = $data['content'];
+            }
+
+            $content = base64_encode($content);
+        }
+
+        return [
+            'content' => $content,
+            'encoding' => $data['encoding']
+        ];
+    }
+
+    protected function get_endpoint(string $method): string
+    {
+        switch ($method) {
+            case 'GET':
+                return $this->endpoint . '/' . $this->sha;
+            default:
+                return $this->endpoint;
+        }
     }
 
     private function relative_links(string $content)
@@ -60,65 +139,6 @@ class Blob extends BaseResource
         }
 
         return $content;
-    }
-
-    public function get_cached()
-    {
-        $branch_cache = new Cache('branch');
-        if (!$branch_cache->is_cached()) return;
-
-        $branch = $branch_cache->get();
-        $tree = new Tree($branch['commit']['sha']);
-
-        if ($this->cache->is_cached()) {
-            $cache = $this->cache->get();
-            $file = $tree->find_file($cache['sha']);
-            if ($file['sha'] === $cache['sha']) {
-                $this->data = $cache;
-                return $this->data;
-            }
-        }
-    }
-
-    protected function get_payload(string $method): ?array
-    {
-        if ($this->payload['encoding'] == 'base64') {
-            if ($this->type === 'markdown') {
-                $content = $this->absolute_links($this->payload['content']);
-            }
-
-            if ($this->payload['frontmatter'] !== null && sizeof($this->payload['frontmatter']) > 0) {
-                $content = '---' . PHP_EOL . Yaml::dump($this->payload['frontmatter']) . '---' . PHP_EOL . PHP_EOL . $content;
-            }
-
-            $content = base64_encode($content);
-        }
-
-        $output = [
-            'content' => $content,
-            'encoding' => $this->payload['encoding']
-        ];
-
-        return $output;
-    }
-
-    protected function decorate(?array $data = null): array
-    {
-        $data = parent::decorate($data);
-        $output = [
-            'array' => $data['sha'],
-            'path' => $this->path,
-            'frontmatter' => $this->get_frontmatter(),
-            'content' => $this->get_content()
-        ];
-
-        if ($this->type = 'asset') {
-            $output['encoding'] = $data['encoding'];
-        } else {
-            $output['encoding'] = 'base64';
-        }
-
-        return $output;
     }
 
     private function get_content()

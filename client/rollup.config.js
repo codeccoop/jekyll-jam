@@ -8,17 +8,22 @@ import url from "postcss-url";
 import autoprefixer from "autoprefixer";
 import json from "@rollup/plugin-json";
 import alias from "@rollup/plugin-alias";
-import serve from "rollup-plugin-serve";
+import dev from "rollup-plugin-dev";
 import livereload from "rollup-plugin-livereload";
 
 const dotenv_path =
   process.env.NODE_ENV === "development" ? ".env.development" : ".env";
-require("dotenv").config({ path: dotenv_path, debug: process.env.NODE_ENV === "development" });
+require("dotenv").config({
+  path: dotenv_path,
+  debug: process.env.NODE_ENV === "development",
+});
+
+const CWD = path.join(__dirname, "..");
 
 export default {
   input: "src/index.js",
   output: {
-    file: path.join(__dirname, "..", "static/bundle.js"),
+    file: path.join(CWD, "static/bundle.js"),
     format: "iife",
   },
   plugins: [
@@ -85,10 +90,19 @@ export default {
       plugins: [autoprefixer(), url({ url: "inline" })],
     }),
     json(),
-    serve({
-      open: false,
-      contentBase: "../",
+    dev({
+      dirs: [CWD],
       port: 3000,
+      proxy: [
+        {
+          from: "/api",
+          to: "http://localhost:8000/api",
+        },
+      ],
+      spa: true,
+      server: {
+        connectionTimeout: 1e4,
+      },
     }),
     livereload(),
   ],

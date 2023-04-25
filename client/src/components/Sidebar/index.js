@@ -31,7 +31,7 @@ function Sidebar({ toggleVisibility }) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.download = "latest.zip";
+        link.download = "vocero.zip";
         document.body.appendChild(link);
         link.click();
         URL.revokeObjectURL(url);
@@ -44,7 +44,10 @@ function Sidebar({ toggleVisibility }) {
     commit(changes).then((commit) => {
       const changeMap = changes.reduce((acum, from) => {
         return acum.concat([
-          [from.sha, commit.changes.find((to) => to.path === atob(from.path)).sha],
+          [
+            from.sha,
+            commit.changes.find((to) => to.path === atob(from.path)).sha,
+          ],
         ]);
       }, []);
       dispatch({

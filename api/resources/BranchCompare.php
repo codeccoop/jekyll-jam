@@ -4,9 +4,9 @@ require_once VOCERO_API_ROOT . 'resources/Repo.php';
 
 class BranchCompare extends BaseResource
 {
-    protected string $cache_key = 'branch_compare';
+    // protected string $cache_key = 'branch_compare';
     protected string $endpoint = '/repos/$GH_USER/$GH_REPO/compare';
-    protected bool $use_cache = false;
+    protected bool $cached = false;
 
     private string $branch_name;
     private string $default_branch;

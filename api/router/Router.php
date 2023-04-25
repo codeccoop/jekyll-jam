@@ -15,7 +15,7 @@ class Router
 
         global $routes_map;
         if (!(isset($uri[3]) && $routes_map[$uri[3]])) {
-            header('HTTP/1.1 404 Not Found');
+            http_response_code(404);
             exit;
         } else {
             $route = $routes_map[$uri[3]];
@@ -23,7 +23,7 @@ class Router
 
         $method = $_SERVER['REQUEST_METHOD'];
         if (!in_array($method, $route->methods)) {
-            header('HTTP/1.1 405 Method Not Allowed');
+            http_response_code(405);
             exit;
         }
 

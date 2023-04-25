@@ -4,17 +4,18 @@ function request(
   endpoint,
   { method = "GET", data = null, headers = { Accept: "application/json" } }
 ) {
-  let path = `${API_URL}/index.php/${endpoint}`;
+  let path = `${API_URL}/${endpoint}`;
   if (method === "GET") {
-    if (data !== null) {
-      path +=
-        "?" +
-        Object.keys(data)
-          .filter((k) => data[k] !== void 0)
-          .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(data[k])}`)
-          .join("&");
-      data = null;
+    const query = Object.entries(data || {})
+      .filter(([k, v]) => v !== null && v !== void 0)
+      .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+      .join("&");
+
+    if (query.length) {
+      path += "?" + query;
     }
+
+    data = null;
   } else {
     headers["Content-Type"] = "application/json";
   }
@@ -45,17 +46,17 @@ export function postProject(project) {
   });
 }
 
-export function getConfig(sha) {
-  return request("config", { data: { sha } });
+export function getConfig(tree_sha) {
+  return request("config", { data: { tree_sha } });
 }
 
-export function getStyleURL(sha) {
-  return request("style", { data: { sha } });
+export function getStyle(tree_sha) {
+  return request("style", { data: { tree_sha } });
 }
 
-export function getBlocks(sha) {
+export function getBlocks(tree_sha) {
   return request("blocks", {
-    data: { sha },
+    data: { tree_sha },
     headers: { Accept: "text/javascript" },
   });
 }
@@ -126,7 +127,7 @@ export function observeWorkflowRun(interval = 10e3, timeout = 3e2) {
 
 export function getArtifact() {
   return request("artifact", {
-    headers: { Accept: "application/zip, application/json" },
+    headers: { Accept: "application/zip" },
   }).then((res) => res.blob());
 }
 
