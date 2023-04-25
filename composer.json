@@ -1,6 +1,7 @@
 {
     "require": {
         "symfony/yaml": "^5.4",
-        "guzzlehttp/guzzle": "^7.0"
+        "guzzlehttp/guzzle": "^7.0",
+        "spatie/yaml-front-matter": "^2.0"
     }
 }

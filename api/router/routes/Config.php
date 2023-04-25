@@ -12,7 +12,7 @@ class ConfigRoute extends BaseRoute
     {
         $tree = (new Tree($this->req['query']['tree_sha']))->get();
 
-        $node = Config::get_tree_node($tree)['sha'];
+        $node = Config::get_tree_node($tree);
         if (!$node) {
             $this->handle_http_exception(new Exception("Config file not found", 404));
         }

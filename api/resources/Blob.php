@@ -5,6 +5,7 @@ require_once VOCERO_API_ROOT . 'lib/Link.php';
 require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 use Symfony\Component\Yaml\Yaml;
+use Spatie\YamlFrontMatter\YamlFrontMatter;
 
 class BlobCache extends Cache
 {
@@ -122,7 +123,7 @@ class Blob extends BaseResource
         return preg_replace('/{{\s*site\.baseurl\s*}}/', '', $content);
     }
 
-    private function absolute_links($content)
+    private function absolute_links($content): string
     {
         $replace = fn ($link) => str_replace($link->source, $link->as_absolute(), $content);
 
@@ -141,7 +142,7 @@ class Blob extends BaseResource
         return $content;
     }
 
-    private function get_content()
+    private function get_content(): string
     {
         $blob = $this->get();
         $encoding = $blob['encoding'];
@@ -155,7 +156,8 @@ class Blob extends BaseResource
                 if ($this->type == 'yaml') {
                     $content = json_encode(Yaml::parse($decoded));
                 } else {
-                    $content = $this->relative_links(preg_replace('/^(\n|\r)*---\n[^-{3}]+\n---\n*/', '', $decoded));
+                    $parsed = YamlFrontMatter::parse($decoded);
+                    $content = $this->relative_links($parsed->body());
                 }
 
                 $content = base64_encode($content);
@@ -167,25 +169,21 @@ class Blob extends BaseResource
         return $content;
     }
 
-    private function get_frontmatter()
+    private function get_frontmatter(): array
     {
         $blob = $this->get();
         $encoding = $blob['encoding'];
 
         if ($encoding == 'base64') {
             if (!$this->type === 'markdown') {
-                return;
+                return [];
             }
             $decoded = base64_decode($blob['content']);
         } else {
-            return;
-        }
-
-        preg_match('/^(\n|\r)*---\n([^-{3}]+)\n---\n*/', $decoded, $matches);
-        if (sizeof($matches) > 0) {
-            return Yaml::parse($matches[1]);
-        } else {
             return [];
         }
+
+        $parsed = YamlFrontMatter::parse($decoded);
+        return $parsed->matter();
     }
 }
