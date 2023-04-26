@@ -104,7 +104,9 @@ export default {
         connectionTimeout: 1e4,
       },
     }),
-    livereload(),
+    livereload({
+      delay: 1e3,
+    }),
   ],
   preserveSymlinks: true,
 };
