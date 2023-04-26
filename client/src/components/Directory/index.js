@@ -1,7 +1,10 @@
+/* VENDOR */
 import React, { useState, useEffect } from "react";
-
 import { useStore } from "colmado";
-import { getTree } from "../../services/api";
+
+/* SOURCE */
+import { getTree } from "services/api";
+import { b64d } from "lib/helpers";
 
 import File from "./File";
 
@@ -23,15 +26,21 @@ function Directory() {
   });
   const [{ query, branch }] = useStore();
 
-  const [visibilities, setVisibilities] = useState({});
+  const [visibilities, setVisibilities] = useState({
+    children: false,
+    assets: false,
+    data: false,
+  });
 
   function newFile(type) {
+    const [path, pathType] = parseQueryPathType(query);
+    // TODO: place children on current directory
     if (type === "markdown") {
       const children = tree.children.concat({
         path: "new_file.md",
         name: "new_file.md",
         children: [],
-        sha: 0,
+        sha: null,
         is_file: true,
       });
       setTree({ ...tree, ...{ children } });
@@ -40,7 +49,7 @@ function Directory() {
         path: "data/new_file.yml",
         name: "new_file.yml",
         children: [],
-        sha: 0,
+        sha: null,
         is_file: true,
       });
       setTree({ ...tree, ...{ data } });
@@ -54,7 +63,7 @@ function Directory() {
           sha={item.sha}
           path={item.path}
           name={item.name}
-          is_new={item.sha === 0}
+          is_new={item.sha === null}
           fetchTree={fetchTree}
         />
       );
@@ -62,7 +71,9 @@ function Directory() {
       return (
         <>
           <span
-            className={"directory" + (visibilities[item.path] ? " open" : "")}
+            className={
+              "directory-cover" + (visibilities[item.path] ? " open" : "")
+            }
             id={item.sha}
             onClick={() => toggleVisibility(item.path)}
           >
@@ -95,25 +106,50 @@ function Directory() {
     getTree(branch.sha).then((data) => {
       setTree({
         sha: data.sha,
-        children: data.children.filter((d) => ["data", "assets"].indexOf(d.name) === -1),
+        children: data.children.filter(
+          (d) => /^(_data|assets)/.test(d.path) === false // ["data", "assets"].indexOf(d.name) === -1
+        ),
         data: data.children.find((d) => d.name === "data")?.children || [],
         assets: data.children.find((d) => d.name === "assets")?.children || [],
       });
     });
   }
 
-  useEffect(() => {
-    if (branch?.sha) {
-      fetchTree();
-    }
-  }, [branch?.ahead_by]);
-
   function toggleVisibility(path) {
     setVisibilities({ ...visibilities, [path]: !visibilities[path] });
   }
 
+  function parseQueryPathType({ path }) {
+    const parsed = b64d(path);
+
+    if (/^assets/.test(parsed)) {
+      return [parsed, "assets"];
+    } else if (/^_data/.test(parsed)) {
+      return [parsed, "data"];
+    } else {
+      return [parsed, "children"];
+    }
+  }
+
+  useEffect(() => {
+    if (!branch) return;
+    if (branch.sha) fetchTree();
+  }, [branch]);
+
+  useEffect(() => {
+    if (!tree || tree.isBoilerplate || !query.path) return;
+
+    const [path, pathType] = parseQueryPathType(query);
+    const visibilityChanges = { [pathType]: true };
+    path.split("/").reduce((acum, chunk) => {
+      visibilityChanges[acum + chunk] = true;
+      return acum + path + "/";
+    }, "");
+    setVisibilities({ ...visibilities, ...visibilityChanges });
+  }, [tree]);
+
   return (
-    <nav className={"directory" + (tree.isBoilerplate ? " loading" : "")}>
+    <nav className={"tree" + (tree.isBoilerplate ? " loading" : "")}>
       <h3
         className={"title" + (visibilities.children ? " open" : "")}
         onClick={() => toggleVisibility("children")}
@@ -132,7 +168,7 @@ function Directory() {
       >
         Data<a className="create" onClick={() => newFile("yaml")}></a>
       </h3>
-      {visibilities.data
+      {visibilities.data === true
         ? renderList({
             items: tree.data,
             selected: query.sha,
@@ -142,9 +178,9 @@ function Directory() {
         className={"title" + (visibilities.assets ? " open" : "")}
         onClick={() => toggleVisibility("assets")}
       >
-        Assets<a className="upload" onClick={() => uploadFile("asset")}></a>
+        Media<a className="upload" onClick={() => uploadFile("asset")}></a>
       </h3>
-      {visibilities.assets
+      {visibilities.assets === true
         ? renderList({
             items: tree.assets,
             selected: query.sha,

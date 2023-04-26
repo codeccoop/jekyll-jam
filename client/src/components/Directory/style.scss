@@ -1,4 +1,4 @@
-.directory {
+.tree {
   flex: 1;
 
   .fullscreen & {
@@ -53,6 +53,7 @@
       position: relative;
       float: right;
       height: 1em;
+      width: 1em;
 
       &:after {
         position: absolute;
@@ -95,6 +96,7 @@
 
     li a,
     li span {
+      cursor: pointer;
       color: var(--font-color);
       text-decoration: none;
       font-weight: bold;
@@ -140,8 +142,16 @@
       background-repeat: no-repeat;
     }
 
+    li span + ul {
+      display: none;
+    }
+
     li span.open {
       border-bottom: 1px solid white;
+
+      + ul {
+        display: block;
+      }
     }
   }
 }

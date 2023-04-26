@@ -1,11 +1,15 @@
+/* VENDOR */
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
 import { useStore } from "colmado";
 
+/* SOURCE */
+import Directory from "components/Directory";
+import { commit, observeWorkflowRun, getArtifact } from "services/api";
+import { b64d } from "lib/helpers";
+
+/* STYLE */
 import "./style.scss";
-import Directory from "../Directory";
-import { commit, observeWorkflowRun, getArtifact } from "../../services/api";
 
 function Sidebar({ toggleVisibility }) {
   const navigate = useNavigate();
@@ -17,8 +21,12 @@ function Sidebar({ toggleVisibility }) {
   }
 
   function openSite() {
-    if (project.GH_DOMAIN === "repo") {
-      window.open(`https://${project.GH_USER}.github.io/${project.GH_REPO}`);
+    if (/github\.io/.test(project.GH_DOMAIN)) {
+      if (/github\io$/.test(project.GH_REPO)) {
+        window.open(`https://${project.GH_DOMAIN}`);
+      } else {
+        window.open(`https://${project.GH_USER}.github.io/${project.GH_REPO}`);
+      }
     } else {
       window.open("https://" + project.GH_DOMAIN);
     }
@@ -46,7 +54,7 @@ function Sidebar({ toggleVisibility }) {
         return acum.concat([
           [
             from.sha,
-            commit.changes.find((to) => to.path === atob(from.path)).sha,
+            commit.changes.find((to) => to.path === b64d(from.path)).sha,
           ],
         ]);
       }, []);

@@ -1,11 +1,14 @@
+/* VENDOR */
 import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
-import { commit } from "../../services/api";
+/* SOURCE */
+import { commit } from "services/api";
+import { b64e } from "lib/helpers";
 
 export default function File({ sha, path, name, is_new, fetchTree }) {
   const [fileName, setFileName] = useState(name);
-  const elRef = useRef(null);
+  const elRef = useRef();
 
   useEffect(() => {
     const el = elRef.current;
@@ -15,11 +18,15 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
   function commitFileName(ev) {
     if (ev.keyCode === 13 || ev.type === "blur") {
       const el = elRef.current;
-      commit({
-        content: "",
-        path: btoa(path.replace(/((?![^\/]+\/)\/?.)+$/, fileName)),
-        sha: sha,
-      }).then((commit) => {
+      const fileName = ev.target.value;
+      commit([
+        {
+          content: "",
+          path: b64e(fileName.replace(/^\/*/, "")),
+          frontmatter: [],
+          // sha: sha,
+        },
+      ]).then((commit) => {
         fetchTree();
         el.blur();
       });
@@ -31,10 +38,10 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
       <input
         ref={elRef}
         type="text"
-        onChange={(ev) => setFileName(ev.target.value)}
+        // onChange={(ev) => setFileName(ev.target.value)}
         onKeyDown={commitFileName}
         onBlur={commitFileName}
-        value={fileName}
+        defaultValue={fileName}
       />
     );
   }
@@ -43,7 +50,10 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
     <Link
       id={sha}
       to={
-        "/edit?sha=" + encodeURIComponent(sha) + "&path=" + encodeURIComponent(btoa(path))
+        "/edit?sha=" +
+        encodeURIComponent(sha) +
+        "&path=" +
+        encodeURIComponent(btoa(path))
       }
     >
       {fileName}
