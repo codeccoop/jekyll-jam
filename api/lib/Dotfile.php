@@ -131,6 +131,6 @@ class Dotfile
             }
         }
 
-        return json_encode($response);
+        return json_encode($response, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     }
 }

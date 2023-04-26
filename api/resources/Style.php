@@ -20,7 +20,7 @@ class Style extends Blob
         }
 
         $filepath = preg_replace('/\.scss$/', '.css', $this->path);
-        return b64e($domain . '/' . $filepath);
+        return base64_encode($domain . '/' . $filepath);
     }
 
     static function get_tree_node(array $tree): ?array

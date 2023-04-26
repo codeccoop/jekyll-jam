@@ -48,7 +48,7 @@ class BaseResource
 
         $payload = $this->get_payload($method, $payload);
         if ($payload) {
-            $settings['json'] = $payload;
+            $settings['body'] = json_encode($payload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
         }
 
         $query = $this->get_query($method);
@@ -139,7 +139,7 @@ class BaseResource
     public function json(): string
     {
         $data = $this->decorate();
-        return json_encode($data);
+        return json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
     }
 
     /**
@@ -172,7 +172,8 @@ class BaseResource
     {
         return [
             'Accept' => 'application/vnd.github+json',
-            'Authorization' => 'Bearer ' . $this->env['GH_ACCESS_TOKEN']
+            'Authorization' => 'Bearer ' . $this->env['GH_ACCESS_TOKEN'],
+            'Content-Type' => 'application/json',
         ];
     }
 

@@ -1,26 +1,28 @@
 <?php
 
-function encodeURIComponent(string $str): string
-{
-    $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')');
-    return strtr(rawurlencode($str), $revert);
-}
+/* function encodeURIComponent(string $str): string */
+/* { */
+/*     $revert = array('%21' => '!', '%2A' => '*', '%27' => "'", '%28' => '(', '%29' => ')'); */
+/*     return strtr(rawurlencode($str), $revert); */
+/* } */
 
-function decodeURIComponent(string $str): string
-{
-    $revert = array('!' => '%21', '*' => '%2A', "'" => '%27', '(' => '%28', ')' => '%29');
-    return urldecode(strtr($str, $revert));
-}
+/* function decodeURIComponent(string $str): string */
+/* { */
+/*     $revert = array('!' => '%21', '*' => '%2A', "'" => '%27', '(' => '%28', ')' => '%29'); */
+/*     return urldecode(strtr($str, $revert)); */
+/* } */
 
-function b64e(string $str): string
-{
-    return encodeURIComponent(base64_encode($str));
-}
+/* function b64e(string $str): string */
+/* { */
+/*     return base64_encode($str); */
+/*     // return encodeURIComponent(base64_encode($str)); */
+/* } */
 
-function b64d(string $str): string
-{
-    return base64_decode(decodeURIComponent($str));
-}
+/* function b64d(string $str): string */
+/* { */
+/*     return base64_decode($str); */
+/*     // return base64_decode(decodeURIComponent($str)); */
+/* } */
 
 function get_base_url(array $env): string
 {

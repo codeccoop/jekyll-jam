@@ -133,7 +133,7 @@ function EditorPage() {
     const hasChanged =
       getEditMode(query.path) !== "asset" &&
       editorContent !== defaultContent &&
-      btoa(editorContent) !== blob.content;
+      b64e(editorContent) !== blob.content;
 
     setHasChanged(hasChanged);
   }, [editorContent]);

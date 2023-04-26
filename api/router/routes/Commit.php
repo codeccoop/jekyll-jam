@@ -19,8 +19,8 @@ class CommitRoute extends BaseRoute
 
         $changes = [];
         foreach ($this->req['payload'] as $file) {
-            $path = b64d($file['path']);
-            $content = b64d($file['content']);
+            $path = base64_decode($file['path']);
+            $content = base64_decode($file['content']);
             $blob = (new Blob(null, $path))->post([
                 'path' => $path,
                 'encoding' => 'base64',
@@ -56,6 +56,6 @@ class CommitRoute extends BaseRoute
             'ref' => $ref
         ];
 
-        $this->send_output(json_encode($response));
+        $this->send_output(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 }

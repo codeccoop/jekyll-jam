@@ -69,7 +69,7 @@ class Blob extends BaseResource
 
         $output = [
             'sha' => $data['sha'],
-            'path' => b64e($this->path),
+            'path' => base64_encode($this->path),
             'frontmatter' => $this->get_frontmatter(),
             'content' => $this->get_content()
         ];
@@ -157,7 +157,7 @@ class Blob extends BaseResource
                 $decoded = base64_decode($blob['content']);
 
                 if ($this->type == 'yaml') {
-                    $content = json_encode(Yaml::parse($decoded));
+                    $content = json_encode(Yaml::parse($decoded), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
                 } else {
                     $parsed = YamlFrontMatter::parse($decoded);
                     $content = $this->relative_links($parsed->body());
