@@ -93,8 +93,11 @@ class Blob extends BaseResource
                 $content = $this->absolute_links($data['content']);
 
                 if ($data['frontmatter'] !== null && sizeof($data['frontmatter']) > 0) {
-                    $content = '---' . PHP_EOL . Yaml::dump($data['frontmatter']) . '---' . PHP_EOL . PHP_EOL . $content;
+                    $frontmatter = '---' . PHP_EOL . Yaml::dump($data['frontmatter']) . '---' . PHP_EOL . PHP_EOL;
+                } else {
+                    $frontmatter = '---' . PHP_EOL . '---' . PHP_EOL . PHP_EOL;
                 }
+                $content = $frontmatter . $content;
             } else {
                 $content = $data['content'];
             }
