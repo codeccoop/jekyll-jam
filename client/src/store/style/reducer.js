@@ -1,7 +1,7 @@
 function reducer({ action, payload }) {
   if (action === "STORE_CSS") {
     return payload;
-    // return fetch(atob(payload.path), {
+    // return fetch(b64d(payload.path), {
     //   headers: {
     //     Accept: "text/css",
     //   },

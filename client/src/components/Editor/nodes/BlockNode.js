@@ -113,7 +113,7 @@ class BlockNode extends DecoratorNode {
     writable.__focus += 1;
   }
 
-  createDOM(_, editor) {
+  createDOM(/* config, editor */) {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
     el.id = this.getKey();
@@ -154,7 +154,7 @@ class BlockNode extends DecoratorNode {
         editor={this.editor}
         parentEditor={editor}
         ancestors={this.ancestors}
-        initProps={this.props}
+        initProps={Object.assign({}, this.props)}
         focus={this.isFocus}
       />
     );

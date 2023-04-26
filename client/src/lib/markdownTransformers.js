@@ -75,9 +75,8 @@ function blockExporter(node) {
   const wrapper = searchParent(block.editor.getRootElement(), "vocero-block");
   if (wrapper) {
     const dom = pruneDom(htmlToDom(wrapper.innerHTML), [
-      ".vocero-block-wrapper",
       ".vocero-block",
-      ".block-editor-input",
+      ".vocero-block-editor",
     ]);
     return blockMeta(block) + domToHtml(dom);
   }

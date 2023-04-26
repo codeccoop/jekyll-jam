@@ -59,26 +59,31 @@ function BlockComponent({
   const BlockInner =
     blocks.find((block) => block.name === defn.name)?.fn || (() => {});
 
+  const [state, setState] = useState(initProps);
+
   useEffect(() => {
     blockRegistry[nodeKey] = {
       defn,
       editor,
       key: nodeKey,
-      props: state,
+      props: Object.assign({}, state),
     };
-  }, [nodeKey]);
+  }, [nodeKey, state]);
 
-  const [state, setState] = useState(initProps);
   useEffect(() => {
     if (!defn) return;
-    setState(Object.fromEntries(defn.args.map((a) => [a, null])));
+    setState(
+      Object.fromEntries(defn.args.map((a) => [a, initProps[a] || null]))
+    );
   }, [defn]);
 
   useEffect(() => {
+    if (!propsHasChanged(state, initProps)) return;
+
     parentEditor.update(() => {
       const node = $getNodeByKey(nodeKey);
       if ($isBlockNode(node)) {
-        node.props = state;
+        node.props = Object.assign({}, state);
       }
     });
   }, [state]);
@@ -113,3 +118,12 @@ function BlockComponent({
 }
 
 export default BlockComponent;
+
+function propsHasChanged(props, init) {
+  return (
+    Object.keys(props).length !== Object.keys(init).length ||
+    Object.keys(props).reduce((handle, k) => {
+      return handle || props[k] !== init[k];
+    }, false)
+  );
+}

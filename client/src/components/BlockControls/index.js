@@ -36,7 +36,9 @@ function BlockControls() {
     });
   };
 
-  const [props, setProps] = useState(Object.assign({}, block.props));
+  const [props, setProps] = useState(
+    Object.assign({}, block ? block.props : {})
+  );
   useEffect(() => {
     if (Object.keys(props).length === 0) return;
     debouncedSetter(props);
