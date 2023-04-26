@@ -139,17 +139,10 @@ function EditorPage() {
   }, [editorContent]);
 
   useEffect(() => {
-    if (hasChanged && changes.length) {
-      // Update after a 'save' a.k.a store changes. We have to reconciliate our editor content
-      // and blob content because the second has been updated on the localStorage.
-      retriveBlob();
-      // setHasChanged(false);
-    }
-    // Case when changes were wipped after a commit.
+    if (hasChanged && changes.length) retriveBlob();
     setHasChanged(false);
 
     return () => {
-      // If changes will change, the view is 'saving' some content. HasChanged has to be true.
       setHasChanged(true);
     };
   }, [changes]);
@@ -172,6 +165,7 @@ function EditorPage() {
           path,
           content: b64e(renderBlocks(content, marked)), // .replace(/\n|\r/g, "\n")),
           frontmatter: blob.frontmatter,
+          encoding: blob.encoding,
         },
       });
     });
@@ -182,7 +176,11 @@ function EditorPage() {
     if (!blob) {
       blob = await getBlob(query);
     } else {
-      blob = JSON.parse(JSON.stringify(blob));
+      blob = await new Promise((res) => {
+        setTimeout(() => {
+          res(JSON.parse(JSON.stringify(blob)));
+        }, 0);
+      });
     }
 
     let editorContent = b64d(blob.content);
