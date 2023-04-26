@@ -101,17 +101,17 @@ function BlockComponent({
     });
   }, [focus]);
 
+  if (defn.selfClosed) return <BlockInner {...state} React={React} />;
+
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
       {/* focus && <ToolbarPlugin /> */}
       <BlockInner {...state} React={React}>
-        {!defn.selfClosed && (
-          <BlockEditor
-            editor={editor}
-            parentEditor={parentEditor}
-            hierarchy={ancestors.concat(nodeKey)}
-          />
-        )}
+        <BlockEditor
+          editor={editor}
+          parentEditor={parentEditor}
+          hierarchy={ancestors.concat(nodeKey)}
+        />
       </BlockInner>
     </LexicalNestedComposer>
   );

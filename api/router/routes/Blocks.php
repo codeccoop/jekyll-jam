@@ -10,11 +10,18 @@ class BlocksRoute extends BaseRoute
 
     private string $blocks_js = '[{
     family: "media",
-    name: "CustomVideo",
+    name: "Video",
     level: "block",
-    args: ["url", "width", "height"],
+    args: ["src", "width", "height"],
     selfClosed: true,
-    fn: ({ React, src, width = "500px", height = "auto" }) => React.createElement("video", {width, height}, React.createElement("source", {src,type:"video/mp4"})),
+    fn: ({ React, src, width, height }) => React.createElement("video", { width: width || "500px", height: height || "300px" }, React.createElement("source", { src, type:"video/mp4" })),
+}, {
+    family: "media",
+    name: "Image",
+    level: "block",
+    args: ["src", "width", "height"],
+    selfClosed: true,
+    fn: ({ React, src, width, height }) => React.createElement("img", { style: { width: width || "100%", height: height || "auto" }, src })
 }, {
     family: "layout",
     name: "Columns",

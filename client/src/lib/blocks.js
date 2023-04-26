@@ -1,6 +1,9 @@
 function uuidv4() {
   return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, (c) =>
-    (c ^ (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))).toString(16)
+    (
+      c ^
+      (crypto.getRandomValues(new Uint8Array(1))[0] & (15 >> (c / 4)))
+    ).toString(16)
   );
 }
 
@@ -20,7 +23,9 @@ function getNodeAttributes(node) {
 
 function commentWrap(fragment, raw, uuid) {
   let node = fragment.children[0];
-  const openTag = new Comment(` vocero-block="${uuid}" ${btoa(raw.trim())} `);
+  const openTag = new Comment(
+    ` vocero-block="${uuid}" ${window.btoa(raw.trim())} `
+  );
   const closeTag = new Comment(` /vocero-block="${uuid}" `);
   fragment.insertBefore(openTag, node);
   fragment.appendChild(closeTag, node);
@@ -29,7 +34,9 @@ function commentWrap(fragment, raw, uuid) {
 
 function renderBlock(blockDefn, node) {
   const attributes = getNodeAttributes(node);
-  return parseHTMLFragment(blockDefn.fn({ ...attributes, content: node.innerHTML }));
+  return parseHTMLFragment(
+    blockDefn.fn({ ...attributes, content: node.innerHTML })
+  );
 }
 
 export function renderBlocks(src, marked) {
@@ -42,7 +49,9 @@ export function renderBlocks(src, marked) {
     if (token.renderer) {
       const block = token.renderer.call({ parser: marked.Parser }, token, true);
       rendered +=
-        token.raw.match(/^(\n|\r)*/)[0] + block + token.raw.match(/(\n|\r)*$/)[0];
+        token.raw.match(/^(\n|\r)*/)[0] +
+        block +
+        token.raw.match(/(\n|\r)*$/)[0];
     } else {
       rendered += token.raw;
     }
@@ -56,8 +65,10 @@ export function hydrateBlocks(md) {
 
   while (/<!-- vocero-block/g.test(md)) {
     const uuid = md.match(/(?<=<!-- vocero-block=")([^"]+)" /)[1];
-    const block = atob(
-      md.match(new RegExp(`(?<=<!-- vocero-block="${uuid}" )(.(?!-->))*(?= -->)`))[0]
+    const block = window.atob(
+      md.match(
+        new RegExp(`(?<=<!-- vocero-block="${uuid}" )(.(?!-->))*(?= -->)`)
+      )[0]
     );
     md = md.replace(
       new RegExp(
@@ -143,7 +154,9 @@ export function genBlocksMarkedExtensions(blocks) {
         return src.match(rule)?.index;
       },
       tokenizer(src) {
-        const rule = new RegExp(`^${openPattern}${contentPattern}${closePattern}`);
+        const rule = new RegExp(
+          `^${openPattern}${contentPattern}${closePattern}`
+        );
         const match = rule.exec(src);
 
         if (match) {

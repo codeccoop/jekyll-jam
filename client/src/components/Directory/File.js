@@ -24,7 +24,6 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
           content: "",
           path: b64e(fileName.replace(/^\/*/, "")),
           frontmatter: [],
-          // sha: sha,
         },
       ]).then((commit) => {
         fetchTree();
@@ -38,7 +37,6 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
       <input
         ref={elRef}
         type="text"
-        // onChange={(ev) => setFileName(ev.target.value)}
         onKeyDown={commitFileName}
         onBlur={commitFileName}
         defaultValue={fileName}
@@ -49,12 +47,7 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
   return (
     <Link
       id={sha}
-      to={
-        "/edit?sha=" +
-        encodeURIComponent(sha) +
-        "&path=" +
-        encodeURIComponent(btoa(path))
-      }
+      to={"/edit?sha=" + encodeURIComponent(sha) + "&path=" + b64e(path)}
     >
       {fileName}
     </Link>

@@ -78,7 +78,9 @@ class BlockNode extends DecoratorNode {
     super(key);
     this.__defn = defn;
     this.__ancestors = ancestors;
-    this.__editor = editor || initBlockEditor(editorState);
+    this.__editor = defn.selfClosed
+      ? null
+      : editor || initBlockEditor(editorState);
     this.__props = props;
     this.__focus = focus;
   }
@@ -113,10 +115,18 @@ class BlockNode extends DecoratorNode {
     writable.__focus += 1;
   }
 
-  createDOM(/* config, editor */) {
+  createDOM(_, editor) {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
     el.id = this.getKey();
+    if (this.defn.selfClosed) {
+      el.addEventListener("click", () => {
+        editor.update(() => {
+          this.focus();
+        });
+      });
+    }
+
     return el;
   }
 
@@ -128,10 +138,12 @@ class BlockNode extends DecoratorNode {
     const el = document.createElement("div");
     el.classList.add("vocero-block");
     el.id = this.getKey();
-    el.setAttribute(
-      "data-editor",
-      b64e(JSON.stringify(editor.getEditorState().toJSON()))
-    );
+    if (this.editor) {
+      el.setAttribute(
+        "data-editor",
+        b64e(JSON.stringify(editor.getEditorState().toJSON()))
+      );
+    }
     return { element: el };
   }
 
@@ -140,7 +152,7 @@ class BlockNode extends DecoratorNode {
       version: 1,
       type: "block",
       defn: this.defn,
-      editorState: this.editor.getEditorState().toJSON(),
+      editorState: this.editor ? this.editor.getEditorState().toJSON() : null,
       ancestors: this.ancestors,
       props: this.props,
     };
