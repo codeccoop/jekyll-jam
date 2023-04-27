@@ -5,7 +5,8 @@ function request(
   { method = "GET", data = null, headers = { Accept: "application/json" } }
 ) {
   let path = `${API_URL}/${endpoint}`;
-  if (method === "GET") {
+  if (method === "GET" || method === "DELETE") {
+    console.log(data);
     const query = Object.entries(data || {})
       .filter(([k, v]) => v !== null && v !== void 0)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
@@ -84,6 +85,10 @@ export function commit(changes) {
     frontmatter,
   }));
   return request("commit", { method: "POST", data });
+}
+
+export function dropBlob({ sha, path }) {
+  return request("commit", { method: "DELETE", data: { sha, path } });
 }
 
 export function postPull() {

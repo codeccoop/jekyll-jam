@@ -9,7 +9,7 @@ require_once VOCERO_API_ROOT . 'resources/Commit.php';
 
 class CommitRoute extends BaseRoute
 {
-    public array $methods = ['POST'];
+    public array $methods = ['POST', 'DELETE'];
 
     public function post(): void
     {
@@ -57,5 +57,40 @@ class CommitRoute extends BaseRoute
         ];
 
         $this->send_output(json_encode($response, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    }
+
+    public function delete(): void
+    {
+        if (!(isset($this->req['query']['sha']) && isset($this->req['query']['sha']))) {
+            $this->handle_http_exception(new Exception("Invalid payload", 400));
+        }
+
+        $sha = $this->req['query']['sha'];
+        $path = $this->req['query']['path'];
+
+        $blob = (new Blob($sha, $path))->get();
+        $tree = (new Tree())->delete_blob($sha);
+        $parent_commit = (new Commit())->get();
+        $tree = (new Tree())->post([
+            'changes' => $tree['tree']
+        ]);
+        $commit = (new Commit())->post([
+            'message' => "Drop $path by Vocero",
+            'parent_sha' => $parent_commit['sha'],
+            'tree_sha' => $tree['sha']
+        ]);
+        $ref = (new Ref())->post([
+            'commit_sha' => $commit['sha'],
+            'update' => true
+        ]);
+
+        $response = [
+            'changes' => [$blob],
+            'tree' => $tree,
+            'commit' => $commit,
+            'ref' => $ref
+        ];
+
+        $this->send_output(json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
     }
 }

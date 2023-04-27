@@ -3,10 +3,10 @@ import React, { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 
 /* SOURCE */
-import { commit } from "services/api";
+import { commit, dropBlob } from "services/api";
 import { b64e } from "lib/helpers";
 
-export default function File({ sha, path, name, is_new, fetchTree }) {
+export default function File({ sha, path, name, is_new, fetchTree, drop }) {
   const [fileName, setFileName] = useState(name);
   const elRef = useRef();
 
@@ -44,12 +44,19 @@ export default function File({ sha, path, name, is_new, fetchTree }) {
     );
   }
 
+  function drop() {
+    dropBlob({ sha, path }).then((commit) => {
+      console.log(commit);
+    });
+  }
+
   return (
     <Link
       id={sha}
       to={"/edit?sha=" + encodeURIComponent(sha) + "&path=" + b64e(path)}
     >
       {fileName}
+      <button onClick={drop}>drop</button>
     </Link>
   );
 }

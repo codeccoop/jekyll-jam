@@ -48,6 +48,12 @@ function Sidebar({ toggleVisibility }) {
       .catch(console.error);
   }
 
+  function deleteBlob(blob) {
+    deleteBlob(blob).then((commit) => {
+      console.log(commit);
+    });
+  }
+
   function commitChanges() {
     commit(changes).then((commit) => {
       const changeMap = changes.reduce((acum, from) => {

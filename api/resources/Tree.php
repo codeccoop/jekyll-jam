@@ -28,10 +28,15 @@ class Tree extends BaseResource
     {
         if (!$data) return null;
 
-        return [
-            'base_tree' => $data['base_sha'],
+        $output = [
             'tree' => $data['changes']
         ];
+
+        if (isset($data['base_sha'])) {
+            $output['base_tree'] = $data['base_sha'];
+        }
+
+        return $output;
     }
 
     protected function decorate(?array $data = null): array
@@ -169,5 +174,19 @@ class Tree extends BaseResource
         }));
 
         return $file;
+    }
+
+    public function delete_blob(string $sha): array
+    {
+        $tree = $this->get();
+        $blobs = [];
+        foreach ($tree['tree'] as $blob) {
+            if ($blob['sha'] !== $sha) {
+                $blobs[] = $blob;
+            }
+        }
+
+        $tree['tree'] = $blobs;
+        return $tree;
     }
 }
