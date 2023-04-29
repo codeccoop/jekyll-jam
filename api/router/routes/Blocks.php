@@ -21,7 +21,7 @@ class BlocksRoute extends BaseRoute
     level: "block",
     args: ["src", "width", "height"],
     selfClosed: true,
-    fn: ({ React, src, width, height }) => React.createElement("img", { style: { width: width || "100%", height: height || "auto" }, src })
+    fn: ({ React, src, width, height }) => React.createElement("img", { style: { width: width || "100%", height: height || "300px" }, src })
 }, {
     family: "layout",
     name: "Columns",

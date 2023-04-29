@@ -74,10 +74,10 @@ class CommitRoute extends BaseRoute
 
         $leafs = array_map(function ($leaf) {
             if (!isset($leaf['pruned'])) return $leaf;
-            $blob = (new Blob($leaf['sha'], $leaf['path']))->get();
+            $blob = json_decode((new Blob($leaf['sha'], $leaf['path']))->json(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             $blob = (new Blob(null, $leaf['path']))->post([
                 'encoding' => $blob['encoding'],
-                'content' => $blob['content'],
+                'content' => base64_decode($blob['content']),
                 'frontmatter' => $blob['frontmatter']
             ]);
             return [

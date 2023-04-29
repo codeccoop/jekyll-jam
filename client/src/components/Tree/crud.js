@@ -53,9 +53,10 @@ export function uploadFile(tree, directory = "assets") {
           );
           commit([
             {
-              content: b64e(reader.result),
+              content: window.btoa(reader.result),
               path: b64e(newFile.path),
               encoding: "base64",
+              frontmatter: [],
             },
           ]).then((commit) => {
             const blob = commit.changes[0];
@@ -74,6 +75,7 @@ export function uploadFile(tree, directory = "assets") {
         }
       };
       reader.readAsBinaryString(file);
+      document.body.removeChild(input);
     });
     document.body.append(input);
     input.click();

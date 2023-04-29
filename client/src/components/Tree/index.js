@@ -151,14 +151,7 @@ function Tree() {
           action: "FETCH_BRANCH",
         });
 
-        if (!query.sha) {
-          navigate(`/edit?sha=${sha}&path=${b64e(path)}`);
-        } else {
-          dispatch({
-            action: "REFRESH_SHA",
-            payload: sha,
-          });
-        }
+        navigate(`/edit?sha=${sha}&path=${b64e(path)}`);
       });
     }
   }
@@ -207,7 +200,7 @@ function Tree() {
         Data
         <button
           className="create"
-          onClick={(ev) => onAddFile(ev, "data")}
+          onClick={(ev) => onAddFile(ev, "data", "_data")}
         ></button>
       </h3>
       {visibilities.data === true

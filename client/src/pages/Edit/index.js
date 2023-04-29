@@ -65,15 +65,13 @@ function EditComponent({ mode, content, setContent, blob }) {
 }
 
 function EditorPage() {
+  const el = useRef();
   const marked = useMarked();
   const [editor] = useLexicalComposerContext();
   const blocksRegistry = useBlockRegistryContext();
   const [{ query, changes, branch }, dispatch] = useStore();
 
   const [blob, setBlob] = useState({});
-  useEffect(() => {
-    console.log(blob);
-  }, [blob]);
 
   const isContentLoaded = useRef(false);
   const [editorContent, setEditorContent] = useState(defaultContent);
@@ -107,7 +105,7 @@ function EditorPage() {
   useEffect(() => {
     setBlob({ ...blob, content: null });
     setEditorContent(defaultContent);
-    if (query.sha) retriveBlob();
+    if (query.sha) retriveBlob(changes);
   }, [query.sha]);
 
   const [preview, setPreview] = useState(false);
@@ -138,7 +136,7 @@ function EditorPage() {
   }, [editorContent]);
 
   useEffect(() => {
-    if (hasChanged && changes.length) retriveBlob();
+    if (hasChanged && changes.length) retriveBlob(changes);
     setHasChanged(false);
 
     return () => {
@@ -146,7 +144,7 @@ function EditorPage() {
     };
   }, [changes]);
 
-  function storeEdit() {
+  function storeEdit(blob) {
     const { sha, path } = Object.fromEntries(
       new URLSearchParams(location.search).entries()
     );
@@ -170,21 +168,31 @@ function EditorPage() {
     });
   }
 
-  const saveListener = useRef((ev) => {
+  function onKeyDown(ev, blob) {
     if (ev.key === "s" && ev.ctrlKey) {
       ev.preventDefault();
       ev.stopPropagation();
-      storeEdit();
+      storeEdit(blob);
+    }
+  }
+
+  const ctrlSListener = useRef((ev) => {
+    if (ev.key === "s" && ev.ctrlKey) {
+      if (!el.current.contains(ev.target)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
     }
   });
   useEffect(() => {
     if (getEditMode(query.path) === "media") return;
-    document.body.addEventListener("keydown", saveListener.current);
-    return () =>
-      document.body.removeEventListener("keydown", saveListener.current);
+    document.body.addEventListener("keydown", ctrlSListener.current, true);
+    return () => {
+      document.body.removeEventListener("keydown", ctrlSListener.current, true);
+    };
   }, []);
 
-  async function retriveBlob() {
+  async function retriveBlob(changes) {
     let blob = changes.find((d) => d.sha === query.sha);
     if (!blob) {
       blob = await getBlob(query);
@@ -208,7 +216,7 @@ function EditorPage() {
     setEditorContent(editorContent);
   }
 
-  function toTheClippBoard() {
+  function toTheClippBoard(blob) {
     navigator.clipboard.writeText(
       "/" + b64d(blob.path).replace(/\.md$/, ".html")
     );
@@ -218,17 +226,18 @@ function EditorPage() {
   return (
     <>
       <div
+        ref={el}
         className={[
           "edit__content",
           getEditMode(query.path),
           preview && previewContent ? " preview" : "edit",
         ].join(" ")}
+        onKeyDown={(ev) => onKeyDown(ev, blob)}
       >
         <EditComponent
           mode={getEditMode(query.path)}
           content={editorContent}
           setContent={setEditorContent}
-          blob={blob}
         />
         {preview && previewContent && <Preview text={previewContent} />}
       </div>
@@ -241,7 +250,7 @@ function EditorPage() {
         </a>
         <a
           className={"btn" + (hasChanged || true ? "" : " disabled")}
-          onClick={storeEdit}
+          onClick={() => storeEdit(blob)}
         >
           Save
         </a>
