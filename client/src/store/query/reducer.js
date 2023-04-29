@@ -1,11 +1,10 @@
-function encodeQuery(query) {
-  return Object.entries(query)
-    .map((e) => e.map(encodeURIComponent).join("="))
-    .join("&");
-}
+/* SOURCE */
+import { encodeQuery } from "lib/helpers";
 
 function genHref(query) {
-  query = Object.fromEntries(Object.entries(query).filter(([k, v]) => v !== void 0));
+  query = Object.fromEntries(
+    Object.entries(query).filter(([k, v]) => v !== void 0)
+  );
   if (Object.e(query).length === 0) {
     return location.pathname;
   }
@@ -23,10 +22,7 @@ function reducer({ state, action, payload }) {
       query = { ...state, ...payload };
       return genHref(search);
     case "REFRESH_SHA":
-      const [, sha] = payload.find(([from]) => state.sha === from);
-      if (sha) {
-        return { ...state, sha: sha };
-      }
+      return { ...state, sha: payload };
   }
 }
 

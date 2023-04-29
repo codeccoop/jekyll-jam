@@ -6,9 +6,12 @@ import { $getNodeByKey } from "lexical";
 /* SOURCE */
 import { $isBlockNode } from "components/Editor/nodes/BlockNode";
 
+/* STYLE */
+import "./style.scss";
+
 function BlockControl({ name, value, setValue }) {
   return (
-    <>
+    <div className="block-controls__field">
       <label htmlFor={name}>{name}</label>
       <input
         type="text"
@@ -16,7 +19,7 @@ function BlockControl({ name, value, setValue }) {
         value={value || ""}
         onInput={(ev) => setValue(ev.target.value)}
       />
-    </>
+    </div>
   );
 }
 
@@ -58,21 +61,27 @@ function BlockControls() {
     }, 500);
   }
 
-  if (!block) return <h2>Select one block</h2>;
+  // if (!block) return <h2>Select one block</h2>;
   return (
-    <div className="block-control">
-      <h3>{block.defn.name}</h3>
-      <form>
-        {Object.entries(props).map((prop, i) => (
-          <BlockControl
-            key={`${prop[0]}-${i}`}
-            name={prop[0]}
-            value={prop[1]}
-            setValue={(val) => setProps({ ...props, [prop[0]]: val })}
-          />
-        ))}
-      </form>
-      <button onClick={handleDelete}>DELETE</button>
+    <div className="block-controls">
+      {block ? (
+        <>
+          <h3>{block.defn.name}</h3>
+          <form>
+            {Object.entries(props).map((prop, i) => (
+              <BlockControl
+                key={`${prop[0]}-${i}`}
+                name={prop[0]}
+                value={prop[1]}
+                setValue={(val) => setProps({ ...props, [prop[0]]: val })}
+              />
+            ))}
+          </form>
+          <button onClick={handleDelete}>DELETE</button>
+        </>
+      ) : (
+        <h3>Select one block</h3>
+      )}
     </div>
   );
 }

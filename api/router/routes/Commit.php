@@ -22,8 +22,7 @@ class CommitRoute extends BaseRoute
             $path = base64_decode($file['path']);
             $content = base64_decode($file['content']);
             $blob = (new Blob(null, $path))->post([
-                'path' => $path,
-                'encoding' => 'base64',
+                'encoding' => $file["encoding"],
                 'content' => $content,
                 'frontmatter' => $file['frontmatter']
             ]);
@@ -36,22 +35,23 @@ class CommitRoute extends BaseRoute
         }
 
         $commit = (new Branch())->get()['commit'];
-        $tree = (new Tree())->post([
+        $tree = new Tree();
+        $tree_sha = $tree->post([
             'base_sha' => $commit['sha'],
             'changes' => $changes
-        ]);
+        ])['sha'];
 
         $commit = (new Commit())->post([
             'message' => "Edit by Vocero",
             'parent_sha' => $commit['sha'],
-            'tree_sha' => $tree['sha']
+            'tree_sha' => $tree_sha
         ]);
 
         $ref = (new Ref())->post(['commit_sha' => $commit['sha'], 'update' => true]);
 
         $response = [
             'changes' => $changes,
-            'tree' => $tree,
+            'tree' => json_decode($tree->json(), true),
             'commit' => $commit,
             'ref' => $ref
         ];
@@ -69,15 +69,29 @@ class CommitRoute extends BaseRoute
         $path = $this->req['query']['path'];
 
         $blob = (new Blob($sha, $path))->get();
-        $tree = (new Tree())->delete_blob($sha);
         $parent_commit = (new Commit())->get();
-        $tree = (new Tree())->post([
-            'changes' => $tree['tree']
-        ]);
+        $tree = new Tree();
+
+        $leafs = array_map(function ($leaf) {
+            if (!isset($leaf['pruned'])) return $leaf;
+            $blob = (new Blob($leaf['sha'], $leaf['path']))->get();
+            $blob = (new Blob(null, $leaf['path']))->post([
+                'encoding' => $blob['encoding'],
+                'content' => $blob['content'],
+                'frontmatter' => $blob['frontmatter']
+            ]);
+            return [
+                'sha' => $blob['sha'],
+                'path' => $leaf['path'],
+                'type' => $leaf['type'],
+                'mode' => $leaf['mode']
+            ];
+        }, $tree->drop_leaf($sha, $path));
+        $tree_sha = $tree->post(['changes' => $leafs])['sha'];
         $commit = (new Commit())->post([
             'message' => "Drop $path by Vocero",
             'parent_sha' => $parent_commit['sha'],
-            'tree_sha' => $tree['sha']
+            'tree_sha' => $tree_sha
         ]);
         $ref = (new Ref())->post([
             'commit_sha' => $commit['sha'],
@@ -86,7 +100,7 @@ class CommitRoute extends BaseRoute
 
         $response = [
             'changes' => [$blob],
-            'tree' => $tree,
+            'tree' => json_decode((new Tree($tree_sha))->json(), true),
             'commit' => $commit,
             'ref' => $ref
         ];

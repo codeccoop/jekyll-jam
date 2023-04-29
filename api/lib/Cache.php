@@ -1,7 +1,7 @@
 <?php
 class Cache
 {
-    private string $base_path = VOCERO_API_ROOT . '../.cache';
+    public string $base_path = VOCERO_API_ROOT . '../.cache';
     private string $path;
     private ?array $content;
 
@@ -47,14 +47,21 @@ class Cache
             fwrite($file, json_encode($content));
             fclose($file);
             return $content;
-        } else {
+        } else if ($mode === 'r') {
             if (!file_exists($this->path)) return null;;
             $file = fopen($this->path, 'r');
             $size = filesize($this->path);
             if ($size === 0) return null;
             $content = json_decode(fread($file, $size), true);
+            if (!$content || count(array_keys($content)) === 0) return null;
             fclose($file);
             return $content;
+        } else if ($mode === 't') {
+            if (!file_exists($this->path)) return null;;
+            $handle = fopen($this->path, 'r+');
+            ftruncate($handle, 1);
+            fclose($handle);
+            return null;
         }
     }
 
@@ -104,7 +111,7 @@ class Cache
 
     public function truncate(): void
     {
-        $this->open('w', []);
+        $this->open('t');
     }
 
     public function reset(): void

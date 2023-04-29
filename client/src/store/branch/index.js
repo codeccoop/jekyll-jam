@@ -3,21 +3,23 @@ import React, { useEffect, useState } from "react";
 
 /* SOURCE */
 import reducer from "./reducer";
-import { getBranch } from "../../services/api.js";
+import { getBranch } from "services/api.js";
 
 const Component = ({ Warehouse, children }) => {
   const [state, setState] = useState();
 
   useEffect(() => {
-    getBranch()
-      .then(setState)
-      .catch((err) => {
-        console.warn("Can't fetch branch");
-        setState({});
-      });
+    loadBranch(getBranch());
   }, []);
 
-  return <Warehouse value={[state, setState]}>{children}</Warehouse>;
+  function loadBranch(promise) {
+    promise.then(setState).catch((err) => {
+      console.warn("Can't fetch branch");
+      setState({});
+    });
+  }
+
+  return <Warehouse value={[state, loadBranch]}>{children}</Warehouse>;
 };
 
 export default { name: "branch", Component, reducer };

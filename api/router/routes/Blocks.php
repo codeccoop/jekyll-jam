@@ -14,7 +14,7 @@ class BlocksRoute extends BaseRoute
     level: "block",
     args: ["src", "width", "height"],
     selfClosed: true,
-    fn: ({ React, src, width, height }) => React.createElement("video", { width: width || "500px", height: height || "300px" }, React.createElement("source", { src, type:"video/mp4" })),
+    fn: ({ React, src, width, height }) => React.createElement("video", { controls: true, width: width || "500px", height: height || "300px" }, React.createElement("source", { src, type:"video/mp4" })),
 }, {
     family: "media",
     name: "Image",

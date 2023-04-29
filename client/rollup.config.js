@@ -103,6 +103,7 @@ export default {
       server: {
         connectionTimeout: 1e4,
       },
+      silent: true,
     }),
     livereload({
       delay: 1e3,

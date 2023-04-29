@@ -11,7 +11,7 @@ import {
 /* SOURCE */
 import Editor from "components/Editor";
 import Preview from "components/Preview";
-import AssetViewer from "components/AssetViewer";
+import MediaViewer from "components/MediaViewer";
 import YamlForm from "components/YamlForm";
 
 import { getBlob, getStyle } from "services/api";
@@ -28,6 +28,8 @@ import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 import "./style.scss";
 
 function getEditMode(queryPath) {
+  if (!queryPath) return null;
+
   let path;
   try {
     path = b64d(queryPath);
@@ -37,7 +39,7 @@ function getEditMode(queryPath) {
   if (path.match(/^\_data/)) {
     return "data";
   } else if (path.match(/^assets/)) {
-    return "asset";
+    return "media";
   } else {
     return "editor";
   }
@@ -51,12 +53,12 @@ function EditComponent({ mode, content, setContent, blob }) {
       return <Editor content={content} defaultContent={defaultContent} />;
     case "data":
       return <YamlForm onUpdate={setContent} content={content} />;
-    case "asset":
+    case "media":
       return (
-        <AssetViewer
+        <MediaViewer
           content={blob.content}
           encoding={blob.encoding}
-          path={blob.path}
+          path={b64d(blob.path)}
         />
       );
   }
@@ -68,13 +70,10 @@ function EditorPage() {
   const blocksRegistry = useBlockRegistryContext();
   const [{ query, changes, branch }, dispatch] = useStore();
 
-  const [blob, setBlob] = useState({
-    content: null,
-    sha: null,
-    frontmatter: null,
-    path: null,
-    encoding: null,
-  });
+  const [blob, setBlob] = useState({});
+  useEffect(() => {
+    console.log(blob);
+  }, [blob]);
 
   const isContentLoaded = useRef(false);
   const [editorContent, setEditorContent] = useState(defaultContent);
@@ -131,7 +130,7 @@ function EditorPage() {
   const [hasChanged, setHasChanged] = useState(false);
   useEffect(() => {
     const hasChanged =
-      getEditMode(query.path) !== "asset" &&
+      getEditMode(query.path) !== "media" &&
       editorContent !== defaultContent &&
       b64e(editorContent) !== blob.content;
 
@@ -164,12 +163,26 @@ function EditorPage() {
           sha,
           path,
           content: b64e(renderBlocks(content, marked)), // .replace(/\n|\r/g, "\n")),
-          frontmatter: blob.frontmatter,
-          encoding: blob.encoding,
+          frontmatter: blob.frontmatter || [],
+          encoding: blob.encoding || "base64",
         },
       });
     });
   }
+
+  const saveListener = useRef((ev) => {
+    if (ev.key === "s" && ev.ctrlKey) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      storeEdit();
+    }
+  });
+  useEffect(() => {
+    if (getEditMode(query.path) === "media") return;
+    document.body.addEventListener("keydown", saveListener.current);
+    return () =>
+      document.body.removeEventListener("keydown", saveListener.current);
+  }, []);
 
   async function retriveBlob() {
     let blob = changes.find((d) => d.sha === query.sha);
@@ -183,8 +196,11 @@ function EditorPage() {
       });
     }
 
-    let editorContent = b64d(blob.content);
-    if (getEditMode(query.path) === "editor") {
+    const mode = getEditMode(query.path);
+    let editorContent =
+      mode === "media" ? window.atob(blob.content) : b64d(blob.content);
+
+    if (mode === "editor") {
       editorContent = hydrateBlocks(editorContent);
     }
 
@@ -193,9 +209,12 @@ function EditorPage() {
   }
 
   function toTheClippBoard() {
-    navigator.clipboard.writeText("/" + blob.path.replace(/\.md$/, ".html"));
+    navigator.clipboard.writeText(
+      "/" + b64d(blob.path).replace(/\.md$/, ".html")
+    );
   }
 
+  if (!query.path) return <h1>Loading</h1>;
   return (
     <>
       <div

@@ -6,7 +6,6 @@ function request(
 ) {
   let path = `${API_URL}/${endpoint}`;
   if (method === "GET" || method === "DELETE") {
-    console.log(data);
     const query = Object.entries(data || {})
       .filter(([k, v]) => v !== null && v !== void 0)
       .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
@@ -79,10 +78,11 @@ export function getBlob({ sha, path }) {
 }
 
 export function commit(changes) {
-  const data = changes.map(({ path, content, frontmatter }) => ({
+  const data = changes.map(({ path, content, frontmatter, encoding }) => ({
     path,
     content,
     frontmatter,
+    encoding,
   }));
   return request("commit", { method: "POST", data });
 }

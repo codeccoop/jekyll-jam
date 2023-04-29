@@ -79,7 +79,8 @@
     }
   }
 
-  .btn[data-changes] {
+  button[data-changes] {
+    width: 100%;
     position: relative;
 
     &[data-changes="0"]::after {

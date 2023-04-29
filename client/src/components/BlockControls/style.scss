@@ -1,0 +1,15 @@
+.block-controls {
+  display: block;
+  padding: 0 1em;
+
+  .block-controls__field > input {
+    display: block;
+    width: 100%;
+  }
+
+  button {
+    cursor: pointer;
+    margin-top: 0.5rem;
+    width: 100%;
+  }
+}

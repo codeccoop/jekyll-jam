@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 /* SOURCE */
-import Directory from "components/Directory";
+import Tree from "components/Tree";
 import { commit, observeWorkflowRun, getArtifact } from "services/api";
 import { b64d } from "lib/helpers";
 
@@ -48,12 +48,6 @@ function Sidebar({ toggleVisibility }) {
       .catch(console.error);
   }
 
-  function deleteBlob(blob) {
-    deleteBlob(blob).then((commit) => {
-      console.log(commit);
-    });
-  }
-
   function commitChanges() {
     commit(changes).then((commit) => {
       const changeMap = changes.reduce((acum, from) => {
@@ -68,8 +62,7 @@ function Sidebar({ toggleVisibility }) {
         action: "CLEAR_CHANGES",
       });
       dispatch({
-        action: "REFRESH_SHA",
-        payload: changeMap,
+        action: "FETCH_BRANCH",
       });
       setIsBuilding(true);
       observeWorkflowRun().finally(() => {
@@ -83,7 +76,7 @@ function Sidebar({ toggleVisibility }) {
       <div className="sidebar__head">
         <span onClick={toggleVisibility}>&laquo;</span>
       </div>
-      <Directory />
+      <Tree />
       <div className="sidebar__bottom">
         <div className="sidebar__controls">
           <a
@@ -100,14 +93,14 @@ function Sidebar({ toggleVisibility }) {
             <abbr title="Publish"></abbr>
           </a>
         </div>
-        <a
+        <button
           className="btn"
           disabled={isBuilding}
           data-changes={(changes || []).length}
           onClick={commitChanges}
         >
-          Commit
-        </a>
+          {isBuilding ? "Publishing..." : "Publish"}
+        </button>
       </div>
     </div>
   );

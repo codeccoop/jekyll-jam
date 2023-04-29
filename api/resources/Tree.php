@@ -14,6 +14,13 @@ class Tree extends BaseResource
         parent::__construct();
     }
 
+    public function post(?array $payload = null): array
+    {
+        $sha = parent::post($payload)['sha'];
+        $this->cache->truncate();
+        return (new Tree($sha))->get();
+    }
+
     protected function get_endpoint(string $method): string
     {
         switch ($method) {
@@ -176,17 +183,21 @@ class Tree extends BaseResource
         return $file;
     }
 
-    public function delete_blob(string $sha): array
+    public function drop_leaf(string $sha, string $path): array
     {
         $tree = $this->get();
-        $blobs = [];
-        foreach ($tree['tree'] as $blob) {
-            if ($blob['sha'] !== $sha) {
-                $blobs[] = $blob;
+        $leafs = [];
+        $directory = dirname($path);
+        foreach ($tree['tree'] as $leaf) {
+            if ($leaf['sha'] !== $sha) {
+                $leaf_path = $leaf['path'];
+                if ($directory !== '.' && preg_match("/^$directory/", $leaf_path)) {
+                    $leaf['pruned'] = true;
+                }
+                if ($leaf['type'] !== 'tree') $leafs[] = $leaf;
             }
         }
 
-        $tree['tree'] = $blobs;
-        return $tree;
+        return $leafs;
     }
 }

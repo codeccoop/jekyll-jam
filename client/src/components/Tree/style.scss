@@ -2,8 +2,8 @@
   flex: 1;
 
   .fullscreen & {
-    h3,
-    .item {
+    .branch,
+    .branch + ul {
       display: none;
     }
   }
@@ -14,12 +14,13 @@
       cursor: progress;
     }
 
-    a {
+    a,
+    button {
       pointer-events: none;
     }
   }
 
-  h3.title {
+  .branch {
     margin-bottom: 0px;
     cursor: pointer;
     position: relative;
@@ -37,25 +38,33 @@
       transform: translateY(-50%);
     }
 
-    &.open {
-      &::before {
-        content: "\003C";
-      }
+    &.open::before {
+      content: "\003C";
+    }
+  }
 
-      a {
+  .branch,
+  .directory > .title,
+  .file {
+    &:hover {
+      > button {
         display: inline;
       }
     }
 
-    > a {
+    > button {
       display: none;
       cursor: pointer;
       position: relative;
       float: right;
-      height: 1em;
-      width: 1em;
+      height: 1.5em;
+      width: 1.5em;
+      margin-top: 0.2em;
+      background: none;
+      border: none;
 
-      &:after {
+      &::after {
+        content: "";
         position: absolute;
         left: 0px;
         top: 0px;
@@ -66,14 +75,16 @@
         background-repeat: no-repeat;
       }
 
-      &.create:after {
-        content: "";
+      &.create::after {
         background-image: url("../../assets/icons/new-file-icon.png");
       }
 
-      &.upload:after {
-        content: "";
+      &.upload::after {
         background-image: url("../../assets/icons/upload-file-icon.png");
+      }
+
+      &.drop::after {
+        background-image: url("../../assets/icons/trash-icon--black.png");
       }
     }
   }
@@ -92,10 +103,14 @@
         background-color: steelblue;
         color: white;
       }
+
+      &.file {
+        display: flex;
+      }
     }
 
-    li a,
-    li span {
+    li > a,
+    li > span {
       cursor: pointer;
       color: var(--font-color);
       text-decoration: none;
@@ -107,6 +122,7 @@
       white-space: nowrap;
       display: block;
       line-height: 1.45;
+      flex: 1;
 
       &:before {
         position: absolute;
@@ -120,7 +136,7 @@
       }
     }
 
-    li a:before {
+    li > a:before {
       /* content: '\039E'; */
       content: "";
       width: 1rem;
@@ -131,7 +147,7 @@
       background-repeat: no-repeat;
     }
 
-    li span:before {
+    li > span:before {
       content: "\003E";
       content: "";
       width: 0.8rem;
@@ -142,11 +158,11 @@
       background-repeat: no-repeat;
     }
 
-    li span + ul {
+    li > span + ul {
       display: none;
     }
 
-    li span.open {
+    li > span.open {
       border-bottom: 1px solid white;
 
       + ul {

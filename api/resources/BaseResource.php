@@ -10,7 +10,7 @@ class BaseResource
     protected string $endpoint;
     protected bool $cached = true;
     protected string $cache_key;
-    protected Cache $cache;
+    protected ?Cache $cache = null;
 
     private string $base_url = 'https://api.github.com';
     private ?array $data = null;
@@ -24,7 +24,7 @@ class BaseResource
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);
 
-        if ($this->cached) {
+        if ($this->cached && $this->cache === null) {
             $this->cache = new Cache($this->cache_key, $this->sha);
         }
     }
@@ -48,7 +48,7 @@ class BaseResource
 
         $payload = $this->get_payload($method, $payload);
         if ($payload) {
-            $settings['body'] = json_encode($payload, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+            $settings['body'] = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
         }
 
         $query = $this->get_query($method);
@@ -139,7 +139,7 @@ class BaseResource
     public function json(): string
     {
         $data = $this->decorate();
-        return json_encode($data, JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+        return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**

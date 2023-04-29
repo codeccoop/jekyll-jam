@@ -46,21 +46,22 @@ class Blob extends BaseResource
 
         $this->cache_key = $this->cache_key . '/' . $this->path;
 
-        if (preg_match('/^assets/', $this->path)) $this->type = 'asset';
+        if (preg_match('/^assets\/.+/', $this->path)) $this->type = 'asset';
         else if (preg_match('/\.(markdown|mkdown|mkdn|mkd|md)$/', $this->path)) $this->type = 'markdown';
         else if (preg_match('/\.(yml|yaml)$/', $this->path)) $this->type = 'yaml';
-        else throw new Exception("Unkown blob type", 400);
-
-        parent::__construct();
+        else $this->type = 'unkown';
+        // else throw new Exception("Unkown blob type", 400);
 
         $this->cache = new BlobCache($this->cache_key, $this->sha);
+
+        parent::__construct();
     }
 
     public function post(?array $payload = null): array
     {
-        $data = parent::post($payload);
-        $this->cache->truncate();
-        return (new Blob($data['sha'], $this->path))->get();
+        $sha = parent::post($payload)['sha'];
+        $this->cached && $this->cache->truncate();
+        return (new Blob($sha, $this->path))->get();
     }
 
     protected function decorate(): array
@@ -151,7 +152,7 @@ class Blob extends BaseResource
         $encoding = $blob['encoding'];
 
         if ($encoding == 'base64') {
-            if ($this->type == 'asset') {
+            if ($this->type === 'asset') {
                 $content = $blob['content'];
             } else {
                 $decoded = base64_decode($blob['content']);
