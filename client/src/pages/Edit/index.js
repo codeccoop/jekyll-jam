@@ -217,9 +217,7 @@ function EditorPage() {
   }
 
   function toTheClippBoard(blob) {
-    navigator.clipboard.writeText(
-      "/" + b64d(blob.path).replace(/\.md$/, ".html")
-    );
+    navigator.clipboard.writeText(b64d(blob.path).replace(/\.md$/, ".html"));
   }
 
   if (!query.path) return <h1>Loading</h1>;
