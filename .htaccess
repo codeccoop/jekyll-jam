@@ -1,12 +1,12 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
 
-  RewriteBase /
+  RewriteBase /lucasgarciabaro.github.io/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteRule ^assets/(.+)$ api/index.php/assets/$1 [R,L,NC]
+  RewriteRule ^assets/(.+)$ api/index.php/assets/$1 [R=302,L,NC]
 
-  RewriteBase /
+  RewriteBase /lucasgarciabaro.github.io/
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . index.html [L]

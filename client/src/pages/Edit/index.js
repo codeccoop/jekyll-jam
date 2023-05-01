@@ -243,7 +243,7 @@ function EditorPage() {
         {preview && previewContent && <Preview text={previewContent} />}
       </div>
       <div className="edit__controls">
-        <a className="btn" onClick={toTheClippBoard}>
+        <a className="btn" onClick={() => toTheClippBoard(blob)}>
           Get URL
         </a>
         <a className="btn" onClick={() => setPreview(!preview)}>

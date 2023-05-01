@@ -32,13 +32,13 @@ function get_base_url($env)
         if ($is_user_site) {
             $base_url = '/';
         } else {
-            $base_url = '/' . $env['GH_REPO'];
+            $base_url = '/' . $env['GH_REPO'] . '/';
         }
     } else {
         $base_url = preg_replace('/\/$/', '', preg_replace('/^(.(?!\/))*.\/?/', '', preg_replace('/^https?\:\/\//', '', $env['GH_DOMAIN'])));
     }
 
-    return 'http://' . $env['GH_DOMAIN'] . $base_url . '/';
+    return 'http://' . $env['GH_DOMAIN'] . $base_url;
 }
 
 function get_filename_mimetype($filename)
