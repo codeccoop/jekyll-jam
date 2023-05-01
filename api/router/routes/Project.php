@@ -1,7 +1,7 @@
 <?php
 
 require_once VOCERO_API_ROOT . 'router/routes/BaseRoute.php';
-require_once VOCERO_API_ROOT . 'lib/Dotfile.php';
+require_once VOCERO_API_ROOT . 'lib/Project.php';
 
 class ProjectRoute extends BaseRoute
 {
@@ -9,7 +9,7 @@ class ProjectRoute extends BaseRoute
 
     public function get(): void
     {
-        $project = new Dotfile();
+        $project = new Project();
         $response = $project->json();
         $this->send_output($response);
     }

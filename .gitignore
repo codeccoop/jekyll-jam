@@ -2,19 +2,11 @@ vendor
 
 node_modules
 
-.env
-.env.*
+.project
+.env.local
+
 static/bundle*
 .cache
 .artifacts
-
-bin/*
-! bin/docker-cli
-! bin/activate
-! bin/.htaccess
-
-scripts/*
-! scripts/api/*
-! scripts/.htaccess
 
 codebase

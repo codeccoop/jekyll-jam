@@ -14,6 +14,7 @@ const Component = ({ Warehouse, children }) => {
     getProject()
       .then(setState)
       .catch((err) => {
+        console.log(err);
         console.error("Can't fetch project");
       });
   }, []);

@@ -90,24 +90,29 @@ export default {
       plugins: [autoprefixer(), url({ url: "inline" })],
     }),
     json(),
-    dev({
-      dirs: [CWD],
-      port: 3000,
-      proxy: [
-        {
-          from: "/api",
-          to: "http://localhost:8000/api",
-        },
-      ],
-      spa: true,
-      server: {
-        connectionTimeout: 1e4,
-      },
-      silent: true,
-    }),
-    livereload({
-      delay: 1e3,
-    }),
-  ],
+  ].concat(
+    process.env.NODE_ENV === "development"
+      ? [
+          dev({
+            dirs: [CWD],
+            port: 3000,
+            proxy: [
+              {
+                from: "/api",
+                to: "http://localhost:8000/api",
+              },
+            ],
+            spa: true,
+            server: {
+              connectionTimeout: 1e4,
+            },
+            silent: true,
+          }),
+          livereload({
+            delay: 1e3,
+          }),
+        ]
+      : []
+  ),
   preserveSymlinks: true,
 };

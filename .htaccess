@@ -19,3 +19,13 @@ DirectoryIndex index.html
   RewriteCond %{REQUEST_FILENAME} !-l
   RewriteRule . /index.html [L]
 </IfModule>
+
+<Files ./.env>
+  Order Allow,Deny
+  Deny from all
+</Files>
+
+<Files ./.env.local>
+  Order Allow,Deny
+  Deny from all
+</Files>

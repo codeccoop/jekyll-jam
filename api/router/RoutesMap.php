@@ -9,12 +9,12 @@ class RoutesMap implements ArrayAccess
         $this->routes = $routes;
     }
 
-    public function offsetExists(mixed $offset): bool
+    public function offsetExists($offset)
     {
         return isset($this->routes[$offset]);
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function offsetGet($offset)
     {
         if ($this->offsetExists($offset)) {
             return $this->routes[$offset]();
@@ -23,12 +23,12 @@ class RoutesMap implements ArrayAccess
         return null;
     }
 
-    public function offsetSet(mixed $offset, mixed $value): void
+    public function offsetSet($offset, $value)
     {
         return;
     }
 
-    public function offsetUnset(mixed $offset): void
+    public function offsetUnset($offset)
     {
         return;
     }

@@ -151,7 +151,7 @@ class BaseRoute
         return [
             'Content-Type' => 'application/json',
             'Allow' => 'OPTIONS, ' . implode(', ', $this->methods),
-            'Access-Control-Allow-Origin' => '*',
+            'Access-Control-Allow-Origin' => VOCERO_ORIGINS,
         ];
     }
 

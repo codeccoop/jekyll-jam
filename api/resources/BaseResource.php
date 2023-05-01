@@ -1,6 +1,6 @@
 <?php
 require_once VOCERO_API_ROOT . 'lib/Cache.php';
-require_once VOCERO_API_ROOT . 'lib/Dotfile.php';
+require_once VOCERO_API_ROOT . 'lib/Project.php';
 
 use GuzzleHttp\Client;
 
@@ -19,7 +19,7 @@ class BaseResource
 
     public function __construct()
     {
-        $this->env = (new Dotfile())->get();
+        $this->env = (new Project())->get();
 
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);
         $this->endpoint = str_replace('$GH_REPO', $this->env['GH_REPO'], $this->endpoint);

@@ -6,6 +6,7 @@ class Anchor
 
 
     private array $components = [];
+    private string $source;
 
     function __construct($html)
     {

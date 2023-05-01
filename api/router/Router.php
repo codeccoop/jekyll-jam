@@ -14,7 +14,7 @@ class Router
         $payload = Router::get_payload();
 
         global $routes_map;
-        if (!(isset($uri[3]) && $routes_map[$uri[3]])) {
+        if (!(isset($uri[3]) && isset($routes_map[$uri[3]]))) {
             http_response_code(404);
             exit;
         } else {

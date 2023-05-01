@@ -7,7 +7,7 @@ require_once VOCERO_API_ROOT . 'resources/Repo.php';
 require_once VOCERO_API_ROOT . 'resources/Page.php';
 require_once VOCERO_API_ROOT . 'resources/Tree.php';
 require_once VOCERO_API_ROOT . 'resources/Config.php';
-require_once VOCERO_API_ROOT . 'lib/Dotfile.php';
+require_once VOCERO_API_ROOT . 'lib/Project.php';
 require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class InitRoute extends BaseRoute
@@ -16,7 +16,7 @@ class InitRoute extends BaseRoute
 
     public function get(): void
     {
-        $dotfile = new Dotfile();
+        $dotfile = new Project();
         $env = $dotfile->get();
 
         if (isset($env['GH_INIT']) && $env['GH_INIT']) {

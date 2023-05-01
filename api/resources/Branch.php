@@ -24,13 +24,13 @@ class Branch extends BaseResource
 
     public function get(): array
     {
-        $this->data = parent::get();
+        $data = parent::get();
 
         $compare = (new BranchCompare($this->branch_name))->get();
-        $this->data['ahead_by'] = $compare['ahead_by'];
-        $this->data['behind_by'] = $compare['behind_by'];
+        $data['ahead_by'] = $compare['ahead_by'];
+        $data['behind_by'] = $compare['behind_by'];
 
-        return $this->cache->post($this->data);
+        return $this->cache->post($data);
     }
 
     protected function decorate(): array

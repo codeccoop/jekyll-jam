@@ -23,7 +23,16 @@ function request(
   const config = {
     method: method,
     headers: headers,
+    mode: "no-cors",
+    cache: "no-cache",
+    referrerPolicy: "no-referrer",
+    credentials: "same-origin",
   };
+
+  if (process.env.NODE_ENV === "development") {
+    config.mode = "cors";
+    config.credentials = "omit";
+  }
 
   if (data) config.body = JSON.stringify(data);
 

@@ -1,7 +1,7 @@
 <?php
 
 require_once VOCERO_API_ROOT . 'router/routes/BaseRoute.php';
-require_once VOCERO_API_ROOT . 'lib/Dotfile.php';
+require_once VOCERO_API_ROOT . 'lib/Project.php';
 require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class AssetsRoute extends BaseRoute
@@ -11,7 +11,7 @@ class AssetsRoute extends BaseRoute
     public function get(): void
     {
         $path = implode('/', array_slice($this->req['uri'], 3));
-        $env = (new Dotfile())->get();
+        $env = (new Project())->get();
         $url = get_base_url($env) . $path;
         $content = file_get_contents($url);
 
