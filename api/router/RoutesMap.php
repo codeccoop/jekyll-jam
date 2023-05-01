@@ -2,9 +2,9 @@
 
 class RoutesMap implements ArrayAccess
 {
-    private array $routes = [];
+    private $routes = [];
 
-    public function __construct(array $routes)
+    public function __construct($routes)
     {
         $this->routes = $routes;
     }

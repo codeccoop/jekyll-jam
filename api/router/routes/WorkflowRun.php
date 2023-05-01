@@ -5,15 +5,15 @@ require_once VOCERO_API_ROOT . 'resources/WorkflowRun.php';
 
 class WorkflowRunRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
         $response = $this->fetch();
         $this->send_output($response);
     }
 
-    private function fetch(int $try = 0): string
+    private function fetch($try = 0)
     {
         try {
             return (new WorkflowRun())->json();

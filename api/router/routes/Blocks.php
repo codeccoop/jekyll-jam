@@ -6,9 +6,9 @@ require_once VOCERO_API_ROOT . 'router/routes/BaseRoute.php';
 
 class BlocksRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    private string $blocks_js = '[{
+    private $blocks_js = '[{
     family: "media",
     name: "Video",
     level: "block",
@@ -38,7 +38,7 @@ class BlocksRoute extends BaseRoute
     fn: ({ React, span = 1, gutter = "0", children }) => React.createElement("div", {className:"column",style:{display:"block",flex:span ? span : 1,padding:gutter ? gutter : "0"}}, children)
 }]';
 
-    public function get(): void
+    public function get()
     {
         $this->send_output($this->blocks_js);
     }

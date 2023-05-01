@@ -5,22 +5,22 @@ use Symfony\Component\Yaml\Yaml;
 
 class Config extends Blob
 {
-    public static array $methods = ['GET', 'POST', 'PATCH'];
+    public array $methods = ['GET', 'POST', 'PATCH'];
 
-    public static string $path = '_config.yml';
-    private string $default_path = VOCERO_API_ROOT . 'static/data/default_config.yml';
+    public static $path = '_config.yml';
+    private $default_path = VOCERO_API_ROOT . 'static/data/default_config.yml';
 
-    public function __construct(string $sha)
+    public function __construct($sha)
     {
         parent::__construct($sha, Config::$path);
     }
 
-    public function put(?array $payload = null): array
+    public function put($payload = null)
     {
         return $this->request('POST', $payload);
     }
 
-    public function get_payload(string $method, ?array $data = null): ?array
+    public function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data) return null;
@@ -43,17 +43,17 @@ class Config extends Blob
         ];
     }
 
-    protected function decorate(?array $data = null): array
+    protected function decorate($data = null)
     {
         return Yaml::parse($this->content());
     }
 
-    public function yaml(): string
+    public function yaml()
     {
         return $this->content();
     }
 
-    private function content(): string
+    private function content()
     {
         $blob = $this->get();
 
@@ -66,7 +66,7 @@ class Config extends Blob
         return $decoded;
     }
 
-    static function get_tree_node(array $tree): ?array
+    static function get_tree_node($tree)
     {
         $nodes = array_values(array_filter($tree['tree'], function ($node) {
             return $node['path'] == Config::$path;

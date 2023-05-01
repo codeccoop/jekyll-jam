@@ -5,9 +5,9 @@ require_once VOCERO_API_ROOT . 'resources/Artifact.php';
 
 class ArtifactRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
         $artifact = new Artifact();
         $filepath = $artifact->zip();

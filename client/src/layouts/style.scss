@@ -3,7 +3,8 @@
   grid-template-columns: [sidebar] 30vw [main] auto [end];
   grid-template-rows: [header] var(--header-height) [main] auto [end];
   transition: grid-template-columns 0.5s ease-in;
-  height: 100vh;
+  height: 100%;
+  overflow: hidden;
 
   &.fullscreen {
     grid-template-columns: [sidebar] 3rem [main] auto [end];

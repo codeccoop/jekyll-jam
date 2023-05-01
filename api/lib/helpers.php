@@ -24,7 +24,7 @@
 /*     // return base64_decode(decodeURIComponent($str)); */
 /* } */
 
-function get_base_url(array $env): string
+function get_base_url($env)
 {
     if (strpos($env['GH_DOMAIN'], 'github.io') !== false) {
         preg_match('/\.github\.io$/', $env['GH_REPO'], $match);
@@ -43,24 +43,24 @@ function get_base_url(array $env): string
 
 function get_filename_mimetype($filename)
 {
-    $mime_types = array(
+    $mime_types = [
         'txt' => 'text/plain',
         'htm' => 'text/html',
         'html' => 'text/html',
         'css' => 'text/css',
-        'json' => array('application/json', 'text/json'),
+        'json' => ['application/json', 'text/json'],
         'xml' => 'application/xml',
         'swf' => 'application/x-shockwave-flash',
         'flv' => 'video/x-flv',
 
         'hqx' => 'application/mac-binhex40',
         'cpt' => 'application/mac-compactpro',
-        'csv' => array('text/x-comma-separated-values', 'text/comma-separated-values', 'application/octet-stream', 'application/vnd.ms-excel', 'application/x-csv', 'text/x-csv', 'text/csv', 'application/csv', 'application/excel', 'application/vnd.msexcel'),
+        'csv' => ['text/x-comma-separated-values', 'text/comma-separated-values', 'application/octet-stream', 'application/vnd.ms-excel', 'application/x-csv', 'text/x-csv', 'text/csv', 'application/csv', 'application/excel', 'application/vnd.msexcel'],
         'bin' => 'application/macbinary',
         'dms' => 'application/octet-stream',
         'lha' => 'application/octet-stream',
         'lzh' => 'application/octet-stream',
-        'exe' => array('application/octet-stream', 'application/x-msdownload'),
+        'exe' => ['application/octet-stream', 'application/x-msdownload'],
         'class' => 'application/octet-stream',
         'so' => 'application/octet-stream',
         'sea' => 'application/octet-stream',
@@ -83,29 +83,29 @@ function get_filename_mimetype($filename)
         'php3' => 'application/x-httpd-php',
         'phtml' => 'application/x-httpd-php',
         'phps' => 'application/x-httpd-php-source',
-        'js' => array('application/javascript', 'application/x-javascript'),
+        'js' => ['application/javascript', 'application/x-javascript'],
         'sit' => 'application/x-stuffit',
         'tar' => 'application/x-tar',
-        'tgz' => array('application/x-tar', 'application/x-gzip-compressed'),
+        'tgz' => ['application/x-tar', 'application/x-gzip-compressed'],
         'xhtml' => 'application/xhtml+xml',
         'xht' => 'application/xhtml+xml',
-        'bmp' => array('image/bmp', 'image/x-windows-bmp'),
+        'bmp' => ['image/bmp', 'image/x-windows-bmp'],
         'gif' => 'image/gif',
-        'jpeg' => array('image/jpeg', 'image/pjpeg'),
-        'jpg' => array('image/jpeg', 'image/pjpeg'),
-        'jpe' => array('image/jpeg', 'image/pjpeg'),
-        'png' => array('image/png', 'image/x-png'),
+        'jpeg' => ['image/jpeg', 'image/pjpeg'],
+        'jpg' => ['image/jpeg', 'image/pjpeg'],
+        'jpe' => ['image/jpeg', 'image/pjpeg'],
+        'png' => ['image/png', 'image/x-png'],
         'tiff' => 'image/tiff',
         'tif' => 'image/tiff',
         'shtml' => 'text/html',
         'text' => 'text/plain',
-        'log' => array('text/plain', 'text/x-log'),
+        'log' => ['text/plain', 'text/x-log'],
         'rtx' => 'text/richtext',
         'rtf' => 'text/rtf',
         'xsl' => 'text/xml',
         'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'word' => array('application/msword', 'application/octet-stream'),
+        'word' => ['application/msword', 'application/octet-stream'],
         'xl' => 'application/excel',
         'eml' => 'message/rfc822',
 
@@ -123,7 +123,7 @@ function get_filename_mimetype($filename)
         'svgz' => 'image/svg+xml',
 
         // archives
-        'zip' => array('application/x-zip', 'application/zip', 'application/x-zip-compressed'),
+        'zip' => ['application/x-zip', 'application/zip', 'application/x-zip-compressed'],
         'rar' => 'application/x-rar-compressed',
         'msi' => 'application/x-msdownload',
         'cab' => 'application/vnd.ms-cab-compressed',
@@ -133,7 +133,7 @@ function get_filename_mimetype($filename)
         'midi' => 'audio/midi',
         'mpga' => 'audio/mpeg',
         'mp2' => 'audio/mpeg',
-        'mp3' => array('audio/mpeg', 'audio/mpg', 'audio/mpeg3', 'audio/mp3'),
+        'mp3' => ['audio/mpeg', 'audio/mpg', 'audio/mpeg3', 'audio/mp3'],
         'aif' => 'audio/x-aiff',
         'aiff' => 'audio/x-aiff',
         'aifc' => 'audio/x-aiff',
@@ -142,7 +142,7 @@ function get_filename_mimetype($filename)
         'rpm' => 'audio/x-pn-realaudio-plugin',
         'ra' => 'audio/x-realaudio',
         'rv' => 'video/vnd.rn-realvideo',
-        'wav' => array('audio/x-wav', 'audio/wave', 'audio/wav'),
+        'wav' => ['audio/x-wav', 'audio/wave', 'audio/wav'],
         'mpeg' => 'video/mpeg',
         'mpg' => 'video/mpeg',
         'mpe' => 'video/mpeg',
@@ -153,7 +153,7 @@ function get_filename_mimetype($filename)
 
         // adobe
         'pdf' => 'application/pdf',
-        'psd' => array('image/vnd.adobe.photoshop', 'application/x-photoshop'),
+        'psd' => ['image/vnd.adobe.photoshop', 'application/x-photoshop'],
         'ai' => 'application/postscript',
         'eps' => 'application/postscript',
         'ps' => 'application/postscript',
@@ -161,13 +161,13 @@ function get_filename_mimetype($filename)
         // ms office
         'doc' => 'application/msword',
         'rtf' => 'application/rtf',
-        'xls' => array('application/excel', 'application/vnd.ms-excel', 'application/msexcel'),
-        'ppt' => array('application/powerpoint', 'application/vnd.ms-powerpoint'),
+        'xls' => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel'],
+        'ppt' => ['application/powerpoint', 'application/vnd.ms-powerpoint'],
 
         // open office
         'odt' => 'application/vnd.oasis.opendocument.text',
         'ods' => 'application/vnd.oasis.opendocument.spreadsheet',
-    );
+    ];
 
     $ext = explode('.', $filename);
     $ext = strtolower(end($ext));

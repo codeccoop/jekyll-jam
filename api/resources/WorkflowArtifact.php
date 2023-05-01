@@ -5,15 +5,15 @@ require_once VOCERO_API_ROOT . 'resources/Commit.php';
 
 class WorkflowArtifactCache extends Cache
 {
-    private array $commit;
+    private $commit;
 
-    public function __construct(string $file_path, array $commit)
+    public function __construct($file_path, $commit)
     {
         parent::__construct($file_path);
         $this->commit = $commit;
     }
 
-    public function is_cached(): bool
+    public function is_cached()
     {
         if (!parent::is_cached()) return false;
 
@@ -29,11 +29,11 @@ class WorkflowArtifactCache extends Cache
 
 class WorkflowArtifact extends BaseResource
 {
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts';
-    protected bool $cached = false;
-    protected string $cache_key = 'workflow_artifact';
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts';
+    protected $cached = false;
+    protected $cache_key = 'workflow_artifact';
 
-    private array $commit;
+    private $commit;
 
     public function __construct()
     {
@@ -42,7 +42,7 @@ class WorkflowArtifact extends BaseResource
         $this->cache = new WorkflowArtifactCache($this->cache_key, $this->commit);
     }
 
-    public function get(): array
+    public function get()
     {
         if ($this->cache->is_cached()) return $this->cache->get();
 

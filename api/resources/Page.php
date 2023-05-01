@@ -4,12 +4,12 @@ require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
 class Page extends BaseResource
 {
-    public static array $methods = ['GET', 'POST', 'PUT'];
+    public static $methods = ['GET', 'POST', 'PUT'];
 
-    protected bool $cached = false;
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/pages';
+    protected $cached = false;
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/pages';
 
-    public function get_payload(string $method, ?array $data = null): ?array
+    public function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data) return null;

@@ -4,9 +4,9 @@ require_once VOCERO_API_ROOT . 'resources/Blob.php';
 
 class Style extends Blob
 {
-    public static string $path = 'assets/vocero.scss';
+    public static $path = 'assets/vocero.scss';
 
-    public function __construct(string $sha)
+    public function __construct($sha)
     {
         parent::__construct($sha, Style::$path);
     }
@@ -23,7 +23,7 @@ class Style extends Blob
         return base64_encode($domain . '/' . $filepath);
     }
 
-    static function get_tree_node(array $tree): ?array
+    static function get_tree_node($tree)
     {
         $nodes = array_values(array_filter($tree['tree'], function ($node) {
             return $node['path'] == Style::$path;

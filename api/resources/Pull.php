@@ -1,20 +1,20 @@
 <?php
 require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
-class Branch extends BaseResource
+class Pull extends BaseResource
 {
-    protected bool $cached = false;
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/pulls';
+    protected $cached = false;
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/pulls';
 
-    private ?int $number = null;
+    private $number = null;
 
-    public function __construct(?int $number = null)
+    public function __construct($number = null)
     {
         parent::__construct();
         $this->number = $number;
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':
@@ -24,7 +24,7 @@ class Branch extends BaseResource
         }
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data || $method !== 'POST') return null;

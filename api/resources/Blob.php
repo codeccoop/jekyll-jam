@@ -9,15 +9,15 @@ use Spatie\YamlFrontMatter\YamlFrontMatter;
 
 class BlobCache extends Cache
 {
-    private Cache $branch;
+    private $branch;
 
-    public function __construct(string $file_path, string $sha = null)
+    public function __construct($file_path, $sha = null)
     {
         parent::__construct($file_path, $sha);
         $this->branch = new Cache('branch');
     }
 
-    public function is_cached(): bool
+    public function is_cached()
     {
         if (!parent::is_cached()) return false;
         if (!$this->branch->is_cached()) return false;
@@ -33,13 +33,13 @@ class BlobCache extends Cache
 
 class Blob extends BaseResource
 {
-    protected string $cache_key = 'blobs';
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
+    protected $cache_key = 'blobs';
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/git/blobs';
 
-    private string $type;
-    private string $path;
+    private $type;
+    private $path;
 
-    public function __construct(?string $sha = null, string $path)
+    public function __construct($sha = null, $path)
     {
         $this->sha = $sha;
         $this->path = $path;
@@ -57,14 +57,14 @@ class Blob extends BaseResource
         parent::__construct();
     }
 
-    public function post(?array $payload = null): array
+    public function post($payload = null)
     {
         $sha = parent::post($payload)['sha'];
         $this->cached && $this->cache->truncate();
         return (new Blob($sha, $this->path))->get();
     }
 
-    protected function decorate(): array
+    protected function decorate()
     {
         $data = $this->get();
 
@@ -84,7 +84,7 @@ class Blob extends BaseResource
         return $output;
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data) return null;
@@ -112,7 +112,7 @@ class Blob extends BaseResource
         ];
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':
@@ -122,12 +122,12 @@ class Blob extends BaseResource
         }
     }
 
-    private function relative_links(string $content)
+    private function relative_links($content)
     {
         return preg_replace('/{{\s*site\.baseurl\s*}}/', '', $content);
     }
 
-    private function absolute_links($content): string
+    private function absolute_links($content)
     {
         $replace = fn ($link) => str_replace($link->source, $link->as_absolute(), $content);
 
@@ -146,7 +146,7 @@ class Blob extends BaseResource
         return $content;
     }
 
-    private function get_content(): string
+    private function get_content()
     {
         $blob = $this->get();
         $encoding = $blob['encoding'];
@@ -173,7 +173,7 @@ class Blob extends BaseResource
         return $content;
     }
 
-    private function get_frontmatter(): array
+    private function get_frontmatter()
     {
         $blob = $this->get();
         $encoding = $blob['encoding'];

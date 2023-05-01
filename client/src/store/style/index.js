@@ -5,16 +5,20 @@ import React, { useEffect, useState } from "react";
 import reducer from "./reducer";
 import { b64d } from "lib/helpers";
 
+const BASE_URL = process.env.VOCERO_BASE_URL.replace(/\/+$/, "");
 const API_URL = process.env.VOCERO_API_URL;
 
-const Component = ({ store, Warehouse, children }) => {
+const Component = ({ Warehouse, children }) => {
   const [blob, setBlob] = useState();
   const [css, setCss] = useState();
 
   useEffect(() => {
     if (!blob) return;
 
-    const path = API_URL + "/" + b64d(blob.path).replace(/\.scss$/, ".css");
+    const path = `${BASE_URL}${API_URL}/${b64d(blob.path).replace(
+      /\.scss$/,
+      ".css"
+    )}`;
     fetch(path, {
       Accept: "text/css",
     })

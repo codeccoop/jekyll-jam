@@ -3,19 +3,19 @@ require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
 class Repo extends BaseResource
 {
-    public static array $methods = ['GET', 'POST'];
+    public static $methods = ['GET', 'POST'];
 
-    protected string $cache_key = 'repo';
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO';
+    protected $cache_key = 'repo';
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO';
 
-    private ?string $template_slug = null;
+    private $template_slug = null;
 
     public function __construct()
     {
         parent::__construct();
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'POST':
@@ -25,7 +25,7 @@ class Repo extends BaseResource
         }
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data || $method !== 'POST') return null;
@@ -45,7 +45,7 @@ class Repo extends BaseResource
         return $payload;
     }
 
-    public function default_branch(): string
+    public function default_branch()
     {
         $data = $this->get();
         return $data['default_branch'];

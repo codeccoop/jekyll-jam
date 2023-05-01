@@ -1,10 +1,11 @@
+const BASE_URL = process.env.VOCERO_BASE_URL.replace(/\/+$/, "");
 const API_URL = process.env.VOCERO_API_URL;
 
 function request(
   endpoint,
   { method = "GET", data = null, headers = { Accept: "application/json" } }
 ) {
-  let path = `${API_URL}/${endpoint}`;
+  let path = `${BASE_URL}${API_URL}/${endpoint}`;
   if (method === "GET" || method === "DELETE") {
     const query = Object.entries(data || {})
       .filter(([k, v]) => v !== null && v !== void 0)

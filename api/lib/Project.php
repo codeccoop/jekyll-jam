@@ -4,14 +4,14 @@ class Project
 {
 
     private $path = null;
-    private $public = array(
+    private $public = [
         'GH_BRANCH',
         'GH_USER',
         'GH_REPO',
         'GH_DOMAIN',
         'GH_EMAIL',
         'GH_INIT'
-    );
+    ];
 
     function __construct($path = null)
     {

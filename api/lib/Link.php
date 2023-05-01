@@ -2,11 +2,11 @@
 
 class Anchor
 {
-    static public string $rule = '/<a[\s]+([^>]+)>((?:.(?!\<\/a\>))*.)<\/a>/';
+    static public $rule = '/<a[\s]+([^>]+)>((?:.(?!\<\/a\>))*.)<\/a>/';
 
 
-    private array $components = [];
-    private string $source;
+    private $components = [];
+    public $source;
 
     function __construct($html)
     {
@@ -28,6 +28,7 @@ class Link
     static public $rule = '/^!?\[((?:\[(?:.|[^\[\]])*\]|.|`[^`]*`|[^\[\]`])*?)\]\(\s*(<(?:.|[^\n<>])+>|[^\s\x00-\x1f]*)(?:\s+("(?:"?|[^"])*"|\'(?:\'?|[^\'])*\'|\((?:\)?|[^)])*\)))?\s*\)/';
     private $components = [];
     public $children = [];
+    public $source;
 
     function __construct($md)
     {
@@ -146,6 +147,7 @@ class HLink
     static public $rule = '/(?:src|href|srcset)=(\'(?:.(?!\'))*.\'|"(?:.(?!"))*.")/';
     # static public $rule = '/(?:src|href|srcset)=(?:\'((?:.(?!\'))*.)\'|"((?:.(?!"))*.)")/';
     private $components = [];
+    public $source;
 
     function __construct($src)
     {

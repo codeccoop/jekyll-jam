@@ -5,9 +5,9 @@ require_once VOCERO_API_ROOT . 'resources/Branch.php';
 
 class BranchRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
         $branch = new Branch();
         $response = $branch->json();

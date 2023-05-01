@@ -1,13 +1,13 @@
 <?php
 class Cache
 {
-    public string $base_path = VOCERO_API_ROOT . '../.cache';
-    private string $path;
-    private ?array $content;
+    public $base_path = VOCERO_API_ROOT . '../.cache';
+    private $path;
+    private $content;
 
-    public ?string $sha = null;
+    public $sha = null;
 
-    public function __construct(string $file_path, ?string $sha = null)
+    public function __construct($file_path, $sha = null)
     {
         $this->path = $this->base_path . '/' . $file_path;
         $dirname = pathinfo($this->path)['dirname'];
@@ -28,7 +28,7 @@ class Cache
         }
     }
 
-    private function mkdir(string $dirname): void
+    private function mkdir($dirname)
     {
         $acum = '';
         foreach (array_slice(explode('/', $dirname), 1) as $dir) {
@@ -39,7 +39,7 @@ class Cache
         }
     }
 
-    private function open(string $mode, ?array $content = null): ?array
+    private function open($mode, $content = null)
     {
         if ($mode === 'w') {
             if ($content === null) return $content;
@@ -65,7 +65,7 @@ class Cache
         }
     }
 
-    private function rmDir(string $dir): void
+    private function rmDir($dir)
     {
         if (!is_dir($dir)) {
             throw new InvalidArgumentException("$dir must be a directory");
@@ -87,7 +87,7 @@ class Cache
         restore_error_handler();
     }
 
-    public function is_cached(): bool
+    public function is_cached()
     {
         if ($this->content === null) {
             return false;
@@ -97,24 +97,24 @@ class Cache
         return $this->content['sha'] === $this->sha;
     }
 
-    public function get(): ?array
+    public function get()
     {
         if ($this->content !== null) return $this->content;
         if ($this->is_cached() === true) return $this->content;
     }
 
-    public function post(array $content): array
+    public function post(array $content)
     {
         $this->content = $this->open('w', $content);
         return $this->content;
     }
 
-    public function truncate(): void
+    public function truncate()
     {
         $this->open('t');
     }
 
-    public function reset(): void
+    public function reset()
     {
         $this->rmDir($this->base_path);
         # mkdir($this->base_path, 0750, false);

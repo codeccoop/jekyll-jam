@@ -5,18 +5,18 @@ require_once VOCERO_API_ROOT . 'lib/Project.php';
 
 class ProjectRoute extends BaseRoute
 {
-    public array $methods = ['GET', 'POST'];
+    public $methods = ['OPTIONS', 'GET', 'POST'];
 
-    public function get(): void
+    public function get()
     {
         $project = new Project();
         $response = $project->json();
         $this->send_output($response);
     }
 
-    public function post(): void
+    public function post()
     {
-        $project = new Dotfile();
+        $project = new Project();
         $project->post($this->req['payload']);
         $response = $project->json();
         $this->send_output($response);

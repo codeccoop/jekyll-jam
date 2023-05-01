@@ -2,8 +2,8 @@
 
 class BaseRoute
 {
-    public array $methods = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
-    protected array $req;
+    public $methods = ['OPTIONS', 'GET', 'POST', 'PUT', 'PATCH', 'DELETE'];
+    protected $req;
 
     /**
      * Resolve server requests to route callbacks
@@ -11,12 +11,15 @@ class BaseRoute
      * @param BaseRoute $Route
      * @param array $req
      */
-    public function resolve($req): void
+    public function resolve($req)
     {
         $this->req = $req;
 
         try {
             switch ($req['method']) {
+                case 'OPTIONS':
+                    $this->options();
+                    break;
                 case 'GET':
                     $this->get();
                     break;
@@ -39,37 +42,45 @@ class BaseRoute
     }
 
     /**
+     * Route OPTIONS request callback
+     */
+    public function options()
+    {
+        $this->send_output("");
+    }
+
+    /**
      * Route GET request callback
      */
-    public function get(): void
+    public function get()
     {
     }
 
     /**
      * Route POST request callback
      */
-    public function post(): void
+    public function post()
     {
     }
 
     /**
      * Route PUT request callback
      */
-    public function put(): void
+    public function put()
     {
     }
 
     /**
      * Route PATCH request callback
      */
-    public function patch(): void
+    public function patch()
     {
     }
 
     /**
      * Route DELETE request callback
      */
-    public function delete(): void
+    public function delete()
     {
     }
 
@@ -80,7 +91,7 @@ class BaseRoute
      * @param ?array $headers
      * @param int $code
      */
-    protected function send_output(string $data, ?array $headers = null, int $code = 200): void
+    protected function send_output($data, $headers = null, $code = 200)
     {
         if ($code >= 400) {
             http_response_code($code);
@@ -88,7 +99,7 @@ class BaseRoute
             exit;
         }
 
-        if (!$headers) {
+        if (!$headers || !is_array($headers)) {
             $headers = $this->get_headers($_SERVER['REQUEST_METHOD']);
         } else {
             $headers = array_reduce(array_keys($headers), function ($carry, $header) use ($headers) {
@@ -115,7 +126,7 @@ class BaseRoute
      * @param array $headers
      * @param int $code
      */
-    protected function send_file(string $filepath, array $headers, int $code = 200): void
+    protected function send_file($filepath, $headers, $code = 200)
     {
         if ($code >= 400) {
             http_response_code($code);
@@ -127,6 +138,15 @@ class BaseRoute
             http_response_code(404);
             echo '';
             exit;
+        }
+
+        if (!is_array($headers)) {
+            $headers = $this->get_headers($_SERVER['REQUEST_METHOD']);
+        } else {
+            $headers = array_reduce(array_keys($headers), function ($carry, $header) use ($headers) {
+                if ($headers[$header]) $carry[$header] = $headers[$header];
+                return $carry;
+            }, $this->get_headers($_SERVER['REQUEST_METHOD']));
         }
 
         foreach ($headers as $header => $value) {
@@ -146,16 +166,17 @@ class BaseRoute
      *
      * @param string $method
      */
-    protected function get_headers(string $method): array
+    protected function get_headers($method)
     {
         return [
             'Content-Type' => 'application/json',
-            'Allow' => 'OPTIONS, ' . implode(', ', $this->methods),
             'Access-Control-Allow-Origin' => VOCERO_ORIGINS,
+            'Access-Control-Allow-Methods' => implode(', ', $this->methods),
+            'Access-Control-Allow-Headers' => 'Content-Type',
         ];
     }
 
-    protected function handle_http_exception(Exception $e): void
+    protected function handle_http_exception(Exception $e)
     {
         $code = $e->getCode();
         $output = VOCERO_DEBUG ? $e->getMessage() : '';

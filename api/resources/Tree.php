@@ -4,24 +4,24 @@ require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
 class Tree extends BaseResource
 {
-    public string $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
+    public $endpoint = '/repos/$GH_USER/$GH_REPO/git/trees';
 
-    protected string $cache_key = 'tree';
+    protected $cache_key = 'tree';
 
-    public function __construct(?string $sha = null)
+    public function __construct($sha = null)
     {
         $this->sha = $sha;
         parent::__construct();
     }
 
-    public function post(?array $payload = null): array
+    public function post($payload = null)
     {
         $sha = parent::post($payload)['sha'];
         $this->cache->truncate();
         return (new Tree($sha))->get();
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':
@@ -31,7 +31,7 @@ class Tree extends BaseResource
         }
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         if (!$data) return null;
 
@@ -46,7 +46,7 @@ class Tree extends BaseResource
         return $output;
     }
 
-    protected function decorate(?array $data = null): array
+    protected function decorate($data = null)
     {
         $tree = $this->build_tree();
 
@@ -56,7 +56,7 @@ class Tree extends BaseResource
         ];
     }
 
-    private function get_children(array $tree): array
+    private function get_children($tree)
     {
         $items = [];
         foreach ($tree['children'] as $name => $node) {
@@ -73,7 +73,7 @@ class Tree extends BaseResource
         return $items;
     }
 
-    private function build_tree(): array
+    private function build_tree()
     {
         $data = $this->get();
         $tree = ['children' => [], 'sha' => $data['sha']];
@@ -101,7 +101,7 @@ class Tree extends BaseResource
         return $this->prune_tree($tree);
     }
 
-    private function prune_tree(array $tree): array
+    private function prune_tree($tree)
     {
         $paths = [
             '_posts',
@@ -146,12 +146,12 @@ class Tree extends BaseResource
         return $tree;
     }
 
-    private function match_extension(string $path, string $ext): bool
+    private function match_extension($path, $ext)
     {
         return preg_match('/\.' . $ext . '$/', $path);
     }
 
-    private function prune_branch(array $node, array $file_types = ["md"]): bool
+    private function prune_branch($node, $file_types = ["md"])
     {
         if ($node['type'] == 'blob') {
             return array_reduce($file_types, function ($carry, $ext) use ($node) {
@@ -173,7 +173,7 @@ class Tree extends BaseResource
         return true;
     }
 
-    public function find_file(string $sha): ?array
+    public function find_file($sha)
     {
         $tree = $this->get()['tree'];
         $file = array_pop(array_filter($tree, function ($file) use ($sha) {
@@ -183,7 +183,7 @@ class Tree extends BaseResource
         return $file;
     }
 
-    public function drop_leaf(string $sha, string $path): array
+    public function drop_leaf($sha, $path)
     {
         $tree = $this->get();
         $leafs = [];

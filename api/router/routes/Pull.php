@@ -6,9 +6,9 @@ require_once VOCERO_API_ROOT . 'resources/Repo.php';
 
 class PullRoute extends BaseRoute
 {
-    public array $methods = ['POST'];
+    public $methods = ['POST'];
 
-    public function post(): void
+    public function post()
     {
         $branch = (new Repo())->default_branch();
         $pull = (new Pull())->post($branch);

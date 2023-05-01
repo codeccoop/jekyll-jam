@@ -6,9 +6,9 @@ require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class BlobRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
         if (!(isset($this->req['query']['sha']) && isset($this->req['query']['path']))) {
             throw new Exception("Invalid query arguments", 400);

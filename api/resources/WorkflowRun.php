@@ -8,15 +8,15 @@ require_once VOCERO_API_ROOT . 'lib/Cache.php';
 class WorkflowCache extends Cache
 {
     private $key = 'worflow_run';
-    private array $commit;
+    private $commit;
 
-    public function __construct(array $commit)
+    public function __construct($commit)
     {
         parent::__construct($this->key);
         $this->commit = $commit;
     }
 
-    public function is_cached(): bool
+    public function is_cached()
     {
         $cache = new Cache($this->key);
         if ($cache->is_cached()) {
@@ -27,7 +27,7 @@ class WorkflowCache extends Cache
         return false;
     }
 
-    public function get(): ?array
+    public function get()
     {
         $data = (new Cache($this->key))->get();
         if ($data['conclusion'] === null) {
@@ -37,7 +37,7 @@ class WorkflowCache extends Cache
         return $data;
     }
 
-    public function get_id(): string
+    public function get_id()
     {
         return (new Cache($this->key))->get()['id'];
     }
@@ -45,11 +45,11 @@ class WorkflowCache extends Cache
 
 class WorkflowRun extends BaseResource
 {
-    protected bool $cached = false;
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs';
+    protected $cached = false;
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs';
 
-    private ?string $id = null;
-    private ?array $commit = null;
+    private $id = null;
+    private $commit = null;
 
     protected WorkflowCache $custom_cache;
 
@@ -61,7 +61,7 @@ class WorkflowRun extends BaseResource
         $this->custom_cache = new WorkflowCache($this->commit);
     }
 
-    public function get(): array
+    public function get()
     {
         if ($this->custom_cache->is_cached()) {
             $workflow = $this->custom_cache->get();
@@ -73,7 +73,7 @@ class WorkflowRun extends BaseResource
         return $this->get_all();
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'ONE':
@@ -83,7 +83,7 @@ class WorkflowRun extends BaseResource
         }
     }
 
-    protected function get_query(string $method): ?array
+    protected function get_query($method)
     {
         if ($method !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'ALL') return null;
 
@@ -92,7 +92,7 @@ class WorkflowRun extends BaseResource
         ];
     }
 
-    private function get_one(): array
+    private function get_one()
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $_SERVER['REQUEST_METHOD'] = 'ONE';
@@ -107,7 +107,7 @@ class WorkflowRun extends BaseResource
         return $this->custom_cache->post($data);
     }
 
-    private function get_all(): array
+    private function get_all()
     {
         $method = $_SERVER['REQUEST_METHOD'];
         $_SERVER['REQUEST_METHOD'] = 'ALL';

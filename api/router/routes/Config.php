@@ -6,9 +6,9 @@ require_once VOCERO_API_ROOT . 'resources/Tree.php';
 
 class ConfigRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
         $tree = (new Tree($this->req['query']['tree_sha']))->get();
 

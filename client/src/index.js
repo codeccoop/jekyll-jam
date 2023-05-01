@@ -14,6 +14,9 @@ import { useStore } from "colmado";
 import Store from "store";
 import LexicalContext from "lib/contexts/Lexical";
 
+/* STYLE */
+import "./styles/index.scss";
+
 function Spinner() {
   return <h1>Loading...</h1>;
 }

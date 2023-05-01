@@ -6,12 +6,12 @@ require_once VOCERO_API_ROOT . 'resources/Commit.php';
 
 class Artifact extends BaseResource
 {
-    protected bool $cached = false;
-    protected string $cache_key = 'workflow_artifact';
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts/$ARTIFACT_ID/zip';
+    protected $cached = false;
+    protected $cache_key = 'workflow_artifact';
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/artifacts/$ARTIFACT_ID/zip';
 
-    private string $latest = VOCERO_API_ROOT . '../.artifacts/latest.zip';
-    private string $backup = VOCERO_API_ROOT . '../.artifacts/backup.zip';
+    private $latest = VOCERO_API_ROOT . '../.artifacts/latest.zip';
+    private $backup = VOCERO_API_ROOT . '../.artifacts/backup.zip';
 
     public function __construct()
     {
@@ -19,7 +19,7 @@ class Artifact extends BaseResource
         $this->cache = new WorkflowArtifactCache($this->cache_key, (new Commit())->get());
     }
 
-    public function get(): array
+    public function get()
     {
         if ($this->cache->is_cached()) {
             return $this->cache->get();
@@ -29,13 +29,13 @@ class Artifact extends BaseResource
         return $this->cache->post($artifact);
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         $data = $this->get();
         return $data['archive_download_url'];
     }
 
-    protected function get_sink(string $method): mixed
+    protected function get_sink($method)
     {
         if (is_file($this->latest)) {
             unlink($this->latest);

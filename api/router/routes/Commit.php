@@ -9,7 +9,7 @@ require_once VOCERO_API_ROOT . 'resources/Commit.php';
 
 class CommitRoute extends BaseRoute
 {
-    public array $methods = ['POST', 'DELETE'];
+    public $methods = ['OPTIONS', 'POST', 'DELETE'];
 
     public function post(): void
     {

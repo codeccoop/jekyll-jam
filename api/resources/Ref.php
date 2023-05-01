@@ -4,13 +4,13 @@ require_once VOCERO_API_ROOT . 'resources/BranchCompare.php';
 
 class Ref extends BaseResource
 {
-    protected bool $cached = false;
-    protected string $endpoint = '/repos/$GH_USER/$GH_REPO/git/refs';
+    protected $cached = false;
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/git/refs';
 
-    private string $name;
-    private bool $update = false;
+    private $name;
+    private $update = false;
 
-    public function __construct(?string $branch_name = null)
+    public function __construct($branch_name = null)
     {
         parent::__construct();
 
@@ -21,7 +21,7 @@ class Ref extends BaseResource
         }
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data || $method !== 'POST') return null;
@@ -36,7 +36,7 @@ class Ref extends BaseResource
         ];
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':

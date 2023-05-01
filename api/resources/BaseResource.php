@@ -6,16 +6,16 @@ use GuzzleHttp\Client;
 
 class BaseResource
 {
-    protected array $env;
-    protected string $endpoint;
-    protected bool $cached = true;
-    protected string $cache_key;
-    protected ?Cache $cache = null;
+    protected $env;
+    protected $endpoint;
+    protected $cached = true;
+    protected $cache_key;
+    protected $cache = null;
 
-    private string $base_url = 'https://api.github.com';
-    private ?array $data = null;
+    private $base_url = 'https://api.github.com';
+    private $data = null;
 
-    public ?string $sha = null;
+    public $sha = null;
 
     public function __construct()
     {
@@ -34,7 +34,7 @@ class BaseResource
      *
      * @param string $method
      */
-    protected function request(string $method, ?array $payload = null): array
+    protected function request($method, $payload = null)
     {
         if ($method === 'GET') {
             if ($this->data) return $this->data;
@@ -81,7 +81,7 @@ class BaseResource
     /**
      * HTTP GET Request
      */
-    public function get(): array
+    public function get()
     {
         return $this->request('GET');
     }
@@ -91,7 +91,7 @@ class BaseResource
      *
      * @param ?array $payload
      */
-    public function post(?array $payload = null): array
+    public function post($payload = null)
     {
         return $this->request('POST', $payload);
     }
@@ -101,7 +101,7 @@ class BaseResource
      *
      * @param ?array $payload
      */
-    public function put(?array $payload = null): array
+    public function put($payload = null)
     {
         return $this->request('PUT', $payload);
     }
@@ -111,7 +111,7 @@ class BaseResource
      *
      * @param ?array $payload
      */
-    public function patch(?array $payload = null): array
+    public function patch($payload = null)
     {
         return $this->request('PATCH', $payload);
     }
@@ -119,7 +119,7 @@ class BaseResource
     /**
      * HTTP DELETE Request
      */
-    public function delete(): array
+    public function delete()
     {
         return $this->request('DELETE');
     }
@@ -128,7 +128,7 @@ class BaseResource
      * Decorate data before json serialization
      *
      */
-    protected function decorate(): array
+    protected function decorate()
     {
         return $this->get();
     }
@@ -136,7 +136,7 @@ class BaseResource
     /**
      * Output content as json string
      */
-    public function json(): string
+    public function json()
     {
         $data = $this->decorate();
         return json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -147,7 +147,7 @@ class BaseResource
      *
      * @param string $method
      */
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':
@@ -168,7 +168,7 @@ class BaseResource
      *
      * @param string $method
      */
-    protected function get_headers(string $method): array
+    protected function get_headers($method)
     {
         return [
             'Accept' => 'application/vnd.github+json',
@@ -177,19 +177,19 @@ class BaseResource
         ];
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         if (in_array($method, ['GET', 'DELETE'])) return null;
 
         return $data;
     }
 
-    protected function get_query(string $method): ?array
+    protected function get_query($method)
     {
         return null;
     }
 
-    protected function get_sink(string $method): mixed
+    protected function get_sink($method)
     {
         return null;
     }

@@ -12,12 +12,12 @@ require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class InitRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
-        $dotfile = new Project();
-        $env = $dotfile->get();
+        $project = new Project();
+        $env = $project->get();
 
         if (isset($env['GH_INIT']) && $env['GH_INIT']) {
             $this->send_output('{"success": true}');
@@ -79,13 +79,13 @@ class InitRoute extends BaseRoute
             }
         }
 
-        $dotfile->post(['GH_INIT' => true]);
+        $project->post(['GH_INIT' => true]);
 
         $this->send_output('{"success": true}');
     }
 
 
-    private function branch_searcher(string $branch, int $try = 0): array
+    private function branch_searcher($branch, $try = 0)
     {
         if ($try < 10) {
             try {

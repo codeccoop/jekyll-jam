@@ -7,9 +7,9 @@ class Workflow extends BaseResource
     protected $cache_key = 'workflow';
     protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/workflows';
 
-    private string $path = '.github/workflows/vocero.yml';
+    private $path = '.github/workflows/vocero.yml';
 
-    public function get(): array
+    public function get()
     {
         $data = parent::get();
 
@@ -30,7 +30,7 @@ class Workflow extends BaseResource
         return $this->cache->post($workflow);
     }
 
-    public function put(?array $payload = null): array
+    public function put($payload = null)
     {
         if (isset($payload['branches'])) {
             $branches = $payload['branches'];
@@ -42,7 +42,7 @@ class Workflow extends BaseResource
         return $this->get();
     }
 
-    private function config_template(array $branches = ['main'])
+    private function config_template($branches = ['main'])
     {
         return [
             'name' => 'Vocero site CI',

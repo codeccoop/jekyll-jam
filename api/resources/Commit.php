@@ -4,17 +4,17 @@ require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 
 class Commit extends BaseResource
 {
-    public string $endpoint = '/repos/$GH_USER/$GH_REPO/git/commits';
+    public $endpoint = '/repos/$GH_USER/$GH_REPO/git/commits';
 
-    protected string $cache_key = 'commit';
+    protected $cache_key = 'commit';
 
-    public function __construct(?string $sha = null)
+    public function __construct($sha = null)
     {
         $this->sha = $sha;
         parent::__construct();
     }
 
-    public function get(): array
+    public function get()
     {
         if ($this->cache->is_cached()) return $this->cache->get();
 
@@ -25,7 +25,7 @@ class Commit extends BaseResource
         return parent::get();
     }
 
-    protected function get_payload(string $method, ?array $data = null): ?array
+    protected function get_payload($method, $data = null)
     {
         $data = parent::get_payload($method, $data);
         if (!$data) return null;
@@ -47,7 +47,7 @@ class Commit extends BaseResource
         return $output;
     }
 
-    protected function get_endpoint(string $method): string
+    protected function get_endpoint($method)
     {
         switch ($method) {
             case 'GET':

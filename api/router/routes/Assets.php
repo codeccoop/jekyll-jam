@@ -6,11 +6,11 @@ require_once VOCERO_API_ROOT . 'lib/helpers.php';
 
 class AssetsRoute extends BaseRoute
 {
-    public array $methods = ['GET'];
+    public $methods = ['GET'];
 
-    public function get(): void
+    public function get()
     {
-        $path = implode('/', array_slice($this->req['uri'], 3));
+        $path = implode('/', array_slice($this->req['uri'], 2));
         $env = (new Project())->get();
         $url = get_base_url($env) . $path;
         $content = file_get_contents($url);
