@@ -238,6 +238,7 @@ function EditorPage() {
           mode={getEditMode(query.path)}
           content={editorContent}
           setContent={setEditorContent}
+          blob={blob}
         />
         {preview && previewContent && <Preview text={previewContent} />}
       </div>
