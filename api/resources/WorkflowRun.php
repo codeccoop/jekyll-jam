@@ -93,13 +93,13 @@ class WorkflowRun extends BaseResource
         if ($method !== 'GET' && $_SERVER['REQUEST_METHOD'] !== 'ALL') return null;
 
         return [
-            'created' => '>=' . preg_replace('/\+.*$/', '', date('c', strtotime($this->commit['committer']['date']))),
+            'created' => '>=' . preg_replace('/T.*$/', '', date('c', strtotime($this->commit['committer']['date']))),
         ];
     }
 
     private function get_single_endpoint($run_id)
     {
-        return preg_replace('/workflows\/.+$', 'runs/' . $run_id, $this->endpoint);
+        return preg_replace('/workflows\/.+$/', 'runs/' . $run_id, $this->endpoint);
     }
 
     private function get_one()
