@@ -49,6 +49,10 @@ $routes = [
         require_once VOCERO_API_ROOT . 'router/routes/Tree.php';
         return new TreeRoute();
     },
+    'workflow' => function () {
+        require_once VOCERO_API_ROOT . 'router/routes/Workflow.php';
+        return new WorkflowRoute();
+    },
     'workflow_run' => function () {
         require_once VOCERO_API_ROOT . 'router/routes/WorkflowRun.php';
         return new WorkflowRunRoute();

@@ -17,8 +17,10 @@ class BaseResource
 
     public $sha = null;
 
-    public function __construct()
+    public function __construct($sha = null)
     {
+        if ($sha) $this->sha = $sha;
+
         $this->env = (new Project())->get();
 
         $this->endpoint = str_replace('$GH_USER', $this->env['GH_USER'], $this->endpoint);

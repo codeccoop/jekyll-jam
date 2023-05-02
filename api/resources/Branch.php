@@ -1,6 +1,7 @@
 <?php
 require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
 require_once VOCERO_API_ROOT . 'resources/BranchCompare.php';
+require_once VOCERO_API_ROOT . 'resources/Commit.php';
 
 class Branch extends BaseResource
 {
@@ -29,6 +30,8 @@ class Branch extends BaseResource
         $compare = (new BranchCompare($this->branch_name))->get();
         $data['ahead_by'] = $compare['ahead_by'];
         $data['behind_by'] = $compare['behind_by'];
+
+        (new Commit($data['commit']['sha']))->get();
 
         return $this->cache->post($data);
     }

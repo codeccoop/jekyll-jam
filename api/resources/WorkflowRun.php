@@ -1,19 +1,21 @@
 <?php
 
 require_once VOCERO_API_ROOT . 'resources/BaseResource.php';
-require_once VOCERO_API_ROOT . 'resources/Content.php';
+require_once VOCERO_API_ROOT . 'resources/Workflow.php';
 require_once VOCERO_API_ROOT . 'resources/Commit.php';
 require_once VOCERO_API_ROOT . 'lib/Cache.php';
 
 class WorkflowCache extends Cache
 {
     private $key = 'worflow_run';
-    private $commit;
+    private $commit_sha;
+    private $workflow_id;
 
-    public function __construct($commit)
+    public function __construct($commit, $workflow)
     {
         parent::__construct($this->key);
-        $this->commit = $commit;
+        $this->commit_sha = $commit['sha'];
+        $this->workflow_id = $workflow['id'];
     }
 
     public function is_cached()
@@ -21,7 +23,7 @@ class WorkflowCache extends Cache
         $cache = new Cache($this->key);
         if ($cache->is_cached()) {
             $data = $cache->get();
-            return $data['head_sha'] == $this->commit['sha'];
+            return $data['head_sha'] == $this->commit_sha && $data['workflow_id'] === $this->workflow_id;
         }
 
         return false;
@@ -37,7 +39,7 @@ class WorkflowCache extends Cache
         return $data;
     }
 
-    public function get_id()
+    public function get_run_id()
     {
         return (new Cache($this->key))->get()['id'];
     }
@@ -46,27 +48,30 @@ class WorkflowCache extends Cache
 class WorkflowRun extends BaseResource
 {
     protected $cached = false;
-    protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs';
+    // protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/runs';
+    protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/workflows/$WF_ID/runs';
 
     private $id = null;
     private $commit = null;
 
-    protected WorkflowCache $custom_cache;
+    protected $custom_cache;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->commit = (new Commit())->get();
-        $this->custom_cache = new WorkflowCache($this->commit);
+        $workflow = (new Workflow())->get();
+        $this->custom_cache = new WorkflowCache($this->commit, $workflow);
+        $this->endpoint = str_replace('$WF_ID', $workflow['id'], $this->endpoint);
     }
 
     public function get()
     {
         if ($this->custom_cache->is_cached()) {
-            $workflow = $this->custom_cache->get();
-            if ($workflow) return $workflow;
-            else $this->id = $this->custom_cache->get_id();
+            $run = $this->custom_cache->get();
+            if ($run) return $run;
+            else $this->id = $this->custom_cache->get_run_id();
             return $this->get_one();
         }
 
@@ -77,7 +82,7 @@ class WorkflowRun extends BaseResource
     {
         switch ($_SERVER['REQUEST_METHOD']) {
             case 'ONE':
-                return $this->endpoint . '/' . $this->id;
+                return $this->get_single_endpoint($this->id);
             default:
                 return $this->endpoint;
         }
@@ -90,6 +95,11 @@ class WorkflowRun extends BaseResource
         return [
             'created' => '>=' . preg_replace('/\+.*$/', '', date('c', strtotime($this->commit['committer']['date']))),
         ];
+    }
+
+    private function get_single_endpoint($run_id)
+    {
+        return preg_replace('/workflows\/.+$', 'runs/' . $run_id, $this->endpoint);
     }
 
     private function get_one()

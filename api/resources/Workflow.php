@@ -8,15 +8,29 @@ class Workflow extends BaseResource
     protected $endpoint = '/repos/$GH_USER/$GH_REPO/actions/workflows';
 
     private $path = '.github/workflows/vocero.yml';
+    private $name = 'pages-build-deployment';
+
+    public function __construct($name = null)
+    {
+        if ($name) $this->name = $name;
+        parent::__construct();
+    }
 
     public function get()
     {
+        if ($this->cache->is_cached()) {
+            $cached = $this->cache->get();
+            if ($cached['name'] === $this->name) return $cached;
+        }
+
         $data = parent::get();
 
         $workflow = null;
         if ($data['total_count'] > 0) {
             foreach ($data['workflows'] as $wf) {
-                if ($wf['name'] === 'Vocero site CI') {
+                echo $wf['name'] . PHP_EOL;
+                // if ($wf['name'] === 'Vocero site CI') {
+                if ($wf['name'] === $this->name) {
                     $workflow = $wf;
                     break;
                 }
