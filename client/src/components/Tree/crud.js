@@ -1,6 +1,6 @@
 /* SOURCE */
-import { dropBlob, commit } from "services/api";
-import { b64e } from "lib/helpers";
+import { dropBlob } from "services/api";
+import { getPathType } from "lib/helpers";
 
 function setUnique(file, siblings) {
   const tocayo = siblings.find((sibling) => sibling.path === file.path);
@@ -22,15 +22,21 @@ function getSiblings(tree, type, directory) {
     type === "md" ? "files" : type === "yml" ? "data" : "media";
   const branch = tree[branchName];
 
-  return directory
-    .split("/")
-    .filter((chunk) => chunk)
-    .filter((chunk) => ["_data", "assets"].indexOf(chunk) === -1)
-    .reduce((siblings, pathChunk) => {
-      return siblings.find(
-        (sibling) => sibling.path.split("/").pop() === pathChunk
-      ).children;
-    }, branch);
+  let parent = null;
+  return [
+    directory
+      .split("/")
+      .filter((chunk) => chunk)
+      .filter((chunk) => ["_data", "assets"].indexOf(chunk) === -1)
+      .reduce((siblings, pathChunk) => {
+        const node = siblings.find(
+          (sibling) => sibling.path.split("/").pop() === pathChunk
+        );
+        parent = node;
+        return node.children;
+      }, branch),
+    parent,
+  ];
 }
 
 export function uploadFile(tree, directory = "assets") {
@@ -49,28 +55,11 @@ export function uploadFile(tree, directory = "assets") {
               name: file.name,
               path: `${directory}/${file.name}`.replace(/\/+/, "/"),
             },
-            getSiblings(tree, "media", directory)
+            getSiblings(tree, "media", directory)[0]
           );
-          commit([
-            {
-              content: window.btoa(reader.result),
-              path: b64e(newFile.path),
-              encoding: "base64",
-              frontmatter: [],
-            },
-          ]).then((commit) => {
-            const blob = commit.changes[0];
-            res({
-              tree: addFile(tree, "media", directory, {
-                name: blob.path.split("/").pop(),
-                path: blob.path,
-                sha: blob.sha,
-                is_file: true,
-                children: [],
-              }),
-              sha: commit.changes[0].sha,
-              path: blob.path,
-            });
+          res({
+            content: window.btoa(reader.result),
+            path: newFile.path,
           });
         }
       };
@@ -93,7 +82,7 @@ export function addFile(tree, type, directory = "", newFile = null) {
     sha: null,
   };
 
-  const siblings = getSiblings(tree, type, directory);
+  const [siblings] = getSiblings(tree, type, directory);
   siblings.push(setUnique(newFile, siblings));
 
   switch (type) {
@@ -106,17 +95,50 @@ export function addFile(tree, type, directory = "", newFile = null) {
   }
 }
 
-export function createFile(file) {
-  return commit([
-    {
-      content: "",
-      path: b64e(file.path),
-      frontmatter: [],
-      encoding: "base64",
-    },
-  ]);
-}
-
 export function dropFile({ sha, path }) {
   return dropBlob({ sha, path });
+}
+
+export function addLeaf(tree, leaf) {
+  const [path, branch] = getPathType(leaf);
+  const type = branch === "files" ? "md" : branch === "data" ? "yml" : "media";
+  const [siblings, parent] = getSiblings(
+    tree,
+    type,
+    path.split("/").slice(0, -1).join("/")
+  );
+  const newSiblings = siblings
+    .filter((sibling) => sibling.sha !== null)
+    .concat({
+      sha: leaf.sha,
+      name: path.split("/").pop(),
+      path: path,
+      is_file: true,
+      children: [],
+    });
+  if (parent) {
+    parent.children = newSiblings;
+  } else {
+    tree[branch] = newSiblings;
+  }
+  return { ...tree, [branch]: tree[branch] };
+}
+
+export function dropLeaf(tree, leaf) {
+  const [path, branch] = getPathType(leaf);
+  const type = branch === "files" ? "md" : branch === "data" ? "yml" : "media";
+  const [siblings, parent] = getSiblings(
+    tree,
+    type,
+    path.split("/").slice(0, -1).join("/")
+  );
+  const newSiblings = siblings.filter((sibling) => sibling.sha !== leaf.sha);
+
+  if (parent) {
+    parent.children = newSiblings;
+  } else {
+    tree[branch] = newSiblings;
+  }
+
+  return { ...tree, [branch]: tree[branch] };
 }

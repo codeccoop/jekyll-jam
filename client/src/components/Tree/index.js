@@ -1,12 +1,12 @@
 /* VENDOR */
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 /* SOURCE */
-import { addFile, uploadFile, dropFile } from "./crud";
+import { addFile, uploadFile, dropFile, addLeaf, dropLeaf } from "./crud";
 import { getTree } from "services/api";
-import { getPathType, flattenTree, b64e } from "lib/helpers";
+import { getPathType, flattenTree, uuid, b64e } from "lib/helpers";
 
 import File from "./File";
 
@@ -15,7 +15,6 @@ import Directory from "./Directory";
 
 function Tree() {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const [tree, setTree] = useState({
     placeholder: true,
@@ -30,7 +29,7 @@ function Tree() {
       { name: "documents", children: [], sha: 5 },
     ],
   });
-  const [{ query, branch }, dispatch] = useStore();
+  const [{ query, branch, changes }, dispatch] = useStore();
 
   const [visibilities, setVisibilities] = useState({
     files: false,
@@ -46,6 +45,9 @@ function Tree() {
           path={item.path}
           name={item.name}
           isNew={item.sha === null}
+          createFile={(ev, { path, content }) =>
+            onCreateFile(ev, { path, content })
+          }
           dropFile={(ev) => onDropFile(ev, item)}
         />
       );
@@ -93,6 +95,12 @@ function Tree() {
   }
 
   function fetchTree() {
+    const cache = localStorage.getItem("_VOCERO_TREE");
+    if (cache) {
+      setTree(JSON.parse(cache));
+      return Promise.resolve();
+    }
+
     getTree(branch.sha)
       .then((tree) => {
         setTree(parseTree(tree));
@@ -144,32 +152,66 @@ function Tree() {
     if (type === "md" || type === "yml") {
       setTree(addFile(tree, type, directory));
     } else {
-      uploadFile(tree).then(({ tree, sha, path }) => {
-        setTree(tree);
+      uploadFile(tree).then((leaf) => onCreateFile(ev, leaf));
+    }
+  }
 
+  function onCreateFile(ev, { path, content }) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const sha = uuid();
+    const leaf = {
+      sha,
+      path: b64e(path),
+      content,
+      frontmatter: [],
+      encoding: "base64",
+    };
+
+    dispatch({
+      action: "ADD_CHANGE",
+      payload: leaf,
+    });
+
+    localStorage.setItem("_VOCERO_TREE", JSON.stringify(addLeaf(tree, leaf)));
+
+    fetchTree().then(() => {
+      navigate(`/edit?sha=${encodeURIComponent(sha)}&path=${b64e(path)}`);
+    });
+  }
+
+  function onDropFile(ev, leaf) {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const cached = changes.find((change) => change.sha === leaf.sha);
+    if (cached && cached.sha.length < 10) {
+      dispatch({
+        action: "DROP_CHANGE",
+        payload: cached,
+      });
+      localStorage.setItem(
+        "_VOCERO_TREE",
+        JSON.stringify(dropLeaf(tree, cached))
+      );
+      fetchTree().then(() => {
+        if (query.sha === leaf.sha) {
+          navigate("/");
+        }
+      });
+    } else {
+      dropFile(leaf).then(({ tree }) => {
+        setTree(parseTree(tree));
         dispatch({
           action: "FETCH_BRANCH",
         });
 
-        navigate(`/edit?sha=${sha}&path=${b64e(path)}`);
+        if (leaf.sha === query.sha) {
+          navigate("/");
+        }
       });
     }
-  }
-
-  function onDropFile(ev, item) {
-    ev.preventDefault();
-    ev.stopPropagation();
-
-    dropFile(item).then(({ tree }) => {
-      setTree(parseTree(tree));
-      dispatch({
-        action: "FETCH_BRANCH",
-      });
-
-      if (item.sha === query.sha) {
-        navigate("/");
-      }
-    });
   }
 
   return (

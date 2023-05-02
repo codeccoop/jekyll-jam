@@ -1,33 +1,22 @@
 /* VENDOR */
 import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useStore } from "colmado";
 
 /* SOURCE */
 import { b64e } from "lib/helpers";
-import { createFile } from "./crud";
 
-export default function File({ sha, path, name, isNew, dropFile }) {
+export default function File({ sha, path, name, isNew, createFile, dropFile }) {
   const input = useRef();
   const unliked = useRef(false);
-  const [{ query }, dispatch] = useStore();
-  const navigate = useNavigate();
 
-  function commitFile(ev) {
+  function onCreateFile(ev) {
+    ev.stopPropagation();
     if (unliked.current) return;
     unliked.current = true;
-    const fileName = ev.target.value;
-    createFile({
-      path: path.replace(/new_file\.\w+$/, fileName).replace(/^\/*/, ""),
-    }).then((commit) => {
-      const file = commit.changes[0];
-      dispatch({
-        action: "FETCH_BRANCH",
-      });
 
-      navigate(
-        `/edit?sha=${encodeURIComponent(file.sha)}&path=${b64e(file.path)}`
-      );
+    createFile(ev, {
+      path: path.replace(/new_file\.\w+$/, ev.target.value).replace(/^\/*/, ""),
+      content: "",
     });
   }
 
@@ -35,13 +24,13 @@ export default function File({ sha, path, name, isNew, dropFile }) {
     isNew && input.current.focus();
   }, []);
 
-  if (isNew) {
+  if (isNew && !unliked.current) {
     return (
       <input
         ref={input}
         type="text"
-        onKeyDown={(ev) => ev.code === "Enter" && commitFile(ev)}
-        onBlur={commitFile}
+        onKeyDown={(ev) => ev.code === "Enter" && onCreateFile(ev)}
+        onBlur={onCreateFile}
         defaultValue={name}
       />
     );

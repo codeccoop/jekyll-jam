@@ -35,6 +35,7 @@ function Sidebar({ toggleVisibility }) {
   function downloadBuild() {
     getArtifact()
       .then((blob) => {
+        debugger;
         if (blob.type === "application/json") throw new Error(blob);
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
@@ -48,7 +49,7 @@ function Sidebar({ toggleVisibility }) {
       .catch(console.error);
   }
 
-  function commitChanges() {
+  function commitChanges(changes) {
     commit(changes).then((commit) => {
       const changeMap = changes.reduce((acum, from) => {
         return acum.concat([
@@ -97,7 +98,7 @@ function Sidebar({ toggleVisibility }) {
           className="btn"
           disabled={isBuilding}
           data-changes={(changes || []).length}
-          onClick={commitChanges}
+          onClick={() => commitChanges(changes)}
         >
           {isBuilding ? "Publishing..." : "Publish"}
         </button>
