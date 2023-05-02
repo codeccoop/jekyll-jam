@@ -10,3 +10,6 @@ static/bundle*
 .artifacts
 
 codebase
+
+vocero.zip
+sh/php
