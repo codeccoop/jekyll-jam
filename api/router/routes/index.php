@@ -29,6 +29,10 @@ $routes = [
         require_once VOCERO_API_ROOT . 'router/routes/Config.php';
         return new ConfigRoute();
     },
+    'deployment' => function () {
+        require_once VOCERO_API_ROOT . 'router/routes/Deployment.php';
+        return new DeploymentRoute();
+    },
     'init' => function () {
         require_once VOCERO_API_ROOT . 'router/routes/Init.php';
         return new InitRoute();
