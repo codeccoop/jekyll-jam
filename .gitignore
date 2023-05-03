@@ -4,6 +4,7 @@ node_modules
 
 .project
 .env.local
+.env.development.local
 
 static/bundle*
 .cache
