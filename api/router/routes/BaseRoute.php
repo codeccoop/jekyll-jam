@@ -95,8 +95,6 @@ class BaseRoute
     {
         if ($code >= 400) {
             http_response_code($code);
-            echo $data;
-            exit;
         }
 
         if (!$headers || !is_array($headers)) {
@@ -130,14 +128,10 @@ class BaseRoute
     {
         if ($code >= 400) {
             http_response_code($code);
-            echo '';
-            exit;
         }
 
         if (!is_file($filepath)) {
             http_response_code(404);
-            echo '';
-            exit;
         }
 
         if (!is_array($headers)) {
@@ -157,7 +151,10 @@ class BaseRoute
         header("Content-disposition: attachment; filename=$filename");
         $size = filesize($filepath);
         header("Content-Length: $size");
-        readfile($filepath);
+
+        if (is_file($filepath)) {
+            readfile($filepath);
+        }
         exit;
     }
 
