@@ -94,7 +94,7 @@ export default {
     process.env.NODE_ENV === "development"
       ? [
           dev({
-            dirs: [CWD],
+            dirs: [path.join(CWD, "client"), CWD],
             port: 3000,
             proxy: [
               {
@@ -102,7 +102,7 @@ export default {
                 to: "http://localhost:8000/api",
               },
             ],
-            spa: true,
+            spa: "./client/index.html",
             server: {
               connectionTimeout: 1e4,
             },
