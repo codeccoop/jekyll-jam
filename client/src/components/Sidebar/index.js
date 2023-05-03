@@ -51,6 +51,7 @@ function Sidebar({ toggleVisibility }) {
 
   function commitChanges(changes) {
     commit(changes).then((commit) => {
+      localStorage.removeItem("_VOCERO_TREE");
       const changeMap = changes.reduce((acum, from) => {
         return acum.concat([
           [
