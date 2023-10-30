@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 
 /* SOURCE */
-import { getBlocks } from "../../services/api.js";
+import { getBlocks } from "services/api.js";
 
 const geval = eval;
 const Component = ({ Warehouse, children }) => {

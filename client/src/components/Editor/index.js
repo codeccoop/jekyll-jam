@@ -23,8 +23,7 @@ import Toolbar from "components/Toolbar";
 import "./style.scss";
 import "./lexical.scss";
 
-export default function Editor({ content, defaultContent }) {
-  content = content !== null ? content : defaultContent;
+export default function Editor() {
   const [editor] = useLexicalComposerContext();
 
   return (
@@ -34,6 +33,7 @@ export default function Editor({ content, defaultContent }) {
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={<ContentEditable className="vocero-root-editor" />}
+            placeholder={<div>Loading file contents...</div>}
             ErrorBoundary={LexicalErrorBoundary}
           />
           <HistoryPlugin />

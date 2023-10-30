@@ -2,23 +2,19 @@
 import React, { useEffect, useRef } from "react";
 import { useStore } from "colmado";
 
-/* SOURCE */
-import useMarked from "hooks/useMarked";
-
 /* STYLE */
 import "./style.scss";
 import previewStyle from "./style";
 
-function classedWrapper(text) {
-  return `<main class="vocero-preview"><div class="vocero-preview__content">${text}</div></main>`;
+function classedWrapper(html) {
+  return `<main class="vocero-preview"><div class="vocero-preview__content">${html}</div></main>`;
 }
 
-export default function Preview({ text }) {
+export default function Preview({ html }) {
   const elRef = useRef();
   const shadowRef = useRef();
   const rendererRef = useRef(document.createElement("template"));
   const [{ style }] = useStore();
-  const marked = useMarked();
   const css = style;
 
   useEffect(() => {
@@ -33,19 +29,21 @@ export default function Preview({ text }) {
   }, [elRef]);
 
   useEffect(() => {
-    if (!(shadowRef.current && text)) return;
+    if (!(shadowRef.current && html)) return;
     const shadow = shadowRef.current;
     const renderer = rendererRef.current;
-    const contentWrapper = renderer.content.querySelector(".vocero-preview__wrapper");
+    const contentWrapper = renderer.content.querySelector(
+      ".vocero-preview__wrapper"
+    );
 
     if (contentWrapper) {
-      contentWrapper.innerHTML = marked.parse(text);
+      contentWrapper.innerHTML = html;
       const rendererHTML = renderer.innerHTML;
       shadow.innerHTML = "";
       shadow.appendChild(renderer.content);
       renderer.innerHTML = rendererHTML;
     }
-  }, [text]);
+  }, [html]);
 
   useEffect(() => {
     if (!(shadowRef.current && css)) return;
@@ -69,7 +67,7 @@ export default function Preview({ text }) {
     <div ref={elRef} className="preview">
       <div
         className="preview-content"
-        dangerouslySetInnerHTML={{ __html: classedWrapper(marked.parse(text)) }}
+        dangerouslySetInnerHTML={{ __html: classedWrapper(html) }}
       ></div>
     </div>
   );

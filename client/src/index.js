@@ -69,11 +69,11 @@ function App() {
 
   return (
     <BrowserRouter basename={process.env.VOCERO_BASE_URL}>
-      <LexicalContext>
-        <Store>
+      <Store>
+        <LexicalContext>
           <MainLayout>{project ? <AppRoutes /> : <Spinner />}</MainLayout>
-        </Store>
-      </LexicalContext>
+        </LexicalContext>
+      </Store>
     </BrowserRouter>
   );
 }

@@ -15,7 +15,6 @@
     "@lexical/react": "^0.9.1",
     "colmado": "^1.0.7",
     "lexical": "^0.9.1",
-    "marked": "^4.0.18",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-flux-store": "1.0.0",

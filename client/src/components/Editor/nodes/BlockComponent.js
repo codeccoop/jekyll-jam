@@ -19,7 +19,6 @@ import ListMaxIndentLevelPlugin from "../plugins/ListMaxIndentLevelPlugin.js";
 // import ToolbarPlugin from "../plugins/ToolbarPlugin";
 import BlockNodesPlugin from "../plugins/BlockNodesPlugin.js";
 import { $isBlockNode } from "./BlockNode.js";
-import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 
 function BlockEditor({ editor, parentEditor, hierarchy = [] }) {
   return (
@@ -53,22 +52,12 @@ function BlockComponent({
   initProps = {},
 }) {
   const [{ blocks }, dispatch] = useStore();
-  const blockRegistry = useBlockRegistryContext();
   const [, { getTheme }] = useLexicalComposerContext();
 
   const BlockInner =
     blocks.find((block) => block.name === defn.name)?.fn || (() => {});
 
   const [state, setState] = useState(initProps);
-
-  useEffect(() => {
-    blockRegistry[nodeKey] = {
-      defn,
-      editor,
-      key: nodeKey,
-      props: Object.assign({}, state),
-    };
-  }, [nodeKey, state]);
 
   useEffect(() => {
     if (!defn) return;

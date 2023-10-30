@@ -2,11 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "colmado";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import {
-  $convertFromMarkdownString,
-  $convertToMarkdownString,
-  TRANSFORMERS,
-} from "@lexical/markdown";
+import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
 
 /* SOURCE */
 import Editor from "components/Editor";
@@ -15,17 +11,11 @@ import MediaViewer from "components/MediaViewer";
 import YamlForm from "components/YamlForm";
 
 import { getBlob, getStyle } from "services/api";
-import { hydrateBlocks, renderBlocks } from "lib/blocks";
 import { b64d, b64e } from "lib/helpers";
-import {
-  genBlockTransformer,
-  genBlockSerializer,
-} from "lib/markdownTransformers";
-import useMarked from "hooks/useMarked";
-import { useBlockRegistryContext } from "lib/contexts/BlockRegistry";
 
 /* STYLE */
 import "./style.scss";
+import { $getRoot, $insertNodes } from "lexical";
 
 function getEditMode(queryPath) {
   if (!queryPath) return null;
@@ -45,12 +35,10 @@ function getEditMode(queryPath) {
   }
 }
 
-const defaultContent = "# Loading file contents...";
-
 function EditComponent({ mode, content, setContent, blob }) {
   switch (mode) {
     case "editor":
-      return <Editor content={content} defaultContent={defaultContent} />;
+      return <Editor />;
     case "data":
       return <YamlForm onUpdate={setContent} content={content} />;
     case "media":
@@ -66,31 +54,30 @@ function EditComponent({ mode, content, setContent, blob }) {
 
 function EditorPage() {
   const el = useRef();
-  const marked = useMarked();
   const [editor] = useLexicalComposerContext();
-  const blocksRegistry = useBlockRegistryContext();
-  const [{ query, changes, branch }, dispatch] = useStore();
+  const [{ blocks, query, changes, branch }, dispatch] = useStore();
 
   const [blob, setBlob] = useState({});
 
   const isContentLoaded = useRef(false);
-  const [editorContent, setEditorContent] = useState(defaultContent);
-  const [previewContent, setPreviewContent] = useState(null);
+  const [editorContent, setEditorContent] = useState();
+  const [previewContent, setPreviewContent] = useState();
   useEffect(() => {
-    if (
-      !isContentLoaded.current ||
-      (isContentLoaded.current && editorContent === defaultContent)
-    ) {
+    if (isContentLoaded.current && blocks.length) {
       editor.update(() => {
-        $convertFromMarkdownString(editorContent, [
-          ...TRANSFORMERS,
-          genBlockSerializer(),
-        ]);
+        if (!editorContent) return;
+
+        const parser = new DOMParser();
+        const dom = parser.parseFromString(editorContent, "text/html");
+        dom._vBlocks = blocks;
+        const nodes = $generateNodesFromDOM(editor, dom);
+        $getRoot().select();
+        $insertNodes(nodes);
       });
     }
 
-    return () => (isContentLoaded.current = editorContent !== defaultContent);
-  }, [editorContent]);
+    return () => (isContentLoaded.current = !!editorContent);
+  }, [editorContent, blocks]);
 
   useEffect(() => {
     if (!branch) return;
@@ -103,21 +90,19 @@ function EditorPage() {
   }, [branch]);
 
   useEffect(() => {
-    setBlob({ ...blob, content: null });
-    setEditorContent(defaultContent);
     if (query.sha) retriveBlob(changes);
+    return () => {
+      setBlob({ ...blob, content: null });
+      setEditorContent(void 0);
+    };
   }, [query.sha]);
 
   const [preview, setPreview] = useState(false);
   useEffect(() => {
     if (preview) {
       editor.getEditorState().read(() => {
-        setPreviewContent(
-          $convertToMarkdownString([
-            ...TRANSFORMERS,
-            genBlockTransformer(blocksRegistry),
-          ])
-        );
+        editor._vBlocks = blocks;
+        setPreviewContent($generateHtmlFromNodes(editor));
       });
     }
     return () => {
@@ -129,7 +114,7 @@ function EditorPage() {
   useEffect(() => {
     const hasChanged =
       getEditMode(query.path) !== "media" &&
-      editorContent !== defaultContent &&
+      !!editorContent &&
       b64e(editorContent) !== blob.content;
 
     setHasChanged(hasChanged);
@@ -150,17 +135,15 @@ function EditorPage() {
     );
 
     editor.getEditorState().read(() => {
-      const content = $convertToMarkdownString([
-        ...TRANSFORMERS,
-        genBlockTransformer(blocksRegistry),
-      ]);
+      editor._vBlocks = blocks;
+      const content = $generateHtmlFromNodes(editor);
 
       dispatch({
         action: "ADD_CHANGE",
         payload: {
           sha,
           path,
-          content: b64e(renderBlocks(content, marked)), // .replace(/\n|\r/g, "\n")),
+          content: b64e(content),
           frontmatter: blob.frontmatter || [],
           encoding: blob.encoding || "base64",
         },
@@ -184,6 +167,7 @@ function EditorPage() {
       }
     }
   });
+
   useEffect(() => {
     if (getEditMode(query.path) === "media") return;
     document.body.addEventListener("keydown", ctrlSListener.current, true);
@@ -209,7 +193,7 @@ function EditorPage() {
       mode === "media" ? window.atob(blob.content) : b64d(blob.content);
 
     if (mode === "editor") {
-      editorContent = hydrateBlocks(editorContent);
+      // editorContent = hydrateBlocks(editorContent);
     }
 
     setBlob(blob);
@@ -238,7 +222,7 @@ function EditorPage() {
           setContent={setEditorContent}
           blob={blob}
         />
-        {preview && previewContent && <Preview text={previewContent} />}
+        {preview && previewContent && <Preview html={previewContent} />}
       </div>
       <div className="edit__controls">
         <a className="btn" onClick={() => toTheClippBoard(blob)}>
