@@ -89,9 +89,11 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
       });
     }
 
-    parentEditor.update(() => {
+    editor.update(() => {
       const node = $getNodeByKey(nodeKey);
       if ($isBlockNode(node)) {
+        const root = $getRoot();
+        root.select();
         node.focus();
       }
     });

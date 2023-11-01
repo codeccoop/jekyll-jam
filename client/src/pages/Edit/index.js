@@ -59,25 +59,30 @@ function EditorPage() {
 
   const [blob, setBlob] = useState({});
 
-  const isContentLoaded = useRef(false);
+  const [isContentLoaded, setIsContentLoaded] = useState(false);
   const [editorContent, setEditorContent] = useState();
   const [previewContent, setPreviewContent] = useState();
   useEffect(() => {
-    if (isContentLoaded.current && blocks.length) {
-      editor.update(() => {
-        if (!editorContent) return;
+    setIsContentLoaded(!!editorContent);
+    return () => {
+      setIsContentLoaded(false);
+    };
+  }, [editorContent]);
 
+  useEffect(() => {
+    if (isContentLoaded && blocks.length) {
+      editor.update(() => {
         const parser = new DOMParser();
         const dom = parser.parseFromString(editorContent, "text/html");
         dom._vBlocks = blocks;
         const nodes = $generateNodesFromDOM(editor, dom);
-        $getRoot().select();
+        const root = $getRoot();
+        root.getChildren().forEach((child) => child.remove());
+        root.select();
         $insertNodes(nodes);
       });
     }
-
-    return () => (isContentLoaded.current = !!editorContent);
-  }, [editorContent, blocks]);
+  }, [blocks, isContentLoaded]);
 
   useEffect(() => {
     if (!branch) return;
@@ -92,8 +97,8 @@ function EditorPage() {
   useEffect(() => {
     if (query.sha) retriveBlob(changes);
     return () => {
+      setEditorContent(null);
       setBlob({ ...blob, content: null });
-      setEditorContent(void 0);
     };
   }, [query.sha]);
 
@@ -112,11 +117,8 @@ function EditorPage() {
 
   const [hasChanged, setHasChanged] = useState(false);
   useEffect(() => {
-    const hasChanged =
-      getEditMode(query.path) !== "media" &&
-      !!editorContent &&
-      b64e(editorContent) !== blob.content;
-
+    if (getEditMode(query.path) === "media" || !isContentLoaded) return;
+    const hasChanged = b64e(editorContent) !== blob.content;
     setHasChanged(hasChanged);
   }, [editorContent]);
 
@@ -151,7 +153,7 @@ function EditorPage() {
     });
   }
 
-  function onKeyDown(ev, blob) {
+  function onSave(ev, blob) {
     if (ev.key === "s" && ev.ctrlKey) {
       ev.preventDefault();
       ev.stopPropagation();
@@ -159,7 +161,7 @@ function EditorPage() {
     }
   }
 
-  const ctrlSListener = useRef((ev) => {
+  const onSaveInterceptor = useRef((ev) => {
     if (ev.key === "s" && ev.ctrlKey) {
       if (!el.current.contains(ev.target)) {
         ev.preventDefault();
@@ -170,9 +172,13 @@ function EditorPage() {
 
   useEffect(() => {
     if (getEditMode(query.path) === "media") return;
-    document.body.addEventListener("keydown", ctrlSListener.current, true);
+    document.body.addEventListener("keydown", onSaveInterceptor.current, true);
     return () => {
-      document.body.removeEventListener("keydown", ctrlSListener.current, true);
+      document.body.removeEventListener(
+        "keydown",
+        onSaveInterceptor.current,
+        true
+      );
     };
   }, []);
 
@@ -192,16 +198,16 @@ function EditorPage() {
     let editorContent =
       mode === "media" ? window.atob(blob.content) : b64d(blob.content);
 
-    if (mode === "editor") {
-      // editorContent = hydrateBlocks(editorContent);
-    }
+    // if (mode === "editor") {
+    //   editorContent = hydrateBlocks(editorContent);
+    // }
 
     setBlob(blob);
     setEditorContent(editorContent);
   }
 
   function toTheClippBoard(blob) {
-    navigator.clipboard.writeText(b64d(blob.path).replace(/\.md$/, ".html"));
+    navigator.clipboard.writeText(b64d(blob.path)); // .replace(/\.md$/, ".html"));
   }
 
   if (!query.path) return <h1>Loading</h1>;
@@ -214,7 +220,7 @@ function EditorPage() {
           getEditMode(query.path),
           preview && previewContent ? " preview" : "edit",
         ].join(" ")}
-        onKeyDown={(ev) => onKeyDown(ev, blob)}
+        onKeyDown={(ev) => onSave(ev, blob)}
       >
         <EditComponent
           mode={getEditMode(query.path)}

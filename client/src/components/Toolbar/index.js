@@ -4,11 +4,12 @@ import React, { useEffect, useState } from "react";
 /* SOURCE */
 import Blocks from "components/Blocks";
 import BlockControls from "components/BlockControls";
+import EditorTree from "components/EditorTree";
 
 /* STYLE */
 import "./style.scss";
 
-const tabs = ["blocks", "block"];
+const tabs = ["tree", "blocks", "block"];
 
 function Tab({ isActive, tab, setTab }) {
   return (
@@ -42,7 +43,13 @@ function Toolbar() {
         ))}
       </nav>
       <ToolbarContent isReady={currentTab !== void 0}>
-        {currentTab === "blocks" ? <Blocks /> : <BlockControls />}
+        {currentTab === "tree" ? (
+          <EditorTree />
+        ) : currentTab === "blocks" ? (
+          <Blocks />
+        ) : (
+          <BlockControls />
+        )}
       </ToolbarContent>
     </div>
   );

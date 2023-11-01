@@ -1,12 +1,13 @@
 /* VENDOR */
 import React from "react";
 import { renderToString } from "react-dom/server.browser";
-import { createEditor, DecoratorNode } from "lexical";
+import { $getRoot, createEditor, DecoratorNode } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 
 /* SOURCE */
 import BlockComponent from "./BlockComponent";
 import { b64e, b64d } from "lib/helpers";
+import { getTree } from "lib/tree";
 
 const EMPTY_STATE = () => ({
   root: {
@@ -266,6 +267,30 @@ class BlockNode extends DecoratorNode {
 
   isIsolated() {
     return true;
+  }
+
+  getTree(editor) {
+    return new Promise((res) => {
+      const defn = {
+        type: this.getType(),
+        key: this.getKey(),
+        children: [],
+        editor: this.editor || editor,
+      };
+      if (!this.editor) res(defn);
+
+      this.editor.getEditorState().read(() => {
+        const root = $getRoot();
+        Promise.all(
+          root.getChildren().map((node) => getTree(node, this.editor))
+        ).then((children) =>
+          res({
+            ...defn,
+            children,
+          })
+        );
+      });
+    });
   }
 }
 
