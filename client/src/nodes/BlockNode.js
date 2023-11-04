@@ -1,26 +1,17 @@
 /* VENDOR */
-import React from "react";
+import React, { useState } from "react";
 import { renderToString } from "react-dom/server.browser";
 import { $getRoot, createEditor, DecoratorNode } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 
 /* SOURCE */
-import BlockComponent from "./BlockComponent";
-import { b64e, b64d } from "lib/helpers";
-import { getTree } from "lib/tree";
+import BlockComponent from "components/Editor/BlockComponent";
+import { b64e, b64d } from "utils";
+import { getTree } from "utils/tree";
 
 const EMPTY_STATE = () => ({
   root: {
-    children: [
-      {
-        children: [],
-        direction: null,
-        format: "",
-        indent: 0,
-        type: "paragraph",
-        version: 1,
-      },
-    ],
+    children: [PARAGRAPH_NODE()],
     direction: null,
     format: "",
     indent: 0,
@@ -36,6 +27,13 @@ const PARAGRAPH_NODE = () => ({
   indent: 0,
   type: "paragraph",
   version: 1,
+});
+
+const ROOT_NODE = () => ({
+  children: [],
+  defn: {
+    name: "root",
+  },
 });
 
 function htmlToDom(html) {
@@ -76,10 +74,6 @@ class BlockNode extends DecoratorNode {
     );
   }
 
-  static importJSON(serializedNode) {
-    return $createBlockNode(serializedNode);
-  }
-
   constructor(
     { defn, editor, editorState, ancestors = [], props = {}, focus = 0 },
     key
@@ -87,9 +81,7 @@ class BlockNode extends DecoratorNode {
     super(key);
     this.__defn = defn;
     this.__ancestors = ancestors;
-    this.__editor = defn.selfClosed
-      ? null
-      : editor || initBlockEditor(editorState);
+    this.__editor = editor || initBlockEditor(editorState);
     this.__props = props;
     this.__focus = focus;
   }
@@ -129,7 +121,8 @@ class BlockNode extends DecoratorNode {
     el.classList.add("vocero-block");
     el.id = this.getKey();
     if (this.defn.selfClosed) {
-      el.addEventListener("click", () => {
+      el.addEventListener("click", (ev) => {
+        ev.stopPropagation();
         editor.update(() => {
           this.focus();
         });
@@ -165,11 +158,19 @@ class BlockNode extends DecoratorNode {
 
     return {
       priority: 10,
-      conversion: (el) => {
+      conversion: (el, parent) => {
+        let ancestors = [];
+        if (parent) {
+          ancestors = (parent.dataset["ancestors"] || "")
+            .split(":")
+            .concat(parent.id)
+            .filter((key) => key);
+        }
+        el.setAttribute("data-ancestors", ancestors.join(":"));
         Array.from(el.children).forEach((child, i) => {
           const { conversion } = BlockNode._importDOM(child) || {};
           if (conversion) {
-            const { node } = conversion(child);
+            const { node } = conversion(child, el);
             editorState.root.children[i] = node.exportJSON();
           }
         });
@@ -178,6 +179,7 @@ class BlockNode extends DecoratorNode {
           defn,
           props,
           editorState,
+          ancestors,
         });
 
         return { node };
@@ -187,10 +189,21 @@ class BlockNode extends DecoratorNode {
 
   static importDOM() {
     return Object.fromEntries(
-      ["div", "p", "video", "img", "span"].map((tag) => [
-        tag,
-        BlockNode._importDOM,
-      ])
+      [
+        "div",
+        "p",
+        "video",
+        "img",
+        "span",
+        "ul",
+        "li",
+        "section",
+        "nav",
+        "figure",
+        "img",
+        "a",
+        "iframe",
+      ].map((tag) => [tag, BlockNode._importDOM])
     );
   }
 
@@ -213,6 +226,7 @@ class BlockNode extends DecoratorNode {
     const setAttr = ((e, k, d) =>
       e.setAttribute(`data-${k}`, b64e(JSON.stringify(d)))).bind(null, element);
 
+    element.id = this.getKey();
     setAttr("vblock", this.defn.name);
     setAttr("props", this.props);
     if (this.editor) {
@@ -240,6 +254,10 @@ class BlockNode extends DecoratorNode {
     return dom.children[0];
   }
 
+  static importJSON(serializedNode) {
+    return $createBlockNode(serializedNode);
+  }
+
   exportJSON() {
     return {
       version: 1,
@@ -259,7 +277,7 @@ class BlockNode extends DecoratorNode {
         editor={this.editor}
         parentEditor={editor}
         ancestors={this.ancestors}
-        initProps={Object.assign({}, this.props)}
+        props={Object.assign({}, this.props)}
         focus={this.isFocus}
       />
     );
@@ -272,10 +290,11 @@ class BlockNode extends DecoratorNode {
   getTree(editor) {
     return new Promise((res) => {
       const defn = {
-        type: this.getType(),
+        type: this.defn.name,
         key: this.getKey(),
         children: [],
         editor: this.editor || editor,
+        isBlock: true,
       };
       if (!this.editor) res(defn);
 

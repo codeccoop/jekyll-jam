@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 /* SOURCE */
-import Tree from "components/Tree";
+import Tree from "components/ProjectTree";
 import { commit, observeWorkflowRun, getArtifact } from "services/api";
-import { b64d } from "lib/helpers";
+import { b64d } from "utils";
 
 /* STYLE */
 import "./style.scss";

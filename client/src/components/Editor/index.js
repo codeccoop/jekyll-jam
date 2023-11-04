@@ -12,11 +12,11 @@ import { TRANSFORMERS } from "@lexical/markdown";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 /* SOURCE */
-import ToolbarPlugin from "./plugins/ToolbarPlugin";
-import CodeHighlightPlugin from "./plugins/CodeHighlight";
-import ListMaxIndentLevelPlugin from "./plugins/ListMaxIndentLevelPlugin";
-import BlockNodesPlugin from "./plugins/BlockNodesPlugin";
-
+import EditorFocus from "context/EditorFocus";
+import ToolbarPlugin from "plugins/ToolbarPlugin";
+import CodeHighlightPlugin from "plugins/CodeHighlight";
+import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin";
+import BlockNodesPlugin from "plugins/BlockNodesPlugin";
 import Toolbar from "components/Toolbar";
 
 /* STYLE */
@@ -27,7 +27,7 @@ export default function Editor() {
   const [editor] = useLexicalComposerContext();
 
   return (
-    <>
+    <EditorFocus>
       <div className="editor-container">
         <ToolbarPlugin />
         <div className="editor-inner">
@@ -47,6 +47,6 @@ export default function Editor() {
         </div>
       </div>
       <Toolbar />
-    </>
+    </EditorFocus>
   );
 }

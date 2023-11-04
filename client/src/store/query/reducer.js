@@ -1,5 +1,5 @@
 /* SOURCE */
-import { encodeQuery } from "lib/helpers";
+import { encodeQuery } from "utils/url";
 
 function genHref(query) {
   query = Object.fromEntries(

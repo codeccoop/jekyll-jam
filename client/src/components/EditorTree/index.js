@@ -2,21 +2,45 @@ import React, { useState, useEffect } from "react";
 import { $getNodeByKey, $getRoot } from "lexical";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
-import { getTree } from "lib/tree";
+import { useEditorFocus } from "context/EditorFocus";
+import { getTree } from "utils/tree";
 
-function TreeNode({ node, onSelect }) {
+import TreeState, { useTreeState } from "./TreeState";
+
+import "./style.scss";
+
+function TreeNode({ node }) {
+  const [focusedNode, setFocusedNode] = useEditorFocus();
+  const [visibilities] = useTreeState();
+
   const onClick = (ev) => {
     ev.stopPropagation();
-    onSelect(node);
+    visibilities[node.key] = !visibilities[node.key];
+    if (visibilities[node.key]) {
+      node.editor._parentEditor.getEditorState().read(() => {
+        const blockNode = $getNodeByKey(node.key);
+        setFocusedNode(blockNode);
+      });
+    }
   };
 
-  if (node.type === "text") return null;
+  const getClassName = () => {
+    const classes = ["node"];
+    node.key === focusedNode?.getKey() && classes.push("selected");
+
+    visibilities
+      ? !visibilities[node.key] && classes.push("collapsed")
+      : classes.push("collapsed");
+    return classes.join(" ");
+  };
+
+  if (!node.isBlock) return null;
   return (
-    <div className="node" onClick={onClick}>
+    <div className={getClassName()} onClick={onClick}>
       <p>{node.type}</p>
       <ul>
         {node.children.map((node) => (
-          <TreeNode key={node.key} node={node} onSelect={onSelect} />
+          <TreeNode key={node.key} node={node} />
         ))}
       </ul>
     </div>
@@ -26,15 +50,21 @@ function TreeNode({ node, onSelect }) {
 function EditorTree() {
   const [editor] = useLexicalComposerContext();
   const [tree, setTree] = useState([]);
-  const [node, setNode] = useState(null);
 
   const buildTree = ({ editorState }) => {
     editorState.read(() => {
       const root = $getRoot();
       Promise.all(
         root.getChildren().map((child) => getTree(child, editor))
-      ).then(setTree);
+      ).then((tree) => setTree(filterTree(tree)));
     });
+  };
+
+  const filterTree = (tree) => {
+    return tree.reduce((acum, node) => {
+      if (!node.isBlock) return acum.concat(filterTree(node.children));
+      return acum.concat(node);
+    }, []);
   };
 
   useEffect(() => {
@@ -45,23 +75,14 @@ function EditorTree() {
     editor.registerUpdateListener(buildTree);
   }, [editor]);
 
-  useEffect(() => console.log(tree), [tree]);
-
-  useEffect(() => {
-    if (!node) return;
-    node.editor.focus();
-  }, [node]);
-
   return (
-    <ul>
-      {tree.map((node) => (
-        <TreeNode
-          key={node.key}
-          onSelect={(node) => setNode(node)}
-          node={node}
-        />
-      ))}
-    </ul>
+    <TreeState tree={tree}>
+      <ul className="editor-tree">
+        {tree.map((node) => (
+          <TreeNode key={node.key} node={node} />
+        ))}
+      </ul>
+    </TreeState>
   );
 }
 

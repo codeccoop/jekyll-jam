@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { useStore } from "colmado";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 import { $generateHtmlFromNodes, $generateNodesFromDOM } from "@lexical/html";
+import { $getRoot, $insertNodes } from "lexical";
 
 /* SOURCE */
 import Editor from "components/Editor";
@@ -11,11 +12,10 @@ import MediaViewer from "components/MediaViewer";
 import YamlForm from "components/YamlForm";
 
 import { getBlob, getStyle } from "services/api";
-import { b64d, b64e } from "lib/helpers";
+import { b64d, b64e } from "utils";
 
 /* STYLE */
 import "./style.scss";
-import { $getRoot, $insertNodes } from "lexical";
 
 function getEditMode(queryPath) {
   if (!queryPath) return null;
@@ -198,16 +198,12 @@ function EditorPage() {
     let editorContent =
       mode === "media" ? window.atob(blob.content) : b64d(blob.content);
 
-    // if (mode === "editor") {
-    //   editorContent = hydrateBlocks(editorContent);
-    // }
-
     setBlob(blob);
     setEditorContent(editorContent);
   }
 
   function toTheClippBoard(blob) {
-    navigator.clipboard.writeText(b64d(blob.path)); // .replace(/\.md$/, ".html"));
+    navigator.clipboard.writeText(b64d(blob.path));
   }
 
   if (!query.path) return <h1>Loading</h1>;

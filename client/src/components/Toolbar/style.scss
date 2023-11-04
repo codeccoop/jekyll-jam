@@ -31,8 +31,12 @@
         line-height: calc(20px + 0.4em);
       }
 
-      &[data-tab="blocks"]::after {
+      &[data-tab="tree"]::after {
         content: "\1F371";
+      }
+
+      &[data-tab="blocks"]::after {
+        content: "\1F962";
       }
 
       &[data-tab="block"]::after {

@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 
 /* SOURCE */
 import reducer from "./reducer";
-import { b64d } from "lib/helpers";
+import { b64d } from "utils";
 
 const BASE_URL = process.env.VOCERO_BASE_URL.replace(/\/+$/, "");
 const API_URL = process.env.VOCERO_API_URL;

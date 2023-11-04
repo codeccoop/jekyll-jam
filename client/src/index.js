@@ -2,6 +2,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useStore } from "colmado";
 
 /* SOURCE */
 import Home from "pages/Home";
@@ -9,10 +10,8 @@ import Edit from "pages/Edit";
 import Settings from "pages/Settings";
 import Init from "pages/Init";
 import MainLayout from "layouts/main";
-import { useStore } from "colmado";
-
+import LexicalContext from "context/Lexical";
 import Store from "store";
-import LexicalContext from "lib/contexts/Lexical";
 
 /* STYLE */
 import "./styles/index.scss";

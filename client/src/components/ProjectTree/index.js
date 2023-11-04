@@ -6,12 +6,14 @@ import { useStore } from "colmado";
 /* SOURCE */
 import { addFile, uploadFile, dropFile, addLeaf, dropLeaf } from "./crud";
 import { getTree } from "services/api";
-import { getPathType, flattenTree, uuid, b64e } from "lib/helpers";
+import { uuid, b64e } from "utils";
+import { getPathType } from "utils/url";
+import { flattenTree } from "utils/tree";
 
+import Directory from "./Directory";
 import File from "./File";
 
 import "./style.scss";
-import Directory from "./Directory";
 
 function Tree() {
   const navigate = useNavigate();

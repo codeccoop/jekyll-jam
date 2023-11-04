@@ -1,9 +1,9 @@
 /* VENDOR */
-import React, { useEffect, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
 
 /* SOURCE */
-import { b64e } from "lib/helpers";
+import { b64e } from "utils";
 
 export default function File({ sha, path, name, isNew, createFile, dropFile }) {
   const input = useRef();

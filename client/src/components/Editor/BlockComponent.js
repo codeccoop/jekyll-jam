@@ -1,6 +1,5 @@
 /* VENDOR */
-import React, { useEffect, useState } from "react";
-import { $getNodeByKey } from "lexical";
+import React from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
@@ -14,11 +13,10 @@ import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin.js";
 import { useStore } from "colmado";
 
 /* SOURCE */
-import CodeHighlightPlugin from "../plugins/CodeHighlight.js";
-import ListMaxIndentLevelPlugin from "../plugins/ListMaxIndentLevelPlugin.js";
-// import ToolbarPlugin from "../plugins/ToolbarPlugin";
-import BlockNodesPlugin from "../plugins/BlockNodesPlugin.js";
-import { $isBlockNode } from "./BlockNode.js";
+import CodeHighlightPlugin from "plugins/CodeHighlight.js";
+import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin.js";
+// import ToolbarPlugin from "plugins/ToolbarPlugin";
+import BlockNodesPlugin from "plugins/BlockNodesPlugin.js";
 
 function BlockEditor({ editor, parentEditor, hierarchy = [] }) {
   return (
@@ -48,54 +46,20 @@ function BlockComponent({
   editor,
   parentEditor,
   ancestors,
-  focus,
-  initProps = {},
+  props = {},
 }) {
-  const [{ blocks }, dispatch] = useStore();
+  const [{ blocks }] = useStore();
   const [, { getTheme }] = useLexicalComposerContext();
 
   const BlockInner =
     blocks.find((block) => block.name === defn.name)?.fn || (() => {});
 
-  const [state, setState] = useState(initProps);
-
-  useEffect(() => {
-    if (!defn) return;
-    setState(
-      Object.fromEntries(defn.args.map((a) => [a, initProps[a] || null]))
-    );
-  }, [defn]);
-
-  useEffect(() => {
-    if (!propsHasChanged(state, initProps)) return;
-
-    parentEditor.update(() => {
-      const node = $getNodeByKey(nodeKey);
-      if ($isBlockNode(node)) {
-        node.props = Object.assign({}, state);
-      }
-    });
-  }, [state]);
-
-  useEffect(() => {
-    dispatch({
-      action: "SET_BLOCK",
-      payload: {
-        defn: defn,
-        nodeKey: nodeKey,
-        props: state,
-        setProps: (state) => setState(state),
-        parentEditor: parentEditor,
-      },
-    });
-  }, [focus]);
-
-  if (defn.selfClosed) return <BlockInner {...state} React={React} />;
+  if (defn.selfClosed) return <BlockInner {...props} React={React} />;
 
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
       {/* focus && <ToolbarPlugin /> */}
-      <BlockInner {...state} React={React}>
+      <BlockInner {...props} React={React}>
         <BlockEditor
           editor={editor}
           parentEditor={parentEditor}
@@ -107,12 +71,3 @@ function BlockComponent({
 }
 
 export default BlockComponent;
-
-function propsHasChanged(props, init) {
-  return (
-    Object.keys(props).length !== Object.keys(init).length ||
-    Object.keys(props).reduce((handle, k) => {
-      return handle || props[k] !== init[k];
-    }, false)
-  );
-}

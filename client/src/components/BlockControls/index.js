@@ -1,10 +1,10 @@
 /* VENDOR */
-import React, { useEffect, useState, useRef } from "react";
-import { useStore } from "colmado";
+import React, { useEffect, useState } from "react";
 import { $getNodeByKey } from "lexical";
 
 /* SOURCE */
-import { $isBlockNode } from "components/Editor/nodes/BlockNode";
+import { $isBlockNode } from "nodes/BlockNode";
+import { useEditorFocus } from "context/EditorFocus";
 
 /* STYLE */
 import "./style.scss";
@@ -24,17 +24,14 @@ function BlockControl({ name, value, setValue }) {
 }
 
 function BlockControls() {
-  const [{ block }, dispatch] = useStore();
+  const [block, setBlock] = useEditorFocus();
 
   const handleDelete = () => {
     block.parentEditor.update(() => {
       const node = $getNodeByKey(block.nodeKey);
       if ($isBlockNode(node)) {
         node.remove();
-        dispatch({
-          action: "SET_BLOCK",
-          payload: null,
-        });
+        setBlock(null);
       }
     });
   };
@@ -44,7 +41,9 @@ function BlockControls() {
   );
   useEffect(() => {
     if (Object.keys(props).length === 0) return;
-    debouncedSetter(props);
+    block.editor._parentEditor.update(() => {
+      block.props = { ...block.props, ...props };
+    });
   }, [props]);
 
   useEffect(() => {
@@ -53,15 +52,6 @@ function BlockControls() {
     return () => setProps({});
   }, [block]);
 
-  const delay = useRef();
-  function debouncedSetter(props) {
-    clearTimeout(delay.current);
-    delay.current = setTimeout(() => {
-      block.setProps({ ...block.props, ...props });
-    }, 500);
-  }
-
-  // if (!block) return <h2>Select one block</h2>;
   return (
     <div className="block-controls">
       {block ? (

@@ -12,11 +12,8 @@ import {
 import { mergeRegister } from "@lexical/utils";
 
 /* SOURCE */
-import BlockNode, {
-  $createBlockNode,
-  $isBlockNode,
-} from "../nodes/BlockNode.js";
-import { useStore } from "colmado";
+import BlockNode, { $createBlockNode, $isBlockNode } from "nodes/BlockNode.js";
+import { useEditorFocus } from "context/EditorFocus.js";
 
 export const INSERT_BLOCK_NODE = createCommand();
 
@@ -30,10 +27,11 @@ function isFamily(hierarchy, ancestors) {
 
 function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   const nodeKey = hierarchy[hierarchy.length - 1];
-  const [, dispatch] = useStore();
 
   const exitDecorators = useRef({});
   const [decorators, setDecorators] = useState();
+  const [, setFocus] = useEditorFocus();
+
   useEffect(() => {
     if (!decorators) return;
 
@@ -46,9 +44,10 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
         });
       });
     return () => (exitDecorators.current = decorators);
-  });
+  }, [decorators]);
 
   function insertBlock(defn, ancestors) {
+    debugger;
     editor.update(() => {
       const selection = $getSelection();
       if (selection) {
@@ -82,20 +81,14 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   }
 
   function handleOnFocus(ev) {
-    if (!parentEditor) {
-      return dispatch({
-        action: "SET_BLOCK",
-        payload: null,
-      });
-    }
+    console.log(ev);
+    if (!parentEditor) return;
+    ev.stopPropagation();
 
-    editor.update(() => {
+    parentEditor.getEditorState().read(() => {
       const node = $getNodeByKey(nodeKey);
-      if ($isBlockNode(node)) {
-        const root = $getRoot();
-        root.select();
-        node.focus();
-      }
+      console.log(node);
+      setFocus(node);
     });
   }
 

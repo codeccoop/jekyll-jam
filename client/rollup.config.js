@@ -39,12 +39,8 @@ export default {
           replacement: path.resolve(__dirname, "src/components"),
         },
         {
-          find: "lib",
-          replacement: path.resolve(__dirname, "src/lib"),
-        },
-        {
-          find: "asset",
-          replacement: path.resolve(__dirname, "src/assets"),
+          find: "context",
+          replacement: path.resolve(__dirname, "src/context"),
         },
         {
           find: "hooks",
@@ -55,8 +51,16 @@ export default {
           replacement: path.resolve(__dirname, "src/layouts"),
         },
         {
+          find: "nodes",
+          replacement: path.resolve(__dirname, "src/nodes"),
+        },
+        {
           find: "pages",
           replacement: path.resolve(__dirname, "src/pages"),
+        },
+        {
+          find: "plugins",
+          replacement: path.resolve(__dirname, "src/plugins"),
         },
         {
           find: "services",
@@ -69,6 +73,10 @@ export default {
         {
           find: "style",
           replacement: path.resolve(__dirname, "src/style"),
+        },
+        {
+          find: "utils",
+          replacement: path.resolve(__dirname, "src/utils"),
         },
       ],
     }),

@@ -1,0 +1,29 @@
+.editor-tree {
+  padding-left: 0.5em;
+
+  .node {
+    cursor: pointer;
+    width: 100%;
+
+    &:not(:last-child) {
+      border-bottom: 1px solid;
+    }
+
+    &.selected > p {
+      color: white;
+      background-color: steelblue;
+    }
+
+    &.collapsed:not(.root) > ul {
+      display: none;
+    }
+
+    > p {
+      margin: 0.2em 0;
+    }
+
+    > ul {
+      padding-left: 0.5em;
+    }
+  }
+}

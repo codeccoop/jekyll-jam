@@ -4,7 +4,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 import { useStore } from "colmado";
 
 /* SOURCE */
-import { INSERT_BLOCK_NODE } from "../Editor/plugins/BlockNodesPlugin";
+import { INSERT_BLOCK_NODE } from "plugins/BlockNodesPlugin";
 
 /* STYLE */
 import "./style.scss";

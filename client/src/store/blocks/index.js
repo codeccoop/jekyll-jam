@@ -4,7 +4,17 @@ import React, { useEffect, useState } from "react";
 /* SOURCE */
 import { getBlocks } from "services/api.js";
 
-const geval = eval;
+const rootBlock = {
+  family: "root",
+  name: "RootBlock",
+  level: "block",
+  args: [],
+  selfClosed: false,
+  fn: ({ React, children }) =>
+    React.createElement("div", { className: "vocero-root" }, children),
+};
+
+const geval = window.eval;
 const Component = ({ Warehouse, children }) => {
   const [state, setState] = useState([]);
 
@@ -13,7 +23,7 @@ const Component = ({ Warehouse, children }) => {
       .then((res) => res.text())
       .then((script) => {
         const blocks = geval(script);
-        setState(blocks);
+        setState([rootBlock].concat(blocks));
       });
   }, []);
 

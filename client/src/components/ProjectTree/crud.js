@@ -1,6 +1,6 @@
 /* SOURCE */
 import { dropBlob } from "services/api";
-import { getPathType } from "lib/helpers";
+import { getPathType } from "utils/url";
 
 function setUnique(file, siblings) {
   const tocayo = siblings.find((sibling) => sibling.path === file.path);
