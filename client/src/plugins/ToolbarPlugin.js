@@ -1,5 +1,10 @@
-import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   CAN_REDO_COMMAND,
   CAN_UNDO_COMMAND,
@@ -14,7 +19,11 @@ import {
   $getNodeByKey,
 } from "lexical";
 import { $isLinkNode, TOGGLE_LINK_COMMAND } from "@lexical/link";
-import { $isParentElementRTL, $wrapNodes, $isAtNodeEnd } from "@lexical/selection";
+import {
+  $isParentElementRTL,
+  $wrapNodes,
+  $isAtNodeEnd,
+} from "@lexical/selection";
 import { $getNearestNodeOfType, mergeRegister } from "@lexical/utils";
 import {
   INSERT_ORDERED_LIST_COMMAND,
@@ -24,7 +33,11 @@ import {
   ListNode,
 } from "@lexical/list";
 import { createPortal } from "react-dom";
-import { $createHeadingNode, $createQuoteNode, $isHeadingNode } from "@lexical/rich-text";
+import {
+  $createHeadingNode,
+  $createQuoteNode,
+  $isHeadingNode,
+} from "@lexical/rich-text";
 import {
   $createCodeNode,
   $isCodeNode,
@@ -40,6 +53,9 @@ const supportedBlockTypes = new Set([
   "code",
   "h1",
   "h2",
+  "h3",
+  "h4",
+  "h5",
   "ul",
   "ol",
 ]);
@@ -100,9 +116,7 @@ function FloatingLinkEditor({ editor }) {
     const nativeSelection = window.getSelection();
     const activeElement = document.activeElement;
 
-    if (editorElem === null) {
-      return;
-    }
+    if (editorElem === null) return;
 
     const rootElement = editor.getRootElement();
     if (
@@ -233,15 +247,11 @@ function getSelectedNode(selection) {
   const focus = selection.focus;
   const anchorNode = selection.anchor.getNode();
   const focusNode = selection.focus.getNode();
-  if (anchorNode === focusNode) {
-    return anchorNode;
-  }
+  if (anchorNode === focusNode) return anchorNode;
+
   const isBackward = selection.isBackward();
-  if (isBackward) {
-    return $isAtNodeEnd(focus) ? anchorNode : focusNode;
-  } else {
-    return $isAtNodeEnd(anchor) ? focusNode : anchorNode;
-  }
+  if (isBackward) return $isAtNodeEnd(focus) ? anchorNode : focusNode;
+  return $isAtNodeEnd(anchor) ? focusNode : anchorNode;
 }
 
 function BlockOptionsDropdownList({
@@ -251,6 +261,9 @@ function BlockOptionsDropdownList({
   setShowBlockOptionsDropDown,
 }) {
   const dropDownRef = useRef(null);
+  const supportedHeadings = Array.from(supportedBlockTypes).filter((tag) =>
+    tag.match(/^h[0-9]/)
+  );
 
   useEffect(() => {
     const toolbar = toolbarRef.current;
@@ -296,26 +309,12 @@ function BlockOptionsDropdownList({
     setShowBlockOptionsDropDown(false);
   };
 
-  const formatLargeHeading = () => {
-    if (blockType !== "h1") {
+  const formatHeading = (heading) => {
+    if (blockType !== heading) {
       editor.update(() => {
         const selection = $getSelection();
-
         if ($isRangeSelection(selection)) {
-          $wrapNodes(selection, () => $createHeadingNode("h1"));
-        }
-      });
-    }
-    setShowBlockOptionsDropDown(false);
-  };
-
-  const formatSmallHeading = () => {
-    if (blockType !== "h2") {
-      editor.update(() => {
-        const selection = $getSelection();
-
-        if ($isRangeSelection(selection)) {
-          $wrapNodes(selection, () => $createHeadingNode("h2"));
+          $wrapNodes(selection, () => $createHeadingNode(heading));
         }
       });
     }
@@ -373,16 +372,17 @@ function BlockOptionsDropdownList({
         <span className="text">Normal</span>
         {blockType === "paragraph" && <span className="active" />}
       </button>
-      <button className="item" onClick={formatLargeHeading}>
-        <span className="icon large-heading" />
-        <span className="text">Large Heading</span>
-        {blockType === "h1" && <span className="active" />}
-      </button>
-      <button className="item" onClick={formatSmallHeading}>
-        <span className="icon small-heading" />
-        <span className="text">Small Heading</span>
-        {blockType === "h2" && <span className="active" />}
-      </button>
+      {supportedHeadings.map((heading) => (
+        <button
+          key={heading}
+          className="item"
+          onClick={() => formatHeading(heading)}
+        >
+          <span className="icon">{heading}</span>
+          <span className="text">heading</span>
+          {blockType === heading && <span className="active" />}
+        </button>
+      ))}
       <button className="item" onClick={formatBulletList}>
         <span className="icon bullet-list" />
         <span className="text">Bullet List</span>
@@ -407,14 +407,14 @@ function BlockOptionsDropdownList({
   );
 }
 
-export default function ToolbarPlugin() {
-  const [editor] = useLexicalComposerContext();
+export default function ToolbarPlugin({ editor }) {
   const toolbarRef = useRef(null);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
   const [blockType, setBlockType] = useState("paragraph");
   const [selectedElementKey, setSelectedElementKey] = useState(null);
-  const [showBlockOptionsDropDown, setShowBlockOptionsDropDown] = useState(false);
+  const [showBlockOptionsDropDown, setShowBlockOptionsDropDown] =
+    useState(false);
   const [codeLanguage, setCodeLanguage] = useState("");
   const [isRTL, setIsRTL] = useState(false);
   const [isLink, setIsLink] = useState(false);
@@ -441,7 +441,9 @@ export default function ToolbarPlugin() {
           const type = parentList ? parentList.getTag() : element.getTag();
           setBlockType(type);
         } else {
-          const type = $isHeadingNode(element) ? element.getTag() : element.getType();
+          const type = $isHeadingNode(element)
+            ? element.getTag()
+            : element.getType();
           setBlockType(type);
           if ($isCodeNode(element)) {
             setCodeLanguage(element.getLanguage() || getDefaultCodeLanguage());
@@ -468,6 +470,8 @@ export default function ToolbarPlugin() {
   }, [editor]);
 
   useEffect(() => {
+    if (!editor) return;
+
     return mergeRegister(
       editor.registerUpdateListener(({ editorState }) => {
         editorState.read(() => {
@@ -518,7 +522,7 @@ export default function ToolbarPlugin() {
 
   const insertLink = useCallback(() => {
     if (!isLink) {
-      editor.dispatchCommand(TOGGLE_LINK_COMMAND, "https://");
+      editor.dispatchCommand(TOGGLE_LINK_COMMAND, "#");
     } else {
       editor.dispatchCommand(TOGGLE_LINK_COMMAND, null);
     }
@@ -551,7 +555,9 @@ export default function ToolbarPlugin() {
         <>
           <button
             className="toolbar-item block-controls"
-            onClick={() => setShowBlockOptionsDropDown(!showBlockOptionsDropDown)}
+            onClick={() =>
+              setShowBlockOptionsDropDown(!showBlockOptionsDropDown)
+            }
             aria-label="Formatting Options"
           >
             <span className={"icon block-type " + blockType} />
@@ -614,7 +620,9 @@ export default function ToolbarPlugin() {
             onClick={() => {
               editor.dispatchCommand(FORMAT_TEXT_COMMAND, "strikethrough");
             }}
-            className={"toolbar-item spaced " + (isStrikethrough ? "active" : "")}
+            className={
+              "toolbar-item spaced " + (isStrikethrough ? "active" : "")
+            }
             aria-label="Format Strikethrough"
           >
             <i className="format strikethrough" />
@@ -635,7 +643,8 @@ export default function ToolbarPlugin() {
           >
             <i className="format link" />
           </button>
-          {isLink && createPortal(<FloatingLinkEditor editor={editor} />, document.body)}
+          {isLink &&
+            createPortal(<FloatingLinkEditor editor={editor} />, document.body)}
           <Divider />
           <button
             onClick={() => {

@@ -1,6 +1,5 @@
 /* VENDOR */
-import React, { useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { useEffect } from "react";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext.js";
 import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import { LexicalNestedComposer } from "@lexical/react/LexicalNestedComposer";
@@ -12,46 +11,16 @@ import { ListPlugin } from "@lexical/react/LexicalListPlugin.js";
 import { LinkPlugin } from "@lexical/react/LexicalLinkPlugin.js";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin.js";
 import { useStore } from "colmado";
-import { $getNodeByKey, $getSelection } from "lexical";
+import { $getNodeByKey } from "lexical";
 
 /* SOURCE */
 import CodeHighlightPlugin from "plugins/CodeHighlight.js";
 import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin.js";
-import ToolbarPlugin from "plugins/ToolbarPlugin";
 import BlockNodesPlugin from "plugins/BlockNodesPlugin.js";
-import { useEditorFocus } from "context/EditorFocus";
 
 function BlockEditor({ editor, parentEditor, hierarchy = [] }) {
-  const [focusNode] = useEditorFocus();
-
-  const isComposing = useRef(false);
-  useEffect(() => {
-    if (!focusNode) {
-      isComposing.current = false;
-    } else {
-      new Promise((res) => {
-        parentEditor.getEditorState().read(() => {
-          const node = $getNodeByKey(focusNode.getKey());
-          if (!node) rej();
-          editor.getEditorState().read(() => {
-            const selection = $getSelection();
-            if (!selection) rej();
-            res();
-          });
-        });
-      })
-        .then(() => (isComposing.current = true))
-        .catch(() => (isComposing.current = false));
-    }
-  }, [editor, parentEditor, focusNode]);
-
   return (
     <>
-      {isComposing.current &&
-        createPortal(
-          <ToolbarPlugin />,
-          document.querySelector(".editor-toolbar")
-        )}
       <RichTextPlugin
         contentEditable={<ContentEditable className="vocero-block-editor" />}
         ErrorBoundary={LexicalErrorBoundary}
@@ -98,7 +67,6 @@ function BlockComponent({
   if (defn.selfClosed) return <BlockInner {...props} React={React} />;
   return (
     <LexicalNestedComposer initialEditor={editor} initialTheme={getTheme()}>
-      {/* focus && <ToolbarPlugin /> */}
       <BlockInner {...props} React={React}>
         <BlockEditor
           editor={editor}

@@ -12,16 +12,30 @@ import { TRANSFORMERS } from "@lexical/markdown";
 import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext";
 
 /* SOURCE */
-import EditorFocus from "context/EditorFocus";
-// import ToolbarPlugin from "plugins/ToolbarPlugin";
+import EditorFocus, { useEditorFocus } from "context/EditorFocus";
 import CodeHighlightPlugin from "plugins/CodeHighlight";
 import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin";
 import BlockNodesPlugin from "plugins/BlockNodesPlugin";
 import Toolbar from "components/Toolbar";
+import ToolbarPlugin from "plugins/ToolbarPlugin";
 
 /* STYLE */
 import "./style.scss";
 import "./lexical.scss";
+
+function EditorToolbar() {
+  const [focusNode] = useEditorFocus();
+  const [editor, setEditor] = useState();
+  useEffect(() => {
+    setEditor(focusNode?.editor);
+  }, [focusNode]);
+
+  return (
+    <div className="editor-toolbar">
+      <ToolbarPlugin editor={editor} />
+    </div>
+  );
+}
 
 export default function Editor() {
   const [editor] = useLexicalComposerContext();
@@ -29,7 +43,7 @@ export default function Editor() {
   return (
     <EditorFocus>
       <div className="editor-container">
-        <div className="editor-toolbar"></div>
+        <EditorToolbar />
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={<ContentEditable className="vocero-root-editor" />}
