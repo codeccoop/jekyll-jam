@@ -15,13 +15,19 @@ function TreeNode({ node }) {
 
   const onClick = (ev) => {
     ev.stopPropagation();
-    visibilities[node.key] = !visibilities[node.key];
-    if (visibilities[node.key]) {
+    if (focusedNode?.getKey() !== node.key) {
       node.editor._parentEditor.getEditorState().read(() => {
         const blockNode = $getNodeByKey(node.key);
         setFocusedNode(blockNode);
       });
+    } else {
+      visibilities[node.key] = true;
     }
+  };
+
+  const onDoubleClick = (ev) => {
+    ev.stopPropagation();
+    visibilities[node.key] = false; // !visibilities[node.key];
   };
 
   const getClassName = () => {
@@ -31,12 +37,17 @@ function TreeNode({ node }) {
     visibilities
       ? !visibilities[node.key] && classes.push("collapsed")
       : classes.push("collapsed");
+
     return classes.join(" ");
   };
 
   if (!node.isBlock) return null;
   return (
-    <div className={getClassName()} onClick={onClick}>
+    <div
+      className={getClassName()}
+      onClick={onClick}
+      onDoubleClick={onDoubleClick}
+    >
       <p>{node.type}</p>
       <ul>
         {node.children.map((node) => (
@@ -44,6 +55,25 @@ function TreeNode({ node }) {
         ))}
       </ul>
     </div>
+  );
+}
+
+function TreeRoot({ tree }) {
+  const [visibilities] = useTreeState();
+  const [focusedNode] = useEditorFocus();
+
+  useEffect(() => {
+    if (!(visibilities && focusedNode)) return;
+    visibilities[focusedNode.getKey()] = true;
+    // return () => (visibilities[focusedNode.getKey()] = false);
+  }, [focusedNode]);
+
+  return (
+    <ul className="editor-tree">
+      {tree.map((node) => (
+        <TreeNode key={node.key} node={node} />
+      ))}
+    </ul>
   );
 }
 
@@ -77,11 +107,7 @@ function EditorTree() {
 
   return (
     <TreeState tree={tree}>
-      <ul className="editor-tree">
-        {tree.map((node) => (
-          <TreeNode key={node.key} node={node} />
-        ))}
-      </ul>
+      <TreeRoot tree={tree} />
     </TreeState>
   );
 }

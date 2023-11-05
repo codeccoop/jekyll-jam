@@ -25,6 +25,8 @@ function isFamily(hierarchy, ancestors) {
   );
 }
 
+let _focusDebounce;
+
 function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   const nodeKey = hierarchy[hierarchy.length - 1];
 
@@ -79,14 +81,16 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
     });
   }
 
-  function handleOnFocus(ev) {
+  function handleOnFocus() {
     if (!parentEditor) return;
-    ev.stopPropagation();
-
-    parentEditor.getEditorState().read(() => {
-      const node = $getNodeByKey(nodeKey);
-      setFocus(node);
-    });
+    clearTimeout(_focusDebounce);
+    _focusDebounce = setTimeout(() => {
+      parentEditor.getEditorState().read(() => {
+        const node = $getNodeByKey(nodeKey);
+        if (node.defn.selfClosed) return;
+        setFocus(node);
+      });
+    }, 100);
   }
 
   useEffect(() => {

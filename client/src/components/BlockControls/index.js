@@ -9,6 +9,15 @@ import { useEditorFocus } from "context/EditorFocus";
 /* STYLE */
 import "./style.scss";
 
+function propsHasChanged(from, to) {
+  return (
+    Object.keys(to).length !== Object.keys(from).length ||
+    Object.keys(to).reduce((handle, k) => {
+      return handle || to[k] !== from[k];
+    }, false)
+  );
+}
+
 function BlockControl({ name, value, setValue }) {
   return (
     <div className="block-controls__field">
@@ -41,6 +50,8 @@ function BlockControls() {
   );
   useEffect(() => {
     if (Object.keys(props).length === 0) return;
+    if (!propsHasChanged(block.props, props)) return;
+
     block.editor._parentEditor.update(() => {
       block.props = { ...block.props, ...props };
     });

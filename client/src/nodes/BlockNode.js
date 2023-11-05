@@ -1,7 +1,14 @@
 /* VENDOR */
 import React from "react";
 import { renderToString } from "react-dom/server.browser";
-import { $getRoot, createEditor, DecoratorNode } from "lexical";
+import {
+  $createRangeSelection,
+  $getNodeByKey,
+  $getRoot,
+  $setSelection,
+  createEditor,
+  DecoratorNode,
+} from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
 
 /* SOURCE */
@@ -96,9 +103,11 @@ class BlockNode extends DecoratorNode {
     el.id = this.getKey();
     if (this.defn.selfClosed) {
       el.addEventListener("click", (ev) => {
+        ev.preventDefault();
         ev.stopPropagation();
         editor.update(() => {
-          this.focus();
+          const selection = $createRangeSelection();
+          $setSelection(selection);
         });
       });
     }

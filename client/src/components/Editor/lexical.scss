@@ -16,11 +16,6 @@
   list-style-type: none;
 }
 
-.App {
-  font-family: sans-serif;
-  text-align: center;
-}
-
 h1 {
   font-size: 24px;
   color: #333;
@@ -720,4 +715,8 @@ i.right-align {
 
 i.justify-align {
   background-image: url("../../assets/icons/justify.svg");
+}
+
+.vocero-block-editor img:not([src]) {
+  min-height: 1.2em;
 }

@@ -11,7 +11,7 @@ function build(tree, parent = null) {
   return tree.map((node) => {
     const treeNode = {
       key: node.key,
-      active: node.active || false,
+      active: node.active,
       parent,
     };
     treeNode.children = build(node.children, treeNode);
@@ -45,7 +45,7 @@ function proxy(tree) {
           }
         }
 
-        listeners.forEach((listener) => listener(tree));
+        setTimeout(() => listeners.forEach((listener) => listener(tree)), 0);
       }
       return true;
     },
@@ -59,7 +59,7 @@ function merge(to, from) {
   to.forEach((node) => {
     const last = from.find((_node) => _node.key === node.key);
     if (last) {
-      node.active = last.active;
+      node.active = node.active !== void 0 ? node.active : last.active;
       merge(node.children, last.children);
     }
   });
@@ -80,13 +80,13 @@ function TreeState({ tree, children }) {
   const renewState = (tree) => {
     if (!tree) return;
     const newState = merge(build(tree), lastState.current);
+    lastState.current = state;
     setState(newState);
   };
 
   const lastState = useRef([]);
   useEffect(() => {
     renewState(tree);
-    return () => (lastState.current = state);
   }, [tree]);
 
   useEffect(() => {

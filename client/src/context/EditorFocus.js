@@ -12,9 +12,7 @@ export function useEditorFocus() {
 function EditorFocus({ children }) {
   const [node, setNode] = useState(_node);
   useEffect(() => {
-    if (node && node.editor) {
-      node.editor.focus();
-    }
+    if (node) node.editor.focus();
     _node = node;
   }, [node]);
 

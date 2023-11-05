@@ -16,7 +16,7 @@ import EditorFocus, { useEditorFocus } from "context/EditorFocus";
 import CodeHighlightPlugin from "plugins/CodeHighlight";
 import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin";
 import BlockNodesPlugin from "plugins/BlockNodesPlugin";
-import Toolbar from "components/Toolbar";
+import EditorSidebar from "components/EditorSidebar";
 import ToolbarPlugin from "plugins/ToolbarPlugin";
 
 /* STYLE */
@@ -60,7 +60,7 @@ export default function Editor() {
           <BlockNodesPlugin editor={editor} />
         </div>
       </div>
-      <Toolbar />
+      <EditorSidebar />
     </EditorFocus>
   );
 }

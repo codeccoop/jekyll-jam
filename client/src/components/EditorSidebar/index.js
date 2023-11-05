@@ -1,5 +1,5 @@
 /* VENDOR */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 /* SOURCE */
 import Blocks from "components/Blocks";
@@ -23,11 +23,11 @@ function Tab({ isActive, tab, setTab }) {
   );
 }
 
-function ToolbarContent({ isReady, children }) {
+function Content({ isReady, children }) {
   return <div className="toolbar-content">{isReady ? children : null}</div>;
 }
 
-function Toolbar() {
+function EditorSidebar() {
   const [currentTab, setCurrentTab] = useState(tabs[0]);
 
   return (
@@ -42,7 +42,7 @@ function Toolbar() {
           />
         ))}
       </nav>
-      <ToolbarContent isReady={currentTab !== void 0}>
+      <Content isReady={currentTab !== void 0}>
         {currentTab === "tree" ? (
           <EditorTree />
         ) : currentTab === "blocks" ? (
@@ -50,9 +50,9 @@ function Toolbar() {
         ) : (
           <BlockControls />
         )}
-      </ToolbarContent>
+      </Content>
     </div>
   );
 }
 
-export default Toolbar;
+export default EditorSidebar;
