@@ -47,7 +47,6 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   }, [decorators]);
 
   function insertBlock(defn, ancestors) {
-    debugger;
     editor.update(() => {
       const selection = $getSelection();
       if (selection) {
@@ -81,13 +80,11 @@ function BlockNodesPlugin({ editor, parentEditor, hierarchy = [] }) {
   }
 
   function handleOnFocus(ev) {
-    console.log(ev);
     if (!parentEditor) return;
     ev.stopPropagation();
 
     parentEditor.getEditorState().read(() => {
       const node = $getNodeByKey(nodeKey);
-      console.log(node);
       setFocus(node);
     });
   }

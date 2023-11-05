@@ -8,14 +8,18 @@ import { b64e } from "utils";
 export default function File({ sha, path, name, isNew, createFile, dropFile }) {
   const input = useRef();
   const unliked = useRef(false);
+  const type = name.match(/\.(\w+)$/)[1];
 
   function onCreateFile(ev) {
+    if (ev.type === "keydown" && ev.code !== "Enter") return;
     ev.stopPropagation();
     if (unliked.current) return;
     unliked.current = true;
 
+    const value = ev.target.value.trim();
+    const fileName = `${value}.${type}`;
     createFile(ev, {
-      path: path.replace(/new_file\.\w+$/, ev.target.value).replace(/^\/*/, ""),
+      path: path.replace(/new_file\.\w+$/, fileName),
       content: "",
     });
   }
@@ -29,9 +33,9 @@ export default function File({ sha, path, name, isNew, createFile, dropFile }) {
       <input
         ref={input}
         type="text"
-        onKeyDown={(ev) => ev.code === "Enter" && onCreateFile(ev)}
+        onKeyDown={onCreateFile}
         onBlur={onCreateFile}
-        defaultValue={name}
+        defaultValue={name.replace(/\.\w+$/, "")}
       />
     );
   }
@@ -42,7 +46,7 @@ export default function File({ sha, path, name, isNew, createFile, dropFile }) {
         id={sha}
         to={"/edit?sha=" + encodeURIComponent(sha) + "&path=" + b64e(path)}
       >
-        {name}
+        {name.replace(/\.\w+$/, "")}
       </Link>
       <button className="drop" onClick={dropFile}></button>
     </>

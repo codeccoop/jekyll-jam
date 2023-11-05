@@ -16,18 +16,25 @@ export function useEditorFocus() {
 function EditorFocus({ children }) {
   const [node, setNode] = useState(_node);
   useEffect(() => {
-    if (node && node.editor) node.editor.focus();
+    if (node && node.editor) {
+      console.log("focus");
+      node.editor.focus();
+    }
     _node = node;
   }, [node]);
 
   const nodeSetter = (newNode) => {
-    if (!$isBlockNode(newNode)) {
-      newNode.editor._parentEditor.getEditorState().read(() => {
-        setNode($getNodeByKey(newNode.key));
-      });
-    } else {
-      setNode(newNode);
-    }
+    if (_node === newNode) return;
+    setNode(newNode);
+    // if (newNode === null) return setNode(newNode);
+
+    // if (!$isBlockNode(newNode)) {
+    //   newNode.editor._parentEditor.getEditorState().read(() => {
+    //     setNode($getNodeByKey(newNode.key));
+    //   });
+    // } else {
+    //   setNode(newNode);
+    // }
   };
 
   return (

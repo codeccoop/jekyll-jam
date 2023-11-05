@@ -13,6 +13,7 @@ import YamlForm from "components/YamlForm";
 
 import { getBlob, getStyle } from "services/api";
 import { b64d, b64e } from "utils";
+import { $createRootBlockNode } from "nodes/BlockNode";
 
 /* STYLE */
 import "./style.scss";
@@ -60,10 +61,10 @@ function EditorPage() {
   const [blob, setBlob] = useState({});
 
   const [isContentLoaded, setIsContentLoaded] = useState(false);
-  const [editorContent, setEditorContent] = useState();
+  const [editorContent, setEditorContent] = useState(null);
   const [previewContent, setPreviewContent] = useState();
   useEffect(() => {
-    setIsContentLoaded(!!editorContent);
+    setIsContentLoaded(editorContent !== null);
     return () => {
       setIsContentLoaded(false);
     };
@@ -76,6 +77,9 @@ function EditorPage() {
         const dom = parser.parseFromString(editorContent, "text/html");
         dom._vBlocks = blocks;
         const nodes = $generateNodesFromDOM(editor, dom);
+        if (!nodes.length) {
+          nodes.push($createRootBlockNode());
+        }
         const root = $getRoot();
         root.getChildren().forEach((child) => child.remove());
         root.select();
@@ -120,7 +124,7 @@ function EditorPage() {
     if (getEditMode(query.path) === "media" || !isContentLoaded) return;
     const hasChanged = b64e(editorContent) !== blob.content;
     setHasChanged(hasChanged);
-  }, [editorContent]);
+  }, [editorContent, isContentLoaded]);
 
   useEffect(() => {
     if (hasChanged && changes.length) retriveBlob(changes);

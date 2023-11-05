@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useStore } from "colmado";
 
 /* SOURCE */
-import Tree from "components/ProjectTree";
+import ProjectTree from "components/ProjectTree";
 import { commit, observeWorkflowRun, getArtifact } from "services/api";
 import { b64d } from "utils";
 
@@ -78,7 +78,7 @@ function Sidebar({ toggleVisibility }) {
       <div className="sidebar__head">
         <span onClick={toggleVisibility}>&laquo;</span>
       </div>
-      <Tree />
+      <ProjectTree />
       <div className="sidebar__bottom">
         <div className="sidebar__controls">
           <a

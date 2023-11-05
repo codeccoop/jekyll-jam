@@ -27,8 +27,8 @@ function BlockControls() {
   const [block, setBlock] = useEditorFocus();
 
   const handleDelete = () => {
-    block.parentEditor.update(() => {
-      const node = $getNodeByKey(block.nodeKey);
+    block.editor._parentEditor.update(() => {
+      const node = $getNodeByKey(block.getKey());
       if ($isBlockNode(node)) {
         node.remove();
         setBlock(null);
@@ -54,7 +54,7 @@ function BlockControls() {
 
   return (
     <div className="block-controls">
-      {block ? (
+      {block && block.defn.family !== "root" ? (
         <>
           <h3>{block.defn.name}</h3>
           <form>

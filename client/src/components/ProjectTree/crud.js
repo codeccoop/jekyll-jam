@@ -19,7 +19,7 @@ function setUnique(file, siblings) {
 
 function getSiblings(tree, type, directory) {
   const branchName =
-    type === "md" ? "files" : type === "yml" ? "data" : "media";
+    type === "html" ? "files" : type === "yml" ? "data" : "media";
   const branch = tree[branchName];
 
   let parent = null;
@@ -86,7 +86,7 @@ export function addFile(tree, type, directory = "", newFile = null) {
   siblings.push(setUnique(newFile, siblings));
 
   switch (type) {
-    case "md":
+    case "html":
       return { ...tree, ...{ children: tree.children } };
     case "yml":
       return { ...tree, ...{ data: tree.data } };
@@ -101,7 +101,8 @@ export function dropFile({ sha, path }) {
 
 export function addLeaf(tree, leaf) {
   const [path, branch] = getPathType(leaf);
-  const type = branch === "files" ? "md" : branch === "data" ? "yml" : "media";
+  const type =
+    branch === "files" ? "html" : branch === "data" ? "yml" : "media";
   const [siblings, parent] = getSiblings(
     tree,
     type,
@@ -126,7 +127,8 @@ export function addLeaf(tree, leaf) {
 
 export function dropLeaf(tree, leaf) {
   const [path, branch] = getPathType(leaf);
-  const type = branch === "files" ? "md" : branch === "data" ? "yml" : "media";
+  const type =
+    branch === "files" ? "html" : branch === "data" ? "yml" : "media";
   const [siblings, parent] = getSiblings(
     tree,
     type,

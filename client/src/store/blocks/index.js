@@ -3,13 +3,10 @@ import React, { useEffect, useState } from "react";
 
 /* SOURCE */
 import { getBlocks } from "services/api.js";
+import { RootNode } from "nodes/jsonNodes";
 
 const rootBlock = {
-  family: "root",
-  name: "RootBlock",
-  level: "block",
-  args: [],
-  selfClosed: false,
+  ...RootNode().defn,
   fn: ({ React, children }) =>
     React.createElement("div", { className: "vocero-root" }, children),
 };

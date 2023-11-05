@@ -1,5 +1,5 @@
 /* VENDOR */
-import React, { useState } from "react";
+import React from "react";
 import { renderToString } from "react-dom/server.browser";
 import { $getRoot, createEditor, DecoratorNode } from "lexical";
 import { $generateHtmlFromNodes } from "@lexical/html";
@@ -8,33 +8,7 @@ import { $generateHtmlFromNodes } from "@lexical/html";
 import BlockComponent from "components/Editor/BlockComponent";
 import { b64e, b64d } from "utils";
 import { getTree } from "utils/tree";
-
-const EMPTY_STATE = () => ({
-  root: {
-    children: [PARAGRAPH_NODE()],
-    direction: null,
-    format: "",
-    indent: 0,
-    type: "root",
-    version: 1,
-  },
-});
-
-const PARAGRAPH_NODE = () => ({
-  children: [],
-  direction: "ltr",
-  format: "",
-  indent: 0,
-  type: "paragraph",
-  version: 1,
-});
-
-const ROOT_NODE = () => ({
-  children: [],
-  defn: {
-    name: "root",
-  },
-});
+import { ParagraphNode, EmptyState, RootNode } from "./jsonNodes";
 
 function htmlToDom(html) {
   const template = document.createElement("template");
@@ -43,10 +17,10 @@ function htmlToDom(html) {
 }
 
 function initBlockEditor(editorState) {
-  editorState = editorState || EMPTY_STATE();
+  editorState = editorState || EmptyState();
 
   if (editorState.root.children.length === 0) {
-    editorState.root.children.push(PARAGRAPH_NODE());
+    editorState.root.children.push(ParagraphNode());
   }
 
   const editor = createEditor();
@@ -315,6 +289,10 @@ class BlockNode extends DecoratorNode {
 
 export function $createBlockNode({ defn, ancestors, props, editorState }) {
   return new BlockNode({ defn, ancestors, props, editorState });
+}
+
+export function $createRootBlockNode() {
+  return new BlockNode(RootNode());
 }
 
 export function $isBlockNode(node) {

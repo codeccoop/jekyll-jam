@@ -1,5 +1,5 @@
 /* VENDOR */
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { RichTextPlugin } from "@lexical/react/LexicalRichTextPlugin";
 import { ContentEditable } from "@lexical/react/LexicalContentEditable";
 import { HistoryPlugin } from "@lexical/react/LexicalHistoryPlugin";
@@ -13,7 +13,7 @@ import { useLexicalComposerContext } from "@lexical/react/LexicalComposerContext
 
 /* SOURCE */
 import EditorFocus from "context/EditorFocus";
-import ToolbarPlugin from "plugins/ToolbarPlugin";
+// import ToolbarPlugin from "plugins/ToolbarPlugin";
 import CodeHighlightPlugin from "plugins/CodeHighlight";
 import ListMaxIndentLevelPlugin from "plugins/ListMaxIndentLevelPlugin";
 import BlockNodesPlugin from "plugins/BlockNodesPlugin";
@@ -29,7 +29,7 @@ export default function Editor() {
   return (
     <EditorFocus>
       <div className="editor-container">
-        <ToolbarPlugin />
+        <div className="editor-toolbar"></div>
         <div className="editor-inner">
           <RichTextPlugin
             contentEditable={<ContentEditable className="vocero-root-editor" />}

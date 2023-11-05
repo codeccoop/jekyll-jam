@@ -15,13 +15,13 @@ import File from "./File";
 
 import "./style.scss";
 
-function Tree() {
+function ProjectTree() {
   const navigate = useNavigate();
 
   const [tree, setTree] = useState({
     placeholder: true,
     files: [
-      { name: "index.md", children: [], sha: 1 },
+      { name: "index.html", children: [], sha: 1 },
       { name: "posts", children: [], sha: 2 },
       { name: "drafts", children: [], sha: 3 },
     ],
@@ -150,8 +150,9 @@ function Tree() {
     ev.stopPropagation();
 
     toggleVisibility(branch, true);
-    const type = branch === "files" ? "md" : branch === "data" ? "yml" : void 0;
-    if (type === "md" || type === "yml") {
+    const type =
+      branch === "files" ? "html" : branch === "data" ? "yml" : void 0;
+    if (type === "html" || type === "yml") {
       setTree(addFile(tree, type, directory));
     } else {
       uploadFile(tree).then((leaf) => onCreateFile(ev, leaf));
@@ -279,4 +280,4 @@ function Tree() {
   );
 }
 
-export default Tree;
+export default ProjectTree;

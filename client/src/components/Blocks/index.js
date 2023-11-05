@@ -39,6 +39,7 @@ export default function Blocks() {
   }
 
   const families = blocks.reduce((families, block) => {
+    if (block.family === "root") return families;
     families[block.family] = families[block.family] || [];
     families[block.family].push(block);
     return families;
